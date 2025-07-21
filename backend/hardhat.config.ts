@@ -22,6 +22,15 @@ const config: HardhatUserConfig = {
   networks: {
     hardhat: {
       chainId: 31337,
+      gas: 30000000,
+      gasPrice: 1000000000,
+      blockGasLimit: 30000000,
+    },
+    localhost: {
+      url: "http://127.0.0.1:8545",
+      gas: 30000000,
+      gasPrice: 1000000000,
+      blockGasLimit: 30000000,
     },
     bitfinity_testnet: {
       url: "https://testnet.bitfinity.network",
