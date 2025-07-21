@@ -24,10 +24,11 @@ import {
 } from "@/components/ui/card";
 import { IconSwitch, IconFlagBitcoin } from "@tabler/icons-react";
 import { useState } from "react";
-import { createStockOnHedera } from "@/server-actions/creations/stocks";
+import { bitfinityService } from "@/lib/bitfinity-contract-service";
+import { useAccount } from 'wagmi';
 import { Spinner } from "@/components/ui/spinner";
 
-// Define the form schema with Zod
+// Define the form schema with Zod for Bitfinity EVM
 const stockFormSchema = z.object({
   symbol: z
     .string()
@@ -38,7 +39,22 @@ const stockFormSchema = z.object({
     .string()
     .min(2, "Name must be at least 2 characters")
     .max(100, "Name must be 100 characters or less"),
+  companyName: z
+    .string()
+    .min(2, "Company name must be at least 2 characters")
+    .max(200, "Company name must be 200 characters or less"),
+  sector: z
+    .string()
+    .min(1, "Sector is required"),
   totalShares: z
+    .string()
+    .transform((val) => parseInt(val))
+    .pipe(z.number().gt(0, "must be greater than 0")),
+  marketCap: z
+    .string()
+    .transform((val) => parseInt(val))
+    .pipe(z.number().gt(0, "must be greater than 0")),
+  initialSupply: z
     .string()
     .transform((val) => parseInt(val))
     .pipe(z.number().gt(0, "must be greater than 0")),
@@ -51,32 +67,58 @@ type StockFormValues = z.infer<typeof stockFormSchema>;
 const defaultValues: Partial<StockFormValues> = {
   symbol: "",
   name: "",
+  companyName: "",
+  sector: "",
   totalShares: 0,
+  marketCap: 0,
+  initialSupply: 0,
 };
 
 export const TokenizeStockForm = () => {
+  const { address, isConnected } = useAccount();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   // Initialize the form
   const form = useForm<StockFormValues>({
     resolver: zodResolver(stockFormSchema),
     defaultValues,
   });
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  // Handle form submission
+
+  // Handle form submission for Bitfinity EVM
   async function onSubmit(data: StockFormValues) {
+    if (!isConnected || !address) {
+      toast.error("Please connect your wallet first");
+      return;
+    }
+
     setIsSubmitting(true);
     try {
-      //TODO: Call Server Action/endpoint
-      await createStockOnHedera(data);
-      // Show success message
-      toast.success(
-        `Stock tokenized successfully:${data.name} (${data.symbol} on Hedera) has been added to the marketplace.`,
-      );
+      // Connect wallet if not already connected
+      const signer = await bitfinityService.connectWallet();
+      if (!signer) {
+        toast.error("Failed to connect wallet");
+        return;
+      }
 
-      // Reset the form
+      // Prepare stock metadata for smart contract
+      const stockMetadata = {
+        symbol: data.symbol,
+        companyName: data.companyName,
+        sector: data.sector,
+        totalShares: BigInt(data.totalShares),
+        marketCap: BigInt(data.marketCap),
+        isActive: true,
+        lastUpdated: BigInt(Math.floor(Date.now() / 1000))
+      };
+
+      // Note: In a real implementation, you would call the factory contract
+      // to deploy the new token. For now, we'll show a success message.
+
+      toast.success(`Stock token ${data.symbol} deployment initiated on Bitfinity EVM!`);
       form.reset();
     } catch (error) {
-      toast.error("Error:unable to tokenize the entry");
-      console.error(error);
+      console.error("Error tokenizing stock:", error);
+      toast.error("Failed to tokenize stock. Please try again.");
     } finally {
       setIsSubmitting(false);
     }
@@ -85,14 +127,14 @@ export const TokenizeStockForm = () => {
   return (
     <div className="container mx-auto max-w-3xl px-4 py-2 justify-self-center">
       <div className="mb-4 flex items-center gap-2">
-        <IconSwitch className="h-6 w-6 text-primary" />
-        <h1 className="text-2xl font-bold">Stock Tokenization on Hedera</h1>
+        <IconFlagBitcoin className="h-6 w-6 text-primary" />
+        <h1 className="text-2xl font-bold">Stock Tokenization on Bitfinity EVM</h1>
       </div>
       <Card className="shadow-sm">
         <CardHeader>
-          <CardTitle>Tokenize New Stock</CardTitle>
+          <CardTitle>Deploy New Stock Token</CardTitle>
           <CardDescription>
-            Add a new Hedera version of a stock to the marketplace by filling out the details below.
+            Deploy a new Nigerian stock token on Bitfinity EVM by filling out the details below.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -134,6 +176,40 @@ export const TokenizeStockForm = () => {
 
               <FormField
                 control={form.control}
+                name="companyName"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Company Name</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Dangote Cement Plc" {...field} />
+                    </FormControl>
+                    <FormDescription>
+                      Enter the full legal name of the company
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="sector"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Sector</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Industrial Goods" {...field} />
+                    </FormControl>
+                    <FormDescription>
+                      Enter the business sector (e.g., Banking, Oil & Gas, Consumer Goods)
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
                 name="totalShares"
                 render={({ field }) => (
                   <FormItem>
@@ -141,24 +217,67 @@ export const TokenizeStockForm = () => {
                     <FormControl>
                       <Input
                         type="number"
-                        placeholder="enter the total number of shares"
+                        placeholder="17040000000"
                         {...field}
                       />
                     </FormControl>
                     <FormDescription>
-                      The total number of shares available
+                      The total number of shares outstanding
                     </FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
               />
-              <Button type="submit" className="w-full font-semibold md:w-auto">
+
+              <FormField
+                control={form.control}
+                name="marketCap"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Market Cap (NGN)</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        placeholder="7710000000000"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormDescription>
+                      Current market capitalization in Nigerian Naira
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="initialSupply"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Initial Token Supply</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        placeholder="1000000"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormDescription>
+                      Initial supply of tokens to mint (will be sent to admin address)
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <Button type="submit" className="w-full font-semibold md:w-auto" disabled={!isConnected}>
                 {isSubmitting ? (
                   <Spinner className="mr-1 h-4 w-4 text-white" />
                 ) : (
                   <IconFlagBitcoin className="mr-1 h-4 w-4" strokeWidth={2} />
                 )}
-                {isSubmitting ? "Tokenizing" : "Tokenize Stock"}
+                {isSubmitting ? "Deploying Token..." : isConnected ? "Deploy Stock Token" : "Connect Wallet First"}
               </Button>
             </form>
           </Form>

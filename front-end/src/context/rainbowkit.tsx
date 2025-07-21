@@ -14,7 +14,7 @@ import {
   arbitrum,
   base,
 } from 'wagmi/chains';
-import { hederaTestnet, hederaMainnet } from '@/config';
+import { bitfinityTestnet, bitfinityMainnet, hederaTestnet, hederaMainnet } from '@/config';
 import {
   QueryClientProvider,
   QueryClient,
@@ -28,7 +28,10 @@ const config = getDefaultConfig({
   appName: 'Liquidity Nigerian Stock Trading',
   projectId: process.env.NEXT_PUBLIC_PROJECT_ID || 'b56e18d47c72ab683b10814fe9495694',
   chains: [
-    // Hedera networks for Nigerian stock trading
+    // Primary Bitfinity EVM networks for Nigerian stock trading
+    bitfinityTestnet,
+    bitfinityMainnet,
+    // Legacy Hedera networks (for migration compatibility)
     hederaTestnet,
     hederaMainnet,
     // Popular EVM chains for broader wallet support

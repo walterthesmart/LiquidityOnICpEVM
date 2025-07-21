@@ -9,7 +9,58 @@ if (!projectId) {
   throw new Error("Project ID is not defined");
 }
 
-// Define Hedera custom chains
+// Define Bitfinity EVM custom chains
+export const bitfinityTestnet = {
+  id: 355113,
+  name: 'Bitfinity Testnet',
+  network: 'bitfinity-testnet',
+  nativeCurrency: {
+    decimals: 18,
+    name: 'BTF',
+    symbol: 'BTF',
+  },
+  rpcUrls: {
+    default: {
+      http: ['https://testnet.bitfinity.network'],
+    },
+    public: {
+      http: ['https://testnet.bitfinity.network'],
+    },
+  },
+  blockExplorers: {
+    default: { name: 'Bitfinity Explorer', url: 'https://explorer.testnet.bitfinity.network' },
+  },
+  testnet: true,
+  iconUrl: '/logo/png/BITFINITY.png',
+  iconBackground: '#fff',
+} as const;
+
+export const bitfinityMainnet = {
+  id: 355110,
+  name: 'Bitfinity Mainnet',
+  network: 'bitfinity-mainnet',
+  nativeCurrency: {
+    decimals: 18,
+    name: 'BTF',
+    symbol: 'BTF',
+  },
+  rpcUrls: {
+    default: {
+      http: ['https://mainnet.bitfinity.network'],
+    },
+    public: {
+      http: ['https://mainnet.bitfinity.network'],
+    },
+  },
+  blockExplorers: {
+    default: { name: 'Bitfinity Explorer', url: 'https://explorer.bitfinity.network' },
+  },
+  testnet: false,
+  iconUrl: '/logo/png/BITFINITY.png',
+  iconBackground: '#fff',
+} as const;
+
+// Legacy Hedera chains (kept for reference)
 export const hederaTestnet = {
   id: 296,
   name: 'Hedera Testnet',
@@ -67,6 +118,9 @@ export const config = getDefaultConfig({
   appName: 'Liquidity Nigerian Stock Trading',
   projectId,
   chains: [
+    // Primary Bitfinity EVM chains
+    bitfinityTestnet,
+    bitfinityMainnet,
     // Include popular chains for broader wallet support
     mainnet,
     polygon,
