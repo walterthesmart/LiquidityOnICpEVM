@@ -7,8 +7,16 @@ import * as cheerio from "cheerio";
 import { StockData } from "@/types";
 // MongoDB collections removed - using Turso database now
 // Legacy Hedera token functions - now deprecated since migrating to Bitfinity EVM
-const hasHederaToken = (_symbol: string): boolean => false;
-const getTokenIdBySymbol = (_symbol: string): string | null => null;
+const hasHederaToken = (symbol: string): boolean => {
+  // Always return false since we migrated to Bitfinity EVM
+  console.debug("Legacy Hedera check for symbol:", symbol);
+  return false;
+};
+const getTokenIdBySymbol = (symbol: string): string | null => {
+  // Always return null since we migrated to Bitfinity EVM
+  console.debug("Legacy Hedera token ID check for symbol:", symbol);
+  return null;
+};
 type HederaTokenSymbol = string;
 import { logError, fetchWithRetry } from "@/lib/utils";
 

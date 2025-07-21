@@ -135,9 +135,10 @@ export class BitfinityContractService {
         this.signer = await provider.getSigner();
 
         if (this.factoryContract) {
+          // Connect signer to contract - type assertion needed for ethers contract connection
           this.factoryContract = this.factoryContract.connect(
             this.signer,
-          ) as any;
+          ) as typeof this.factoryContract;
         }
 
         return this.signer;
@@ -168,9 +169,14 @@ export class BitfinityContractService {
         method: "wallet_switchEthereumChain",
         params: [{ chainId: `0x${networkConfig.chainId.toString(16)}` }],
       });
-    } catch (switchError: any) {
+    } catch (switchError: unknown) {
       // Network not added to wallet
-      if (switchError.code === 4902) {
+      if (
+        switchError &&
+        typeof switchError === "object" &&
+        "code" in switchError &&
+        switchError.code === 4902
+      ) {
         try {
           await window.ethereum.request({
             method: "wallet_addEthereumChain",

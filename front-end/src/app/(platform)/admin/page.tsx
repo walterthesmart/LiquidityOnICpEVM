@@ -9,51 +9,20 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import {
   BarChart3,
   TrendingUp,
   Users,
   DollarSign,
-  Plus,
-  Edit,
-  Pause,
-  Play,
-  Shield,
   AlertTriangle,
   XCircle,
 } from "lucide-react";
 import { bitfinityService } from "@/lib/bitfinity-contract-service";
-import { toast } from "@/hooks/use-toast";
+
 import { TokenizeStockForm } from "./_components/tokenize-stock-form";
 
 interface AdminStats {
@@ -128,7 +97,7 @@ export default function AdminDashboard() {
         <Alert>
           <XCircle className="h-4 w-4" />
           <AlertDescription>
-            You don't have admin permissions to access this dashboard.
+            You don&apos;t have admin permissions to access this dashboard.
           </AlertDescription>
         </Alert>
       </div>

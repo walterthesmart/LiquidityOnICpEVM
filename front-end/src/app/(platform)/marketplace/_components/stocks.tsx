@@ -13,10 +13,10 @@ import { Button } from "@/components/ui/button";
 import { RefreshCw, AlertTriangle } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 // Bitfinity EVM token hooks for Nigerian stock tokens
-import {
-  useAllBitfinityTokens,
-  useBitfinityNetwork,
-} from "@/hooks/use-bitfinity-tokens";
+// import {
+//   useAllBitfinityTokens,
+//   useBitfinityNetwork,
+// } from "@/hooks/use-bitfinity-tokens";
 interface Stocks {
   id: string;
   symbol: string;
@@ -52,10 +52,9 @@ export function Stocks(/*{ stocks }: { stocks: Stocks[] }*/) {
   }, [error, handleError]);
   const { isConnected } = useAccount();
 
-  // Bitfinity EVM integration
-  const { tokens: bitfinityTokens, loading: tokensLoading } =
-    useAllBitfinityTokens();
-  const { network } = useBitfinityNetwork();
+  // Bitfinity EVM integration available but not used in this component yet
+  // const { tokens: bitfinityTokens, loading: tokensLoading } = useAllBitfinityTokens();
+  // const { network } = useBitfinityNetwork();
 
   if (isLoading) {
     return (

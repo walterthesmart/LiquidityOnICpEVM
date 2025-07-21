@@ -3,7 +3,7 @@
  * Provides easy access to deployed Nigerian stock tokens on Bitfinity EVM
  */
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { useAccount } from "wagmi";
 import { Address } from "viem";
 import { bitfinityEVM, formatTokenAmount } from "@/lib/bitfinity-evm";
@@ -40,7 +40,7 @@ export function useBitfinityToken(symbol: string): UseBitfinityTokenReturn {
   const [error, setError] = useState<string | null>(null);
   const { address: userAddress } = useAccount();
 
-  const fetchTokenInfo = async () => {
+  const fetchTokenInfo = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -85,13 +85,13 @@ export function useBitfinityToken(symbol: string): UseBitfinityTokenReturn {
     } finally {
       setLoading(false);
     }
-  };
+  }, [symbol, userAddress]);
 
   useEffect(() => {
     if (symbol) {
       fetchTokenInfo();
     }
-  }, [symbol, userAddress]);
+  }, [symbol, fetchTokenInfo]);
 
   const isDeployed = token !== null;
   const explorerUrl = token ? bitfinityEVM.getTokenUrl(token.address) : null;
@@ -115,7 +115,7 @@ export function useAllBitfinityTokens() {
   const [error, setError] = useState<string | null>(null);
   const { address: userAddress } = useAccount();
 
-  const fetchAllTokens = async () => {
+  const fetchAllTokens = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -163,11 +163,11 @@ export function useAllBitfinityTokens() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [userAddress]);
 
   useEffect(() => {
     fetchAllTokens();
-  }, [userAddress]);
+  }, [fetchAllTokens]);
 
   return {
     tokens,
@@ -186,7 +186,7 @@ export function useTokenBalances(symbols: string[]) {
   const [error, setError] = useState<string | null>(null);
   const { address: userAddress } = useAccount();
 
-  const fetchBalances = async () => {
+  const fetchBalances = useCallback(async () => {
     if (!userAddress || symbols.length === 0) {
       setBalances({});
       setLoading(false);
@@ -230,11 +230,14 @@ export function useTokenBalances(symbols: string[]) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [userAddress, symbols]);
+
+  // Extract complex expression to separate variable for static checking
+  const symbolsKey = symbols.join(",");
 
   useEffect(() => {
     fetchBalances();
-  }, [userAddress, symbols.join(",")]);
+  }, [fetchBalances, symbolsKey]);
 
   return {
     balances,

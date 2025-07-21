@@ -22,7 +22,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { IconSwitch, IconFlagBitcoin } from "@tabler/icons-react";
+import { IconFlagBitcoin } from "@tabler/icons-react";
 import { useState } from "react";
 import { bitfinityService } from "@/lib/bitfinity-contract-service";
 import { useAccount } from "wagmi";
@@ -111,6 +111,7 @@ export const TokenizeStockForm = () => {
 
       // Note: In a real implementation, you would call the factory contract
       // to deploy the new token. For now, we'll show a success message.
+      console.log("Stock metadata prepared for deployment:", stockMetadata);
 
       toast.success(
         `Stock token ${data.symbol} deployment initiated on Bitfinity EVM!`,
