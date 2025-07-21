@@ -1,0 +1,60 @@
+{
+  "name": "Liquidity-hedera-native-tokens",
+  "version": "2.0.0",
+  "description": "Hedera native token creation for Nigerian Stock Exchange tokenization",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "build:watch": "tsc --watch",
+    "clean": "rimraf dist exports",
+    "// --- NATIVE TOKEN CREATION ---": "",
+    "create-tokens": "ts-node src/index.ts",
+    "create-tokens:testnet": "ts-node src/index.ts --network testnet",
+    "create-tokens:mainnet": "ts-node src/index.ts --network mainnet",
+    "create-tokens:previewnet": "ts-node src/index.ts --network previewnet",
+    "create-tokens:no-frontend": "ts-node src/index.ts --no-frontend",
+    "create-tokens:tokens-only": "ts-node src/index.ts --tokens-only",
+    "// --- LEGACY COMPATIBILITY ---": "",
+    "create-tokens-sdk": "ts-node scripts/create-tokens-sdk-only.ts",
+    "create-tokens-native": "ts-node scripts/create-tokens-native.ts",
+    "// --- UTILITY SCRIPTS ---": "",
+    "verify-tokens": "ts-node scripts/verify-tokens.ts",
+    "verify-env": "ts-node scripts/verify-env.ts",
+    "// --- DEVELOPMENT ---": "",
+    "dev": "npm run create-tokens:testnet",
+    "start": "npm run create-tokens:testnet",
+    "prod": "npm run create-tokens:mainnet",
+    "// --- LINTING ---": "",
+    "lint": "eslint src/**/*.ts scripts/**/*.ts",
+    "lint:fix": "eslint src/**/*.ts scripts/**/*.ts --fix",
+    "type-check": "tsc --noEmit",
+    "// --- HELP ---": "",
+    "help": "ts-node src/index.ts --help"
+  },
+  "keywords": [
+    "hedera",
+    "hashgraph",
+    "smart-contracts",
+    "nigerian-stocks",
+    "tokenization",
+    "defi",
+    "hts"
+  ],
+  "author": "Walter Nwaugo",
+  "license": "MIT",
+  "devDependencies": {
+    "@eslint/js": "^9.31.0",
+    "@types/node": "^20.10.6",
+    "@typescript-eslint/eslint-plugin": "^8.37.0",
+    "@typescript-eslint/parser": "^8.37.0",
+    "eslint": "^9.31.0",
+    "rimraf": "^5.0.10",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.3.3"
+  },
+  "dependencies": {
+    "@hashgraph/sdk": "^2.40.0",
+    "dotenv": "^16.3.1"
+  }
+}
