@@ -1,4 +1,4 @@
-// RainbowKit configuration for Hedera integration
+// RainbowKit configuration for Bitfinity EVM integration
 import { getDefaultConfig } from '@rainbow-me/rainbowkit';
 import { mainnet, polygon, optimism, arbitrum, base } from 'wagmi/chains';
 
@@ -9,64 +9,67 @@ if (!projectId) {
   throw new Error("Project ID is not defined");
 }
 
-// Define Hedera custom chains
-export const hederaTestnet = {
-  id: 296,
-  name: 'Hedera Testnet',
-  network: 'hedera-testnet',
+// Define Bitfinity EVM custom chains
+export const bitfinityTestnet = {
+  id: 355113,
+  name: 'Bitfinity Testnet',
+  network: 'bitfinity-testnet',
   nativeCurrency: {
     decimals: 18,
-    name: 'HBAR',
-    symbol: 'HBAR',
+    name: 'Bitfinity Token',
+    symbol: 'BTF',
   },
   rpcUrls: {
     default: {
-      http: [process.env.NEXT_PUBLIC_HEDERA_TESTNET_RPC_URL || 'https://testnet.hashio.io/api'],
+      http: ['https://testnet.bitfinity.network'],
     },
     public: {
-      http: [process.env.NEXT_PUBLIC_HEDERA_TESTNET_RPC_URL || 'https://testnet.hashio.io/api'],
+      http: ['https://testnet.bitfinity.network'],
     },
   },
   blockExplorers: {
-    default: { name: 'HashScan', url: 'https://hashscan.io/testnet' },
+    default: { name: 'Bitfinity Explorer', url: 'https://explorer.testnet.bitfinity.network' },
   },
   testnet: true,
-  iconUrl: '/logo/png/HEDERA.png',
-  iconBackground: '#fff',
+  iconUrl: '/logo/png/BITFINITY.png',
+  iconBackground: '#000',
 } as const;
 
-export const hederaMainnet = {
-  id: 295,
-  name: 'Hedera Mainnet',
-  network: 'hedera-mainnet',
+export const bitfinityMainnet = {
+  id: 355110,
+  name: 'Bitfinity Mainnet',
+  network: 'bitfinity-mainnet',
   nativeCurrency: {
     decimals: 18,
-    name: 'HBAR',
-    symbol: 'HBAR',
+    name: 'Bitfinity Token',
+    symbol: 'BTF',
   },
   rpcUrls: {
     default: {
-      http: [process.env.NEXT_PUBLIC_HEDERA_MAINNET_RPC_URL || 'https://mainnet.hashio.io/api'],
+      http: ['https://mainnet.bitfinity.network'],
     },
     public: {
-      http: [process.env.NEXT_PUBLIC_HEDERA_MAINNET_RPC_URL || 'https://mainnet.hashio.io/api'],
+      http: ['https://mainnet.bitfinity.network'],
     },
   },
   blockExplorers: {
-    default: { name: 'HashScan', url: 'https://hashscan.io/mainnet' },
+    default: { name: 'Bitfinity Explorer', url: 'https://explorer.bitfinity.network' },
   },
   testnet: false,
-  iconUrl: '/logo/png/HEDERA.png',
-  iconBackground: '#fff',
+  iconUrl: '/logo/png/BITFINITY.png',
+  iconBackground: '#000',
 } as const;
 
 // Legacy RainbowKit configuration - now replaced by the main configuration in rainbowkit.tsx
-// This config is kept for reference but the active configuration includes Hedera networks
+// This config is kept for reference but the active configuration includes Bitfinity EVM networks
 
 export const config = getDefaultConfig({
   appName: 'Liquidity Nigerian Stock Trading',
   projectId,
   chains: [
+    // Include Bitfinity EVM networks for Nigerian stock trading
+    bitfinityTestnet,
+    bitfinityMainnet,
     // Include popular chains for broader wallet support
     mainnet,
     polygon,

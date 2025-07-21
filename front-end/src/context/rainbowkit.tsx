@@ -14,7 +14,7 @@ import {
   arbitrum,
   base,
 } from 'wagmi/chains';
-import { hederaTestnet, hederaMainnet } from '@/config';
+import { bitfinityTestnet, bitfinityMainnet } from '@/config';
 import {
   QueryClientProvider,
   QueryClient,
@@ -22,15 +22,15 @@ import {
 import { ReactNode } from 'react';
 
 // RainbowKit configuration for EVM wallet support
-// Including Hedera networks alongside standard EVM chains
+// Including Bitfinity EVM networks alongside standard EVM chains
 
 const config = getDefaultConfig({
   appName: 'Liquidity Nigerian Stock Trading',
   projectId: process.env.NEXT_PUBLIC_PROJECT_ID || 'b56e18d47c72ab683b10814fe9495694',
   chains: [
-    // Hedera networks for Nigerian stock trading
-    hederaTestnet,
-    hederaMainnet,
+    // Bitfinity EVM networks for Nigerian stock trading
+    bitfinityTestnet,
+    bitfinityMainnet,
     // Popular EVM chains for broader wallet support
     mainnet,
     polygon,
