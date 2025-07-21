@@ -12,9 +12,8 @@ import { useErrorHandler } from "@/components/error-boundary";
 import { Button } from "@/components/ui/button";
 import { RefreshCw, AlertTriangle } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-// Hedera token hooks available for future use
-// import { useAllHederaTokens, useHederaNetworkConfig } from "@/hooks/use-hedera-tokens";
-// import { usePolling } from "@/hooks/usePolling";
+// Bitfinity EVM token hooks for Nigerian stock tokens
+import { useAllBitfinityTokens, useBitfinityNetwork } from "@/hooks/use-bitfinity-tokens";
 interface Stocks {
   id: string;
   symbol: string;
@@ -42,9 +41,9 @@ export function Stocks(/*{ stocks }: { stocks: Stocks[] }*/) {
   }, [error, handleError]);
   const { isConnected } = useAccount();
 
-  // Hedera integration (for future use)
-  // const { tokens: hederaTokens } = useAllHederaTokens();
-  // const { isTestnet } = useHederaNetworkConfig();
+  // Bitfinity EVM integration
+  const { tokens: bitfinityTokens, loading: tokensLoading } = useAllBitfinityTokens();
+  const { network } = useBitfinityNetwork();
 
   if (isLoading) {
     return (
