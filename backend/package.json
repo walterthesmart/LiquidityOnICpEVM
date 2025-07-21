@@ -38,6 +38,7 @@
     "// --- UTILITIES ---": "",
     "flatten": "hardhat flatten",
     "size": "hardhat size-contracts",
+    "generate-frontend-config": "hardhat run scripts/generate-frontend-config.ts",
     "help": "hardhat help"
   },
   "keywords": [
