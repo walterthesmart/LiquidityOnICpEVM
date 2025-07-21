@@ -14,7 +14,7 @@ export async function POST(request: Request) {
       });
       return NextResponse.json(
         { error: "Invalid request data", details: parsed.error.errors },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -22,16 +22,20 @@ export async function POST(request: Request) {
     // TODO: Implement Hedera token transfer using Hedera SDK
     console.log("Hedera token transfer:", { receiverAddress, tokenId, amount });
 
-    logError("BuyTokens", new Error("Hedera token transfer not yet implemented"), {
-      operation: "hedera_transfer",
-      receiverAddress,
-      tokenId,
-      amount,
-    });
+    logError(
+      "BuyTokens",
+      new Error("Hedera token transfer not yet implemented"),
+      {
+        operation: "hedera_transfer",
+        receiverAddress,
+        tokenId,
+        amount,
+      },
+    );
 
     return NextResponse.json(
       { error: "Hedera token transfer functionality is not yet implemented" },
-      { status: 501 } // Not Implemented
+      { status: 501 }, // Not Implemented
     );
   } catch (error) {
     logError("BuyTokens", error, {
@@ -40,7 +44,7 @@ export async function POST(request: Request) {
     });
     return NextResponse.json(
       { error: "Error processing token purchase" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

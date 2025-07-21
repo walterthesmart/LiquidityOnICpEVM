@@ -13,7 +13,10 @@ import { Button } from "@/components/ui/button";
 import { RefreshCw, AlertTriangle } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 // Bitfinity EVM token hooks for Nigerian stock tokens
-import { useAllBitfinityTokens, useBitfinityNetwork } from "@/hooks/use-bitfinity-tokens";
+import {
+  useAllBitfinityTokens,
+  useBitfinityNetwork,
+} from "@/hooks/use-bitfinity-tokens";
 interface Stocks {
   id: string;
   symbol: string;
@@ -23,7 +26,12 @@ interface Stocks {
 }
 export function Stocks(/*{ stocks }: { stocks: Stocks[] }*/) {
   const handleError = useErrorHandler();
-  const { data: stocks, isLoading, error, refetch } = useQuery({
+  const {
+    data: stocks,
+    isLoading,
+    error,
+    refetch,
+  } = useQuery({
     queryKey: ["stocks"],
     queryFn: getStocks,
     // enable polling
@@ -35,14 +43,18 @@ export function Stocks(/*{ stocks }: { stocks: Stocks[] }*/) {
   // Handle errors using useEffect
   React.useEffect(() => {
     if (error) {
-      handleError(error as Error, { component: 'Stocks', operation: 'fetchStocks' });
+      handleError(error as Error, {
+        component: "Stocks",
+        operation: "fetchStocks",
+      });
       toast.error("Failed to fetch stock data. Please check your connection.");
     }
   }, [error, handleError]);
   const { isConnected } = useAccount();
 
   // Bitfinity EVM integration
-  const { tokens: bitfinityTokens, loading: tokensLoading } = useAllBitfinityTokens();
+  const { tokens: bitfinityTokens, loading: tokensLoading } =
+    useAllBitfinityTokens();
   const { network } = useBitfinityNetwork();
 
   if (isLoading) {
@@ -67,16 +79,18 @@ export function Stocks(/*{ stocks }: { stocks: Stocks[] }*/) {
         </CardHeader>
         <CardContent className="space-y-4">
           <p className="text-gray-600">
-            {error instanceof Error && error.message.includes('connection')
+            {error instanceof Error && error.message.includes("connection")
               ? "Database connection failed. Please check your internet connection and try again."
-              : error instanceof Error && error.message.includes('fetch')
-              ? "Network error occurred while fetching stock data. This might be due to connectivity issues."
-              : "There was an error loading the stock data. Please try again."}
+              : error instanceof Error && error.message.includes("fetch")
+                ? "Network error occurred while fetching stock data. This might be due to connectivity issues."
+                : "There was an error loading the stock data. Please try again."}
           </p>
 
-          {process.env.NODE_ENV === 'development' && error instanceof Error && (
+          {process.env.NODE_ENV === "development" && error instanceof Error && (
             <details className="bg-gray-50 p-4 rounded-md">
-              <summary className="cursor-pointer font-medium">Error Details (Development)</summary>
+              <summary className="cursor-pointer font-medium">
+                Error Details (Development)
+              </summary>
               <pre className="mt-2 text-sm text-red-600 whitespace-pre-wrap">
                 {error.message}
               </pre>
@@ -91,10 +105,7 @@ export function Stocks(/*{ stocks }: { stocks: Stocks[] }*/) {
               <RefreshCw className="h-4 w-4" />
               Try Again
             </Button>
-            <Button
-              variant="outline"
-              onClick={() => window.location.reload()}
-            >
+            <Button variant="outline" onClick={() => window.location.reload()}>
               Reload Page
             </Button>
           </div>
@@ -117,7 +128,8 @@ export function Stocks(/*{ stocks }: { stocks: Stocks[] }*/) {
         </CardHeader>
         <CardContent className="space-y-4">
           <p className="text-gray-600">
-            No stock data is currently available. This might be due to database connectivity issues or the data hasn&apos;t been loaded yet.
+            No stock data is currently available. This might be due to database
+            connectivity issues or the data hasn&apos;t been loaded yet.
           </p>
 
           <div className="flex gap-2">
@@ -128,10 +140,7 @@ export function Stocks(/*{ stocks }: { stocks: Stocks[] }*/) {
               <RefreshCw className="h-4 w-4" />
               Retry Loading
             </Button>
-            <Button
-              variant="outline"
-              onClick={() => window.location.reload()}
-            >
+            <Button variant="outline" onClick={() => window.location.reload()}>
               Reload Page
             </Button>
           </div>

@@ -1,12 +1,12 @@
 /**
  * Turso Database Operations
- * 
+ *
  * This file contains all database operations using Turso (SQLite) with Drizzle ORM.
  * It replaces the MongoDB operations with SQL-based equivalents.
  */
 
-import { eq, desc, and } from 'drizzle-orm';
-import { db, checkDatabaseHealth, ensureConnection } from './turso-connection';
+import { eq, desc, and } from "drizzle-orm";
+import { db, checkDatabaseHealth, ensureConnection } from "./turso-connection";
 import {
   stocks,
   stockPrices,
@@ -15,10 +15,10 @@ import {
   type STOCKS,
   type STOCKPRICESV2,
   type STOCKPURCHASES,
-  type USERSTOCKS
-} from './schema';
-import { Errors, MyError } from '@/constants/errors';
-import { PaymentStatus } from '@/constants/status';
+  type USERSTOCKS,
+} from "./schema";
+import { Errors, MyError } from "@/constants/errors";
+import { PaymentStatus } from "@/constants/status";
 
 // Interface for compatibility with existing code
 interface GetStocks {
@@ -69,14 +69,17 @@ export class TursoDatabase {
     }
   }
 
-  async checkIfStockExists(symbol: string, chain: string): Promise<string | null> {
+  async checkIfStockExists(
+    symbol: string,
+    chain: string,
+  ): Promise<string | null> {
     try {
       const result = await db
         .select({ tokenID: stocks.tokenID })
         .from(stocks)
         .where(and(eq(stocks.symbol, symbol), eq(stocks.chain, chain)))
         .limit(1);
-      
+
       return result.length > 0 ? result[0].tokenID : null;
     } catch (err) {
       console.log("Error checking if stock exists", err);
@@ -106,7 +109,7 @@ export class TursoDatabase {
         })
         .from(stocks);
 
-      return result.map(stock => ({
+      return result.map((stock) => ({
         id: stock.id.toString(),
         name: stock.name,
         tokenID: stock.tokenID,
@@ -152,7 +155,9 @@ export class TursoDatabase {
     }
   }
 
-  async getPriceChartData(symbol: string): Promise<{ time: Date; price: number }[]> {
+  async getPriceChartData(
+    symbol: string,
+  ): Promise<{ time: Date; price: number }[]> {
     try {
       // Get historical price data for a specific symbol
       const result = await db
@@ -164,7 +169,7 @@ export class TursoDatabase {
         .where(eq(stockPrices.symbol, symbol))
         .orderBy(stockPrices.time); // Order by time ascending for chart data
 
-      return result.map(price => ({
+      return result.map((price) => ({
         time: new Date(price.time),
         price: price.price,
       }));
@@ -177,12 +182,15 @@ export class TursoDatabase {
   async updateStockPricesInDB(args: STOCKPRICESV2): Promise<void> {
     try {
       // Convert the MongoDB format to individual price records
-      const priceRecords = args.details.map(detail => ({
+      const priceRecords = args.details.map((detail) => ({
         time: args.time.toISOString(),
         symbol: detail.symbol,
         price: detail.price,
         changeAmount: detail.change,
-        changePercent: detail.change > 0 ? (detail.change / (detail.price - detail.change)) * 100 : 0,
+        changePercent:
+          detail.change > 0
+            ? (detail.change / (detail.price - detail.change)) * 100
+            : 0,
       }));
 
       await db.insert(stockPrices).values(priceRecords);
@@ -251,7 +259,10 @@ export class TursoDatabase {
     }
   }
 
-  async updateStockPurchaseStatus(paystack_id: string, status: PaymentStatus): Promise<void> {
+  async updateStockPurchaseStatus(
+    paystack_id: string,
+    status: PaymentStatus,
+  ): Promise<void> {
     try {
       await db
         .update(stockPurchases)
@@ -273,9 +284,9 @@ export class TursoDatabase {
 
       if (result.length === 0) return null;
 
-      const stocksArray = result.map(stock => ({
+      const stocksArray = result.map((stock) => ({
         symbol: stock.stockSymbol,
-        name: '', // We'll need to join with stocks table for name
+        name: "", // We'll need to join with stocks table for name
         number_stocks: stock.numberStocks,
         tokenId: stock.tokenId,
       }));
@@ -298,17 +309,18 @@ export class TursoDatabase {
         .where(
           and(
             eq(userStocks.userAddress, args.user_address),
-            eq(userStocks.stockSymbol, args.stock_symbol)
-          )
+            eq(userStocks.stockSymbol, args.stock_symbol),
+          ),
         )
         .limit(1);
 
       if (existingRecord.length > 0) {
         // Update existing record
         const currentShares = existingRecord[0].numberStocks;
-        const newShares = args.operation === 'buy' 
-          ? currentShares + args.amount_shares
-          : currentShares - args.amount_shares;
+        const newShares =
+          args.operation === "buy"
+            ? currentShares + args.amount_shares
+            : currentShares - args.amount_shares;
 
         if (newShares < 0) {
           throw new MyError(Errors.CANNOT_SELL_MORE_THAN_OWNED);
@@ -320,12 +332,12 @@ export class TursoDatabase {
           .where(
             and(
               eq(userStocks.userAddress, args.user_address),
-              eq(userStocks.stockSymbol, args.stock_symbol)
-            )
+              eq(userStocks.stockSymbol, args.stock_symbol),
+            ),
           );
       } else {
         // Create new record (only for buy operations)
-        if (args.operation === 'sell') {
+        if (args.operation === "sell") {
           throw new MyError(Errors.NOT_CREATE_NEW_RECORD_SELL);
         }
 
@@ -356,11 +368,16 @@ export class TursoDatabase {
     return this.getUserStocks(userAddress);
   }
 
-  async updateNumberStocksOwnedByUser(args: UpdateUserStockArgs): Promise<void> {
+  async updateNumberStocksOwnedByUser(
+    args: UpdateUserStockArgs,
+  ): Promise<void> {
     return this.updateUserStockRecord(args);
   }
 
-  async getStockPurchases(userAddress: string, status?: string): Promise<STOCKPURCHASES[]> {
+  async getStockPurchases(
+    userAddress: string,
+    status?: string,
+  ): Promise<STOCKPURCHASES[]> {
     try {
       const whereConditions = [eq(stockPurchases.userWallet, userAddress)];
 
@@ -373,7 +390,7 @@ export class TursoDatabase {
         .from(stockPurchases)
         .where(and(...whereConditions));
 
-      return result.map(purchase => ({
+      return result.map((purchase) => ({
         txHash: purchase.txHash || undefined,
         hederaTxId: purchase.hederaTxId || undefined,
         user_wallet: purchase.userWallet,

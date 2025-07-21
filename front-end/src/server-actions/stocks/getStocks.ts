@@ -6,7 +6,10 @@ import { unstable_cache } from "next/cache";
 import * as cheerio from "cheerio";
 import { StockData } from "@/types";
 // MongoDB collections removed - using Turso database now
-import { hasHederaToken, getTokenIdBySymbol, HederaTokenSymbol } from "@/lib/hedera-tokens";
+// Legacy Hedera token functions - now deprecated since migrating to Bitfinity EVM
+const hasHederaToken = (_symbol: string): boolean => false;
+const getTokenIdBySymbol = (_symbol: string): string | null => null;
+type HederaTokenSymbol = string;
 import { logError, fetchWithRetry } from "@/lib/utils";
 
 // Interface for scraped stock price data
@@ -37,18 +40,23 @@ export async function getStocks(): Promise<StockData[]> {
         });
 
         // Check if it's a connection error
-        if (err instanceof Error && (
-          err.message.includes('ECONNREFUSED') ||
-          err.message.includes('connection') ||
-          err.message.includes('timeout')
-        )) {
-          console.warn("Database connection failed, returning empty array as fallback");
+        if (
+          err instanceof Error &&
+          (err.message.includes("ECONNREFUSED") ||
+            err.message.includes("connection") ||
+            err.message.includes("timeout"))
+        ) {
+          console.warn(
+            "Database connection failed, returning empty array as fallback",
+          );
           // Return empty array to allow the application to continue with price data only
           return [];
         }
 
         // For other errors, still return empty array but log more details
-        console.warn("Database operation failed, returning empty array as fallback");
+        console.warn(
+          "Database operation failed, returning empty array as fallback",
+        );
         return [];
       }),
       getStockPricesWithCache().catch((err) => {
@@ -65,7 +73,9 @@ export async function getStocks(): Promise<StockData[]> {
 
     // If no stocks from database, we can't proceed meaningfully
     if (dbStocks.length === 0) {
-      console.warn("No stocks retrieved from database. This might indicate a database connection issue.");
+      console.warn(
+        "No stocks retrieved from database. This might indicate a database connection issue.",
+      );
 
       // Check if we have any fallback data or if this is expected
       // For now, return empty array but with proper logging
@@ -78,7 +88,9 @@ export async function getStocks(): Promise<StockData[]> {
 
       // Add Hedera integration data
       const isHederaDeployed = hasHederaToken(s.symbol);
-      const hederaTokenId = isHederaDeployed ? getTokenIdBySymbol(s.symbol as HederaTokenSymbol) : undefined;
+      const hederaTokenId = isHederaDeployed
+        ? getTokenIdBySymbol(s.symbol as HederaTokenSymbol)
+        : undefined;
 
       return {
         id: s.id,
@@ -91,38 +103,47 @@ export async function getStocks(): Promise<StockData[]> {
         // Hedera integration fields
         isHederaDeployed,
         hederaTokenId,
-        blockchain: 'hedera' as const,
-        tokenStandard: 'HTS' as const
+        blockchain: "hedera" as const,
+        tokenStandard: "HTS" as const,
       };
     });
 
-    console.log(`Successfully processed ${enrichedStocks.length} stocks with price data`);
+    console.log(
+      `Successfully processed ${enrichedStocks.length} stocks with price data`,
+    );
     return enrichedStocks;
-
   } catch (err) {
-    const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+    const errorMessage = err instanceof Error ? err.message : "Unknown error";
     console.error("Critical error in getStocks:", {
       error: errorMessage,
       timestamp: new Date().toISOString(),
-      stack: err instanceof Error ? err.stack : undefined
+      stack: err instanceof Error ? err.stack : undefined,
     });
 
     // Provide more user-friendly error messages
-    if (errorMessage.includes('ECONNREFUSED') || errorMessage.includes('connection')) {
-      throw new MyError("Database connection failed. Please check if the database service is running.");
-    } else if (errorMessage.includes('timeout')) {
-      throw new MyError("Database operation timed out. Please try again later.");
+    if (
+      errorMessage.includes("ECONNREFUSED") ||
+      errorMessage.includes("connection")
+    ) {
+      throw new MyError(
+        "Database connection failed. Please check if the database service is running.",
+      );
+    } else if (errorMessage.includes("timeout")) {
+      throw new MyError(
+        "Database operation timed out. Please try again later.",
+      );
     } else {
       throw new MyError(`${Errors.NOT_GET_STOCKS}: ${errorMessage}`);
     }
   }
 }
 //Function to get stock by symbol. uses getstocks fun
-export async function getStockBySymbol(symbol: string): Promise<StockData | undefined> {
+export async function getStockBySymbol(
+  symbol: string,
+): Promise<StockData | undefined> {
   const allStocks = await getStocks(); // Reuse existing logic
   return allStocks.find((a) => a.symbol === symbol);
 }
-
 
 const getStockPricesWithCache = unstable_cache(
   async () => {
@@ -142,11 +163,16 @@ export async function getStockPrices(): Promise<ScrapedStockPrice[]> {
     const userAgent = userAgents[Math.floor(Math.random() * userAgents.length)];
 
     // Use our enhanced fetch with retry logic
-    const response = await fetchWithRetry("https://afx.kwayisi.org/nse/", {
-      headers: {
-        "User-Agent": userAgent,
+    const response = await fetchWithRetry(
+      "https://afx.kwayisi.org/nse/",
+      {
+        headers: {
+          "User-Agent": userAgent,
+        },
       },
-    }, 2, 1000); // 2 retries with 1 second delay
+      2,
+      1000,
+    ); // 2 retries with 1 second delay
 
     const data = await response.text();
 
@@ -169,7 +195,7 @@ export async function getStockPrices(): Promise<ScrapedStockPrice[]> {
         symbol: data.symbol ?? "",
         price: data.price ? Number.parseFloat(data.price) : 0.0,
         change: data.change ? Number.parseFloat(data.change) : 0.0,
-        lastUpdated: new Date()
+        lastUpdated: new Date(),
       });
     });
 
@@ -194,9 +220,9 @@ export async function getStockPrices(): Promise<ScrapedStockPrice[]> {
     try {
       const stocks = await database.getStockPricesFromDB();
       // Convert StockPrices to STOCKPRICES by adding lastUpdated
-      return stocks.map(stock => ({
+      return stocks.map((stock) => ({
         ...stock,
-        lastUpdated: new Date()
+        lastUpdated: new Date(),
       }));
     } catch (err) {
       console.log("...error getting stocks from db", err);

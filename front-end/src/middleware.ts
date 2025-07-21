@@ -5,8 +5,14 @@ const isAdminRoute = createRouteMatcher(["/admin(.*)"]);
 
 export default clerkMiddleware(async (auth, req) => {
   // Check if Clerk is properly configured
-  if (!process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY || process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY === 'pk_test_your-publishable-key-here') {
-    console.warn('⚠️  Clerk publishable key not configured. Please set NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY in your .env.local file');
+  if (
+    !process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY ||
+    process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY ===
+      "pk_test_your-publishable-key-here"
+  ) {
+    console.warn(
+      "⚠️  Clerk publishable key not configured. Please set NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY in your .env.local file",
+    );
     // Allow all requests to pass through if Clerk is not configured
     return NextResponse.next();
   }

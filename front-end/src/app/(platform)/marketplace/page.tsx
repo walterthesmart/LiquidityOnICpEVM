@@ -11,7 +11,9 @@ export default async function MarketPlacePage() {
   });
   return (
     <div className="px-4 sm:px-6 md:px-8 lg:px-16 mx-auto">
-      <h1 className="text-xl sm:text-2xl font-bold mt-6 mb-4 sm:mb-2">Marketplace</h1>
+      <h1 className="text-xl sm:text-2xl font-bold mt-6 mb-4 sm:mb-2">
+        Marketplace
+      </h1>
       <HydrationBoundary state={dehydrate(queryClient)}>
         <Stocks /*stocks={stocks}*/ />
       </HydrationBoundary>

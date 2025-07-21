@@ -1,11 +1,13 @@
-import { ethers } from "hardhat";
+import hre from "hardhat";
+// @ts-ignore - Hardhat runtime environment extension
+const ethers = hre.ethers;
 
 async function main() {
   console.log("🚀 Deploying Nigerian Stock Exchange contracts on Bitfinity EVM...");
   
   const [deployer] = await ethers.getSigners();
   console.log("📝 Deploying contracts with account:", deployer.address);
-  
+
   const balance = await ethers.provider.getBalance(deployer.address);
   console.log("💰 Account balance:", ethers.formatEther(balance), "BTF");
 
@@ -14,7 +16,7 @@ async function main() {
   const NigerianStockFactory = await ethers.getContractFactory("NigerianStockFactory");
   const factory = await NigerianStockFactory.deploy();
   await factory.waitForDeployment();
-  
+
   const factoryAddress = await factory.getAddress();
   console.log("✅ NigerianStockFactory deployed to:", factoryAddress);
 

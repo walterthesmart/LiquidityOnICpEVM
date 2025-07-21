@@ -49,7 +49,7 @@ export const storeStockPurchase = z.object({
     .string({ message: Errors.INVALID_WALLET })
     .min(42, { message: Errors.INVALID_WALLET }),
   transaction_type: z.enum(operation_options),
-  paystack_id: z.string().optional()
+  paystack_id: z.string().optional(),
 });
 
 export const sendMoneyTransferSchema = z.object({

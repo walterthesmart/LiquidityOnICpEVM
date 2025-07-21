@@ -1,5 +1,8 @@
 import { PlatformSidebar } from "@/components/platform-sidebar";
-import { ErrorBoundary, NetworkErrorBoundary } from "@/components/error-boundary";
+import {
+  ErrorBoundary,
+  NetworkErrorBoundary,
+} from "@/components/error-boundary";
 
 export default function PlatformLayout({
   children,
@@ -12,9 +15,7 @@ export default function PlatformLayout({
         <main className="flex w-full relative">
           <PlatformSidebar />
           <div className="md:ml-12 mt-16 sm:mt-20 w-full">
-            <NetworkErrorBoundary>
-              {children}
-            </NetworkErrorBoundary>
+            <NetworkErrorBoundary>{children}</NetworkErrorBoundary>
           </div>
         </main>
       </ErrorBoundary>

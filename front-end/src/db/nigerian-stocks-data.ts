@@ -1,5 +1,5 @@
 // MongoDB collections removed - using Turso database now
-import { Stock } from '@/db/schema';
+import { Stock } from "@/db/schema";
 // Hedera token integration imports removed as they're not used in this data file
 
 /**
@@ -7,7 +7,10 @@ import { Stock } from '@/db/schema';
  * Updated for Nigerian market focus with major companies
  * Now includes real Hedera token IDs from deployment
  */
-export const NIGERIAN_STOCKS_DATA: Omit<Stock, 'id' | 'tokenID' | 'hederaTokenAddress'>[] = [
+export const NIGERIAN_STOCKS_DATA: Omit<
+  Stock,
+  "id" | "tokenID" | "hederaTokenAddress"
+>[] = [
   // Banking Sector
   {
     symbol: "ZENITHBANK",
@@ -18,7 +21,7 @@ export const NIGERIAN_STOCKS_DATA: Omit<Stock, 'id' | 'tokenID' | 'hederaTokenAd
     sector: "Banking",
     marketCap: 1200000000000, // ~1.2 trillion NGN
     isActive: true,
-    lastUpdated: new Date().toISOString()
+    lastUpdated: new Date().toISOString(),
   },
   {
     symbol: "GTCO",
@@ -29,7 +32,7 @@ export const NIGERIAN_STOCKS_DATA: Omit<Stock, 'id' | 'tokenID' | 'hederaTokenAd
     sector: "Banking",
     marketCap: 1100000000000, // ~1.1 trillion NGN
     isActive: true,
-    lastUpdated: new Date().toISOString()
+    lastUpdated: new Date().toISOString(),
   },
   {
     symbol: "ACCESS",
@@ -40,7 +43,7 @@ export const NIGERIAN_STOCKS_DATA: Omit<Stock, 'id' | 'tokenID' | 'hederaTokenAd
     sector: "Banking",
     marketCap: 650000000000, // ~650 billion NGN
     isActive: true,
-    lastUpdated: new Date().toISOString()
+    lastUpdated: new Date().toISOString(),
   },
   {
     symbol: "UBA",
@@ -51,7 +54,7 @@ export const NIGERIAN_STOCKS_DATA: Omit<Stock, 'id' | 'tokenID' | 'hederaTokenAd
     sector: "Banking",
     marketCap: 500000000000, // ~500 billion NGN
     isActive: true,
-    lastUpdated: new Date().toISOString()
+    lastUpdated: new Date().toISOString(),
   },
   {
     symbol: "FBNH",
@@ -62,7 +65,7 @@ export const NIGERIAN_STOCKS_DATA: Omit<Stock, 'id' | 'tokenID' | 'hederaTokenAd
     sector: "Banking",
     marketCap: 450000000000, // ~450 billion NGN
     isActive: true,
-    lastUpdated: new Date().toISOString()
+    lastUpdated: new Date().toISOString(),
   },
   {
     symbol: "STANBIC",
@@ -73,7 +76,7 @@ export const NIGERIAN_STOCKS_DATA: Omit<Stock, 'id' | 'tokenID' | 'hederaTokenAd
     sector: "Banking",
     marketCap: 600000000000, // ~600 billion NGN
     isActive: true,
-    lastUpdated: new Date().toISOString()
+    lastUpdated: new Date().toISOString(),
   },
 
   // Cement/Construction Sector
@@ -86,7 +89,7 @@ export const NIGERIAN_STOCKS_DATA: Omit<Stock, 'id' | 'tokenID' | 'hederaTokenAd
     sector: "Cement",
     marketCap: 7500000000000, // ~7.5 trillion NGN
     isActive: true,
-    lastUpdated: new Date().toISOString()
+    lastUpdated: new Date().toISOString(),
   },
   {
     symbol: "BUACEMENT",
@@ -98,7 +101,6 @@ export const NIGERIAN_STOCKS_DATA: Omit<Stock, 'id' | 'tokenID' | 'hederaTokenAd
     marketCap: 3200000000000, // ~3.2 trillion NGN
     isActive: true,
     lastUpdated: new Date().toISOString(),
-
   },
   {
     symbol: "WAPCO",
@@ -109,7 +111,7 @@ export const NIGERIAN_STOCKS_DATA: Omit<Stock, 'id' | 'tokenID' | 'hederaTokenAd
     sector: "Cement",
     marketCap: 450000000000, // ~450 billion NGN
     isActive: true,
-    lastUpdated: new Date().toISOString()
+    lastUpdated: new Date().toISOString(),
   },
 
   // Telecommunications Sector
@@ -122,7 +124,7 @@ export const NIGERIAN_STOCKS_DATA: Omit<Stock, 'id' | 'tokenID' | 'hederaTokenAd
     sector: "Telecommunications",
     marketCap: 4000000000000, // ~4 trillion NGN
     isActive: true,
-    lastUpdated: new Date().toISOString()
+    lastUpdated: new Date().toISOString(),
   },
   {
     symbol: "AIRTELAFRI",
@@ -133,7 +135,7 @@ export const NIGERIAN_STOCKS_DATA: Omit<Stock, 'id' | 'tokenID' | 'hederaTokenAd
     sector: "Telecommunications",
     marketCap: 1800000000000, // ~1.8 trillion NGN
     isActive: true,
-    lastUpdated: new Date().toISOString()
+    lastUpdated: new Date().toISOString(),
   },
 
   // Consumer Goods Sector
@@ -146,7 +148,7 @@ export const NIGERIAN_STOCKS_DATA: Omit<Stock, 'id' | 'tokenID' | 'hederaTokenAd
     sector: "Consumer Goods",
     marketCap: 680000000000, // ~680 billion NGN
     isActive: true,
-    lastUpdated: new Date().toISOString()
+    lastUpdated: new Date().toISOString(),
   },
   {
     symbol: "NESTLE",
@@ -157,7 +159,7 @@ export const NIGERIAN_STOCKS_DATA: Omit<Stock, 'id' | 'tokenID' | 'hederaTokenAd
     sector: "Consumer Goods",
     marketCap: 1400000000000, // ~1.4 trillion NGN
     isActive: true,
-    lastUpdated: new Date().toISOString()
+    lastUpdated: new Date().toISOString(),
   },
   {
     symbol: "FLOURMILL",
@@ -168,7 +170,7 @@ export const NIGERIAN_STOCKS_DATA: Omit<Stock, 'id' | 'tokenID' | 'hederaTokenAd
     sector: "Consumer Goods",
     marketCap: 1200000000000, // ~1.2 trillion NGN
     isActive: true,
-    lastUpdated: new Date().toISOString()
+    lastUpdated: new Date().toISOString(),
   },
 
   // Oil & Gas Sector
@@ -181,7 +183,7 @@ export const NIGERIAN_STOCKS_DATA: Omit<Stock, 'id' | 'tokenID' | 'hederaTokenAd
     sector: "Oil & Gas",
     marketCap: 2800000000000, // ~2.8 trillion NGN
     isActive: true,
-    lastUpdated: new Date().toISOString()
+    lastUpdated: new Date().toISOString(),
   },
 
   // Insurance Sector
@@ -194,7 +196,7 @@ export const NIGERIAN_STOCKS_DATA: Omit<Stock, 'id' | 'tokenID' | 'hederaTokenAd
     sector: "Insurance",
     marketCap: 80000000000, // ~80 billion NGN
     isActive: true,
-    lastUpdated: new Date().toISOString()
+    lastUpdated: new Date().toISOString(),
   },
 
   // Additional Major Nigerian Stocks
@@ -209,7 +211,7 @@ export const NIGERIAN_STOCKS_DATA: Omit<Stock, 'id' | 'tokenID' | 'hederaTokenAd
     sector: "Consumer Goods",
     marketCap: 8262000000000, // ~8.26 trillion NGN
     isActive: true,
-    lastUpdated: new Date().toISOString()
+    lastUpdated: new Date().toISOString(),
   },
   {
     symbol: "DANGSUGAR",
@@ -220,7 +222,7 @@ export const NIGERIAN_STOCKS_DATA: Omit<Stock, 'id' | 'tokenID' | 'hederaTokenAd
     sector: "Consumer Goods",
     marketCap: 607340000000, // ~607 billion NGN
     isActive: true,
-    lastUpdated: new Date().toISOString()
+    lastUpdated: new Date().toISOString(),
   },
   {
     symbol: "GUINNESS",
@@ -231,7 +233,7 @@ export const NIGERIAN_STOCKS_DATA: Omit<Stock, 'id' | 'tokenID' | 'hederaTokenAd
     sector: "Consumer Goods",
     marketCap: 212030000000, // ~212 billion NGN
     isActive: true,
-    lastUpdated: new Date().toISOString()
+    lastUpdated: new Date().toISOString(),
   },
   {
     symbol: "CADBURY",
@@ -242,7 +244,7 @@ export const NIGERIAN_STOCKS_DATA: Omit<Stock, 'id' | 'tokenID' | 'hederaTokenAd
     sector: "Consumer Goods",
     marketCap: 136020000000, // ~136 billion NGN
     isActive: true,
-    lastUpdated: new Date().toISOString()
+    lastUpdated: new Date().toISOString(),
   },
 
   // Conglomerate Sector
@@ -255,7 +257,7 @@ export const NIGERIAN_STOCKS_DATA: Omit<Stock, 'id' | 'tokenID' | 'hederaTokenAd
     sector: "Conglomerate",
     marketCap: 515720000000, // ~516 billion NGN
     isActive: true,
-    lastUpdated: new Date().toISOString()
+    lastUpdated: new Date().toISOString(),
   },
   {
     symbol: "UACN",
@@ -266,7 +268,7 @@ export const NIGERIAN_STOCKS_DATA: Omit<Stock, 'id' | 'tokenID' | 'hederaTokenAd
     sector: "Conglomerate",
     marketCap: 141040000000, // ~141 billion NGN
     isActive: true,
-    lastUpdated: new Date().toISOString()
+    lastUpdated: new Date().toISOString(),
   },
 
   // Personal Care & Household Products
@@ -279,7 +281,7 @@ export const NIGERIAN_STOCKS_DATA: Omit<Stock, 'id' | 'tokenID' | 'hederaTokenAd
     sector: "Consumer Goods",
     marketCap: 333210000000, // ~333 billion NGN
     isActive: true,
-    lastUpdated: new Date().toISOString()
+    lastUpdated: new Date().toISOString(),
   },
   {
     symbol: "PZ",
@@ -290,7 +292,7 @@ export const NIGERIAN_STOCKS_DATA: Omit<Stock, 'id' | 'tokenID' | 'hederaTokenAd
     sector: "Consumer Goods",
     marketCap: 140160000000, // ~140 billion NGN
     isActive: true,
-    lastUpdated: new Date().toISOString()
+    lastUpdated: new Date().toISOString(),
   },
 
   // Oil & Gas Sector (Additional)
@@ -303,7 +305,7 @@ export const NIGERIAN_STOCKS_DATA: Omit<Stock, 'id' | 'tokenID' | 'hederaTokenAd
     sector: "Oil & Gas",
     marketCap: 700300000000, // ~700 billion NGN
     isActive: true,
-    lastUpdated: new Date().toISOString()
+    lastUpdated: new Date().toISOString(),
   },
   {
     symbol: "CONOIL",
@@ -314,7 +316,7 @@ export const NIGERIAN_STOCKS_DATA: Omit<Stock, 'id' | 'tokenID' | 'hederaTokenAd
     sector: "Oil & Gas",
     marketCap: 162730000000, // ~163 billion NGN
     isActive: true,
-    lastUpdated: new Date().toISOString()
+    lastUpdated: new Date().toISOString(),
   },
   {
     symbol: "TOTAL",
@@ -325,7 +327,7 @@ export const NIGERIAN_STOCKS_DATA: Omit<Stock, 'id' | 'tokenID' | 'hederaTokenAd
     sector: "Oil & Gas",
     marketCap: 239360000000, // ~239 billion NGN
     isActive: true,
-    lastUpdated: new Date().toISOString()
+    lastUpdated: new Date().toISOString(),
   },
   {
     symbol: "ETERNA",
@@ -336,7 +338,7 @@ export const NIGERIAN_STOCKS_DATA: Omit<Stock, 'id' | 'tokenID' | 'hederaTokenAd
     sector: "Oil & Gas",
     marketCap: 55430000000, // ~55 billion NGN
     isActive: true,
-    lastUpdated: new Date().toISOString()
+    lastUpdated: new Date().toISOString(),
   },
 
   // Power/Utilities Sector
@@ -349,7 +351,7 @@ export const NIGERIAN_STOCKS_DATA: Omit<Stock, 'id' | 'tokenID' | 'hederaTokenAd
     sector: "Utilities",
     marketCap: 2853750000000, // ~2.85 trillion NGN
     isActive: true,
-    lastUpdated: new Date().toISOString()
+    lastUpdated: new Date().toISOString(),
   },
   {
     symbol: "TRANSPOWER",
@@ -360,7 +362,7 @@ export const NIGERIAN_STOCKS_DATA: Omit<Stock, 'id' | 'tokenID' | 'hederaTokenAd
     sector: "Utilities",
     marketCap: 2400000000000, // ~2.4 trillion NGN
     isActive: true,
-    lastUpdated: new Date().toISOString()
+    lastUpdated: new Date().toISOString(),
   },
 
   // Healthcare/Pharmaceuticals Sector
@@ -373,7 +375,7 @@ export const NIGERIAN_STOCKS_DATA: Omit<Stock, 'id' | 'tokenID' | 'hederaTokenAd
     sector: "Healthcare",
     marketCap: 105800000000, // ~106 billion NGN
     isActive: true,
-    lastUpdated: new Date().toISOString()
+    lastUpdated: new Date().toISOString(),
   },
   {
     symbol: "MAYBAKER",
@@ -384,7 +386,7 @@ export const NIGERIAN_STOCKS_DATA: Omit<Stock, 'id' | 'tokenID' | 'hederaTokenAd
     sector: "Healthcare",
     marketCap: 29330000000, // ~29 billion NGN
     isActive: true,
-    lastUpdated: new Date().toISOString()
+    lastUpdated: new Date().toISOString(),
   },
 
   // Agriculture/Agribusiness Sector
@@ -397,7 +399,7 @@ export const NIGERIAN_STOCKS_DATA: Omit<Stock, 'id' | 'tokenID' | 'hederaTokenAd
     sector: "Agriculture",
     marketCap: 1233000000000, // ~1.23 trillion NGN
     isActive: true,
-    lastUpdated: new Date().toISOString()
+    lastUpdated: new Date().toISOString(),
   },
   {
     symbol: "OKOMUOIL",
@@ -408,7 +410,7 @@ export const NIGERIAN_STOCKS_DATA: Omit<Stock, 'id' | 'tokenID' | 'hederaTokenAd
     sector: "Agriculture",
     marketCap: 887140000000, // ~887 billion NGN
     isActive: true,
-    lastUpdated: new Date().toISOString()
+    lastUpdated: new Date().toISOString(),
   },
   {
     symbol: "LIVESTOCK",
@@ -419,7 +421,7 @@ export const NIGERIAN_STOCKS_DATA: Omit<Stock, 'id' | 'tokenID' | 'hederaTokenAd
     sector: "Agriculture",
     marketCap: 26400000000, // ~26 billion NGN
     isActive: true,
-    lastUpdated: new Date().toISOString()
+    lastUpdated: new Date().toISOString(),
   },
 
   // Technology Sector
@@ -432,7 +434,7 @@ export const NIGERIAN_STOCKS_DATA: Omit<Stock, 'id' | 'tokenID' | 'hederaTokenAd
     sector: "Technology",
     marketCap: 40650000000, // ~41 billion NGN
     isActive: true,
-    lastUpdated: new Date().toISOString()
+    lastUpdated: new Date().toISOString(),
   },
 
   // Hospitality Sector
@@ -445,8 +447,8 @@ export const NIGERIAN_STOCKS_DATA: Omit<Stock, 'id' | 'tokenID' | 'hederaTokenAd
     sector: "Hospitality",
     marketCap: 1458540000000, // ~1.46 trillion NGN
     isActive: true,
-    lastUpdated: new Date().toISOString()
-  }
+    lastUpdated: new Date().toISOString(),
+  },
 ];
 
 /**
@@ -461,44 +463,52 @@ export const NGX_MARKET_INFO = {
     open: "09:30", // 9:30 AM WAT
     close: "14:30", // 2:30 PM WAT
     preMarket: "08:00", // 8:00 AM WAT
-    afterMarket: "15:00" // 3:00 PM WAT
+    afterMarket: "15:00", // 3:00 PM WAT
   },
   tradingDays: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
   holidays: [
     "New Year's Day",
     "Good Friday",
-    "Easter Monday", 
+    "Easter Monday",
     "Workers' Day",
     "Children's Day",
     "Democracy Day",
     "Independence Day",
     "Christmas Day",
-    "Boxing Day"
+    "Boxing Day",
   ],
-  regulators: ["Securities and Exchange Commission (SEC)", "Nigerian Stock Exchange"],
+  regulators: [
+    "Securities and Exchange Commission (SEC)",
+    "Nigerian Stock Exchange",
+  ],
   website: "https://ngxgroup.com",
-  indices: ["NGX All-Share Index", "NGX 30 Index", "NGX Banking Index", "NGX Consumer Goods Index"]
+  indices: [
+    "NGX All-Share Index",
+    "NGX 30 Index",
+    "NGX Banking Index",
+    "NGX Consumer Goods Index",
+  ],
 };
 
 /**
  * Helper function to get stock by symbol
  */
 export function getNigerianStockBySymbol(symbol: string) {
-  return NIGERIAN_STOCKS_DATA.find(stock => stock.symbol === symbol);
+  return NIGERIAN_STOCKS_DATA.find((stock) => stock.symbol === symbol);
 }
 
 /**
  * Helper function to get stocks by sector
  */
 export function getNigerianStocksBySector(sector: string) {
-  return NIGERIAN_STOCKS_DATA.filter(stock => stock.sector === sector);
+  return NIGERIAN_STOCKS_DATA.filter((stock) => stock.sector === sector);
 }
 
 /**
  * Helper function to get all sectors
  */
 export function getNigerianStockSectors() {
-  return [...new Set(NIGERIAN_STOCKS_DATA.map(stock => stock.sector))];
+  return [...new Set(NIGERIAN_STOCKS_DATA.map((stock) => stock.sector))];
 }
 
 /**
@@ -506,7 +516,9 @@ export function getNigerianStockSectors() {
  */
 export function isNGXMarketOpen(): boolean {
   const now = new Date();
-  const lagosTime = new Date(now.toLocaleString("en-US", {timeZone: "Africa/Lagos"}));
+  const lagosTime = new Date(
+    now.toLocaleString("en-US", { timeZone: "Africa/Lagos" }),
+  );
   const day = lagosTime.getDay(); // 0 = Sunday, 1 = Monday, etc.
   const hour = lagosTime.getHours();
   const minute = lagosTime.getMinutes();

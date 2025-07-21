@@ -1,11 +1,11 @@
 "use client";
 
-import React, { useEffect, useRef, memo, useState, useId } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { logError } from '@/lib/utils';
-import { AlertTriangle, RefreshCw } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { AlertCircle, BarChart3 } from 'lucide-react';
+import React, { useEffect, useRef, memo, useState, useId } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { logError } from "@/lib/utils";
+import { AlertTriangle, RefreshCw } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { AlertCircle, BarChart3 } from "lucide-react";
 
 // TradingView widget configuration interface (corrected for Advanced Chart widget)
 interface TradingViewWidgetConfig {
@@ -13,7 +13,7 @@ interface TradingViewWidgetConfig {
   symbol: string;
   interval: string;
   timezone: string;
-  theme: 'light' | 'dark';
+  theme: "light" | "dark";
   style: string;
   locale: string;
   toolbar_bg: string;
@@ -52,7 +52,7 @@ interface TradingViewWidgetProps {
   width?: number | string;
   showTitle?: boolean;
   title?: string;
-  interval?: 'D' | 'W' | 'M' | '1' | '5' | '15' | '30' | '60' | '240'; // Chart intervals
+  interval?: "D" | "W" | "M" | "1" | "5" | "15" | "30" | "60" | "240"; // Chart intervals
   allowSymbolChange?: boolean;
   hideToolbar?: boolean;
   studies?: string[];
@@ -61,67 +61,67 @@ interface TradingViewWidgetProps {
 // Nigerian Stock Exchange symbol mapping using NSENG prefix
 const NIGERIAN_STOCK_SYMBOLS: Record<string, string> = {
   // Banking sector
-  'ACCESS': 'NSENG:ACCESS',
-  'FBNH': 'NSENG:FBNH',
-  'GTCO': 'NSENG:GTCO',
-  'STANBIC': 'NSENG:STANBIC',
-  'UBA': 'NSENG:UBA',
-  'ZENITHBANK': 'NSENG:ZENITHBANK',
+  ACCESS: "NSENG:ACCESS",
+  FBNH: "NSENG:FBNH",
+  GTCO: "NSENG:GTCO",
+  STANBIC: "NSENG:STANBIC",
+  UBA: "NSENG:UBA",
+  ZENITHBANK: "NSENG:ZENITHBANK",
 
   // Telecommunications
-  'AIRTELAFRI': 'NSENG:AIRTELAFRI',
-  'MTNN': 'NSENG:MTNN',
+  AIRTELAFRI: "NSENG:AIRTELAFRI",
+  MTNN: "NSENG:MTNN",
 
   // Cement/Construction
-  'BUACEMENT': 'NSENG:BUACEMENT',
-  'DANGCEM': 'NSENG:DANGCEM',
-  'WAPCO': 'NSENG:WAPCO',
+  BUACEMENT: "NSENG:BUACEMENT",
+  DANGCEM: "NSENG:DANGCEM",
+  WAPCO: "NSENG:WAPCO",
 
   // Consumer Goods
-  'BUAFOODS': 'NSENG:BUAFOODS',
-  'CADBURY': 'NSENG:CADBURY',
-  'FLOURMILL': 'NSENG:FLOURMILL',
-  'GUINNESS': 'NSENG:GUINNESS',
-  'NB': 'NSENG:NB',
-  'NESTLE': 'NSENG:NESTLE',
-  'PZ': 'NSENG:PZ',
-  'UNILEVER': 'NSENG:UNILEVER',
+  BUAFOODS: "NSENG:BUAFOODS",
+  CADBURY: "NSENG:CADBURY",
+  FLOURMILL: "NSENG:FLOURMILL",
+  GUINNESS: "NSENG:GUINNESS",
+  NB: "NSENG:NB",
+  NESTLE: "NSENG:NESTLE",
+  PZ: "NSENG:PZ",
+  UNILEVER: "NSENG:UNILEVER",
 
   // Oil & Gas
-  'CONOIL': 'NSENG:CONOIL',
-  'ETERNA': 'NSENG:ETERNA',
-  'OANDO': 'NSENG:OANDO',
-  'SEPLAT': 'NSENG:SEPLAT',
-  'TOTAL': 'NSENG:TOTAL',
+  CONOIL: "NSENG:CONOIL",
+  ETERNA: "NSENG:ETERNA",
+  OANDO: "NSENG:OANDO",
+  SEPLAT: "NSENG:SEPLAT",
+  TOTAL: "NSENG:TOTAL",
 
   // Utilities/Power
-  'GEREGU': 'NSENG:GEREGU',
-  'TRANSPOWER': 'NSENG:TRANSPOWER',
+  GEREGU: "NSENG:GEREGU",
+  TRANSPOWER: "NSENG:TRANSPOWER",
 
   // Agriculture
-  'LIVESTOCK': 'NSENG:LIVESTOCK',
-  'OKOMUOIL': 'NSENG:OKOMUOIL',
-  'PRESCO': 'NSENG:PRESCO',
+  LIVESTOCK: "NSENG:LIVESTOCK",
+  OKOMUOIL: "NSENG:OKOMUOIL",
+  PRESCO: "NSENG:PRESCO",
 
   // Healthcare/Pharmaceuticals
-  'FIDSON': 'NSENG:FIDSON',
-  'MAYBAKER': 'NSENG:MAYBAKER',
+  FIDSON: "NSENG:FIDSON",
+  MAYBAKER: "NSENG:MAYBAKER",
 
   // Technology
-  'CWG': 'NSENG:CWG',
+  CWG: "NSENG:CWG",
 
   // Conglomerate/Hospitality
-  'TRANSCOHOT': 'NSENG:TRANSCOHOT',
-  'UACN': 'NSENG:UACN',
+  TRANSCOHOT: "NSENG:TRANSCOHOT",
+  UACN: "NSENG:UACN",
 
   // Additional Nigerian stocks
-  'CHAMPION': 'NSENG:CHAMPION',
-  'DANGSUGAR': 'NSENG:DANGSUGAR',
-  'INTBREW': 'NSENG:INTBREW',
-  'LAFARGE': 'NSENG:LAFARGE',
+  CHAMPION: "NSENG:CHAMPION",
+  DANGSUGAR: "NSENG:DANGSUGAR",
+  INTBREW: "NSENG:INTBREW",
+  LAFARGE: "NSENG:LAFARGE",
 
   // Default fallback for any unmapped symbols
-  'DEFAULT': 'NSENG:ACCESS' // Use ACCESS as default Nigerian stock
+  DEFAULT: "NSENG:ACCESS", // Use ACCESS as default Nigerian stock
 };
 
 /**
@@ -131,9 +131,12 @@ const NIGERIAN_STOCK_SYMBOLS: Record<string, string> = {
  */
 function getTradingViewSymbol(symbol: string): string {
   const upperSymbol = symbol.toUpperCase();
-  const tradingViewSymbol = NIGERIAN_STOCK_SYMBOLS[upperSymbol] || NIGERIAN_STOCK_SYMBOLS['DEFAULT'];
+  const tradingViewSymbol =
+    NIGERIAN_STOCK_SYMBOLS[upperSymbol] || NIGERIAN_STOCK_SYMBOLS["DEFAULT"];
 
-  console.log(`TradingView Symbol Mapping: ${symbol} -> ${tradingViewSymbol} (Nigerian Stock Exchange)`);
+  console.log(
+    `TradingView Symbol Mapping: ${symbol} -> ${tradingViewSymbol} (Nigerian Stock Exchange)`,
+  );
   return tradingViewSymbol;
 }
 
@@ -145,293 +148,324 @@ function getAlternativeSymbolFormats(symbol: string): string[] {
   const upperSymbol = symbol.toUpperCase();
   return [
     `NSENG:${upperSymbol}`, // Primary Nigerian Stock Exchange format
-    `NSE:${upperSymbol}`,   // Alternative NSE format
-    `NGX:${upperSymbol}`,   // Nigerian Exchange Group format
+    `NSE:${upperSymbol}`, // Alternative NSE format
+    `NGX:${upperSymbol}`, // Nigerian Exchange Group format
     `LAGOS:${upperSymbol}`, // Lagos Stock Exchange format
-    upperSymbol,            // Symbol without exchange prefix
-    `NSENG:ACCESS`          // Fallback to ACCESS as default Nigerian stock
+    upperSymbol, // Symbol without exchange prefix
+    `NSENG:ACCESS`, // Fallback to ACCESS as default Nigerian stock
   ];
 }
 
 /**
  * TradingView Advanced Chart Widget Component
- * 
+ *
  * Integrates TradingView's advanced charting widget for Nigerian stocks
  * with responsive design, error handling, and performance optimizations.
  */
-const TradingViewWidget: React.FC<TradingViewWidgetProps> = memo(({
-  symbol,
-  className = '',
-  height = '500px',
-  width = '100%',
-  showTitle = true,
-  title,
-  interval = 'W',
-  allowSymbolChange = true,
-  hideToolbar = false,
-  studies = []
-}) => {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const scriptRef = useRef<HTMLScriptElement | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [hasError, setHasError] = useState(false);
-  const [errorMessage, setErrorMessage] = useState('');
+const TradingViewWidget: React.FC<TradingViewWidgetProps> = memo(
+  ({
+    symbol,
+    className = "",
+    height = "500px",
+    width = "100%",
+    showTitle = true,
+    title,
+    interval = "W",
+    allowSymbolChange = true,
+    hideToolbar = false,
+    studies = [],
+  }) => {
+    const containerRef = useRef<HTMLDivElement>(null);
+    const scriptRef = useRef<HTMLScriptElement | null>(null);
+    const [isLoading, setIsLoading] = useState(true);
+    const [hasError, setHasError] = useState(false);
+    const [errorMessage, setErrorMessage] = useState("");
 
-  // Generate stable container ID for this widget instance using React's useId hook
-  const reactId = useId();
-  const containerId = `tradingview_${symbol}_${reactId.replace(/:/g, '_')}`;
-  
-  // Get TradingView formatted symbol
-  const tradingViewSymbol = getTradingViewSymbol(symbol);
+    // Generate stable container ID for this widget instance using React's useId hook
+    const reactId = useId();
+    const containerId = `tradingview_${symbol}_${reactId.replace(/:/g, "_")}`;
 
-  useEffect(() => {
-    if (!containerRef.current) return;
+    // Get TradingView formatted symbol
+    const tradingViewSymbol = getTradingViewSymbol(symbol);
 
-    // Debounce widget creation to prevent rapid re-renders
-    const timeoutId = setTimeout(() => {
-      // Reset states
-      setIsLoading(true);
-      setHasError(false);
-      setErrorMessage('');
+    useEffect(() => {
+      if (!containerRef.current) return;
 
-      // Clean up previous widget
-      if (scriptRef.current) {
-        scriptRef.current.remove();
-        scriptRef.current = null;
-      }
+      // Debounce widget creation to prevent rapid re-renders
+      const timeoutId = setTimeout(() => {
+        // Reset states
+        setIsLoading(true);
+        setHasError(false);
+        setErrorMessage("");
 
-      // Clear container
-      if (containerRef.current) {
-        containerRef.current.innerHTML = '';
-      }
-
-    try {
-      // Create properly configured TradingView Advanced Chart widget
-      const widgetConfig: TradingViewWidgetConfig = {
-        // Core required settings
-        autosize: false, // Disable autosize for better container control
-        symbol: tradingViewSymbol,
-        interval: interval,
-        timezone: 'Etc/UTC', // Use UTC for better compatibility
-        theme: 'light',
-        style: '1', // Candlestick chart style
-        locale: 'en',
-
-        // Container settings
-        container_id: containerId,
-
-        // Explicit dimensions for proper Card container fit
-        width: typeof width === 'number' ? width : '100%',
-        height: typeof height === 'number' ? height : parseInt(height as string) || 500,
-
-        // UI settings
-        toolbar_bg: '#f1f3f6',
-        enable_publishing: false,
-        allow_symbol_change: allowSymbolChange,
-        hide_side_toolbar: hideToolbar,
-        hide_top_toolbar: false,
-        hide_legend: false,
-        hide_volume: false,
-
-        // Popup settings
-        show_popup_button: true,
-        popup_width: '1000',
-        popup_height: '650',
-
-        // Additional features
-        save_image: false,
-        withdateranges: true,
-        details: true,
-        hotlist: true,
-        calendar: true,
-
-        // Studies/indicators
-        studies: studies.length > 0 ? studies : []
-      };
-
-      // Debug: Log the configuration being sent to TradingView
-      console.log('TradingView Widget Configuration:', {
-        symbol: tradingViewSymbol,
-        originalSymbol: symbol,
-        containerId: containerId,
-        config: widgetConfig
-      });
-
-      // Create script element
-      const script = document.createElement('script');
-      script.src = 'https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js';
-      script.type = 'text/javascript';
-      script.async = true;
-      script.innerHTML = JSON.stringify(widgetConfig);
-
-      // Enhanced error handling
-      script.onerror = (error) => {
-        logError('TradingViewWidget', error, {
-          symbol: tradingViewSymbol,
-          originalSymbol: symbol,
-          containerId: containerId,
-          config: widgetConfig,
-          isOnline: navigator.onLine,
-        });
-        setHasError(true);
-        setErrorMessage('Failed to load TradingView widget script. Please check your internet connection.');
-        setIsLoading(false);
-      };
-
-      script.onload = () => {
-        console.log('TradingView script loaded successfully');
-        // Give the widget some time to initialize before removing loading state
-        setTimeout(() => {
-          setIsLoading(false);
-        }, 2000);
-      };
-
-      // Store script reference and append to container
-      scriptRef.current = script;
-      if (containerRef.current) {
-        containerRef.current.appendChild(script);
-      }
-
-      // Set loading timeout with better error handling
-      const loadingTimeout = setTimeout(() => {
-        if (isLoading) {
-          console.warn('TradingView Widget Loading Timeout:', {
-            symbol: tradingViewSymbol,
-            containerId: containerId
-          });
-          setIsLoading(false);
-          // Don't set error state here as the widget might still be working
+        // Clean up previous widget
+        if (scriptRef.current) {
+          scriptRef.current.remove();
+          scriptRef.current = null;
         }
-      }, 10000); // 10 second timeout
+
+        // Clear container
+        if (containerRef.current) {
+          containerRef.current.innerHTML = "";
+        }
+
+        try {
+          // Create properly configured TradingView Advanced Chart widget
+          const widgetConfig: TradingViewWidgetConfig = {
+            // Core required settings
+            autosize: false, // Disable autosize for better container control
+            symbol: tradingViewSymbol,
+            interval: interval,
+            timezone: "Etc/UTC", // Use UTC for better compatibility
+            theme: "light",
+            style: "1", // Candlestick chart style
+            locale: "en",
+
+            // Container settings
+            container_id: containerId,
+
+            // Explicit dimensions for proper Card container fit
+            width: typeof width === "number" ? width : "100%",
+            height:
+              typeof height === "number"
+                ? height
+                : parseInt(height as string) || 500,
+
+            // UI settings
+            toolbar_bg: "#f1f3f6",
+            enable_publishing: false,
+            allow_symbol_change: allowSymbolChange,
+            hide_side_toolbar: hideToolbar,
+            hide_top_toolbar: false,
+            hide_legend: false,
+            hide_volume: false,
+
+            // Popup settings
+            show_popup_button: true,
+            popup_width: "1000",
+            popup_height: "650",
+
+            // Additional features
+            save_image: false,
+            withdateranges: true,
+            details: true,
+            hotlist: true,
+            calendar: true,
+
+            // Studies/indicators
+            studies: studies.length > 0 ? studies : [],
+          };
+
+          // Debug: Log the configuration being sent to TradingView
+          console.log("TradingView Widget Configuration:", {
+            symbol: tradingViewSymbol,
+            originalSymbol: symbol,
+            containerId: containerId,
+            config: widgetConfig,
+          });
+
+          // Create script element
+          const script = document.createElement("script");
+          script.src =
+            "https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js";
+          script.type = "text/javascript";
+          script.async = true;
+          script.innerHTML = JSON.stringify(widgetConfig);
+
+          // Enhanced error handling
+          script.onerror = (error) => {
+            logError("TradingViewWidget", error, {
+              symbol: tradingViewSymbol,
+              originalSymbol: symbol,
+              containerId: containerId,
+              config: widgetConfig,
+              isOnline: navigator.onLine,
+            });
+            setHasError(true);
+            setErrorMessage(
+              "Failed to load TradingView widget script. Please check your internet connection.",
+            );
+            setIsLoading(false);
+          };
+
+          script.onload = () => {
+            console.log("TradingView script loaded successfully");
+            // Give the widget some time to initialize before removing loading state
+            setTimeout(() => {
+              setIsLoading(false);
+            }, 2000);
+          };
+
+          // Store script reference and append to container
+          scriptRef.current = script;
+          if (containerRef.current) {
+            containerRef.current.appendChild(script);
+          }
+
+          // Set loading timeout with better error handling
+          const loadingTimeout = setTimeout(() => {
+            if (isLoading) {
+              console.warn("TradingView Widget Loading Timeout:", {
+                symbol: tradingViewSymbol,
+                containerId: containerId,
+              });
+              setIsLoading(false);
+              // Don't set error state here as the widget might still be working
+            }
+          }, 10000); // 10 second timeout
+
+          return () => {
+            clearTimeout(loadingTimeout);
+          };
+        } catch (error) {
+          logError("TradingViewWidget", error, {
+            symbol: tradingViewSymbol,
+            originalSymbol: symbol,
+            containerId: containerId,
+            isOnline: navigator.onLine,
+            userAgent: navigator.userAgent,
+          });
+          setHasError(true);
+          setErrorMessage(
+            `Failed to initialize TradingView widget for ${symbol}. Attempting to display Nigerian stock: ${tradingViewSymbol}`,
+          );
+          setIsLoading(false);
+        }
+      }, 300); // 300ms debounce
 
       return () => {
-        clearTimeout(loadingTimeout);
+        clearTimeout(timeoutId);
       };
+    }, [
+      symbol,
+      tradingViewSymbol,
+      containerId,
+      height,
+      width,
+      interval,
+      allowSymbolChange,
+      hideToolbar,
+      studies,
+      isLoading,
+    ]);
 
-    } catch (error) {
-      logError('TradingViewWidget', error, {
-        symbol: tradingViewSymbol,
-        originalSymbol: symbol,
-        containerId: containerId,
-        isOnline: navigator.onLine,
-        userAgent: navigator.userAgent,
-      });
-      setHasError(true);
-      setErrorMessage(`Failed to initialize TradingView widget for ${symbol}. Attempting to display Nigerian stock: ${tradingViewSymbol}`);
-      setIsLoading(false);
+    // Cleanup on unmount
+    useEffect(() => {
+      return () => {
+        if (scriptRef.current) {
+          scriptRef.current.remove();
+          scriptRef.current = null;
+        }
+      };
+    }, []);
+
+    // Error state
+    if (hasError) {
+      return (
+        <Card className={className}>
+          {showTitle && (
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <BarChart3 className="h-5 w-5" />
+                {title || `${symbol} Chart`}
+              </CardTitle>
+            </CardHeader>
+          )}
+          <CardContent>
+            <div className="flex flex-col items-center justify-center py-12 text-center">
+              <AlertCircle className="h-12 w-12 text-red-500 mb-4" />
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                Chart Unavailable
+              </h3>
+              <p className="text-gray-600 mb-4 max-w-md">
+                {errorMessage ||
+                  "Unable to load the trading chart at this time."}
+              </p>
+              <p className="text-sm text-gray-500">
+                Symbol: {tradingViewSymbol}
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      );
     }
-    }, 300); // 300ms debounce
 
-    return () => {
-      clearTimeout(timeoutId);
-    };
-  }, [symbol, tradingViewSymbol, containerId, height, width, interval, allowSymbolChange, hideToolbar, studies, isLoading]);
-
-  // Cleanup on unmount
-  useEffect(() => {
-    return () => {
-      if (scriptRef.current) {
-        scriptRef.current.remove();
-        scriptRef.current = null;
-      }
-    };
-  }, []);
-
-  // Error state
-  if (hasError) {
+    // Main widget render
     return (
       <Card className={className}>
         {showTitle && (
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <BarChart3 className="h-5 w-5" />
-              {title || `${symbol} Chart`}
+              {title || `${symbol} Advanced Chart`}
             </CardTitle>
           </CardHeader>
         )}
-        <CardContent>
-          <div className="flex flex-col items-center justify-center py-12 text-center">
-            <AlertCircle className="h-12 w-12 text-red-500 mb-4" />
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">
-              Chart Unavailable
-            </h3>
-            <p className="text-gray-600 mb-4 max-w-md">
-              {errorMessage || 'Unable to load the trading chart at this time.'}
-            </p>
-            <p className="text-sm text-gray-500">
-              Symbol: {tradingViewSymbol}
-            </p>
-          </div>
+        <CardContent className="p-0">
+          {hasError ? (
+            <div className="flex flex-col items-center justify-center py-12 px-4">
+              <AlertTriangle className="h-12 w-12 text-red-500 mb-4" />
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                Chart Loading Failed
+              </h3>
+              <p className="text-gray-600 text-center mb-4 max-w-md">
+                {errorMessage ||
+                  "Unable to load the trading chart. This might be due to network issues or TradingView service unavailability."}
+              </p>
+              <div className="flex gap-2">
+                <Button
+                  onClick={() => {
+                    setHasError(false);
+                    setErrorMessage("");
+                    setIsLoading(true);
+                  }}
+                  className="flex items-center gap-2"
+                >
+                  <RefreshCw className="h-4 w-4" />
+                  Retry
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => window.location.reload()}
+                >
+                  Reload Page
+                </Button>
+              </div>
+            </div>
+          ) : isLoading ? (
+            <div className="flex items-center justify-center py-12">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+              <span className="ml-3 text-gray-600">Loading chart...</span>
+            </div>
+          ) : null}
+          <div
+            ref={containerRef}
+            id={containerId}
+            className="tradingview-widget-container w-full relative"
+            style={{
+              height: typeof height === "number" ? `${height}px` : height,
+              width: "100%", // Always use full width for Card container
+              minHeight: "300px", // Reduced for mobile
+              maxHeight: typeof height === "string" ? height : `${height}px`,
+              overflow: "hidden",
+              borderRadius: "0.5rem", // Match Card border radius
+              backgroundColor: "#ffffff",
+              display: hasError ? "none" : "block",
+            }}
+          />
         </CardContent>
       </Card>
     );
-  }
-
-  // Main widget render
-  return (
-    <Card className={className}>
-      {showTitle && (
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <BarChart3 className="h-5 w-5" />
-            {title || `${symbol} Advanced Chart`}
-          </CardTitle>
-        </CardHeader>
-      )}
-      <CardContent className="p-0">
-        {hasError ? (
-          <div className="flex flex-col items-center justify-center py-12 px-4">
-            <AlertTriangle className="h-12 w-12 text-red-500 mb-4" />
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">Chart Loading Failed</h3>
-            <p className="text-gray-600 text-center mb-4 max-w-md">
-              {errorMessage || 'Unable to load the trading chart. This might be due to network issues or TradingView service unavailability.'}
-            </p>
-            <div className="flex gap-2">
-              <Button
-                onClick={() => {
-                  setHasError(false);
-                  setErrorMessage('');
-                  setIsLoading(true);
-                }}
-                className="flex items-center gap-2"
-              >
-                <RefreshCw className="h-4 w-4" />
-                Retry
-              </Button>
-              <Button variant="outline" onClick={() => window.location.reload()}>
-                Reload Page
-              </Button>
-            </div>
-          </div>
-        ) : isLoading ? (
-          <div className="flex items-center justify-center py-12">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-            <span className="ml-3 text-gray-600">Loading chart...</span>
-          </div>
-        ) : null}
-        <div
-          ref={containerRef}
-          id={containerId}
-          className="tradingview-widget-container w-full relative"
-          style={{
-            height: typeof height === 'number' ? `${height}px` : height,
-            width: '100%', // Always use full width for Card container
-            minHeight: '300px', // Reduced for mobile
-            maxHeight: typeof height === 'string' ? height : `${height}px`,
-            overflow: 'hidden',
-            borderRadius: '0.5rem', // Match Card border radius
-            backgroundColor: '#ffffff',
-            display: hasError ? 'none' : 'block'
-          }}
-        />
-      </CardContent>
-    </Card>
-  );
-});
+  },
+);
 
 // Set display name for debugging
-TradingViewWidget.displayName = 'TradingViewWidget';
+TradingViewWidget.displayName = "TradingViewWidget";
 
 export default TradingViewWidget;
-export { getTradingViewSymbol, NIGERIAN_STOCK_SYMBOLS, getAlternativeSymbolFormats };
+export {
+  getTradingViewSymbol,
+  NIGERIAN_STOCK_SYMBOLS,
+  getAlternativeSymbolFormats,
+};
 export type { TradingViewWidgetProps, NigerianStockSymbol };

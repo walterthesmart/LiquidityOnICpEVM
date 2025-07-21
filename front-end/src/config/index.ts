@@ -1,6 +1,6 @@
 // RainbowKit configuration for Bitfinity EVM integration
-import { getDefaultConfig } from '@rainbow-me/rainbowkit';
-import { mainnet, polygon, optimism, arbitrum, base } from 'wagmi/chains';
+import { getDefaultConfig } from "@rainbow-me/rainbowkit";
+import { mainnet, polygon, optimism, arbitrum, base } from "wagmi/chains";
 
 export const projectId =
   process.env.NEXT_PUBLIC_PROJECT_ID || "b56e18d47c72ab683b10814fe9495694";
@@ -12,120 +12,68 @@ if (!projectId) {
 // Define Bitfinity EVM custom chains
 export const bitfinityTestnet = {
   id: 355113,
-  name: 'Bitfinity Testnet',
-  network: 'bitfinity-testnet',
-<<<<<<< HEAD
+  name: "Bitfinity Testnet",
+  network: "bitfinity-testnet",
   nativeCurrency: {
     decimals: 18,
-    name: 'BTF',
-    symbol: 'BTF',
+    name: "BTF",
+    symbol: "BTF",
   },
   rpcUrls: {
     default: {
-      http: ['https://testnet.bitfinity.network'],
+      http: ["https://testnet.bitfinity.network"],
     },
     public: {
-      http: ['https://testnet.bitfinity.network'],
+      http: ["https://testnet.bitfinity.network"],
     },
   },
   blockExplorers: {
-    default: { name: 'Bitfinity Explorer', url: 'https://explorer.testnet.bitfinity.network' },
+    default: {
+      name: "Bitfinity Explorer",
+      url: "https://explorer.testnet.bitfinity.network",
+    },
   },
   testnet: true,
-  iconUrl: '/logo/png/BITFINITY.png',
-  iconBackground: '#fff',
+  iconUrl: "/logo/png/BITFINITY.png",
+  iconBackground: "#fff",
 } as const;
 
 export const bitfinityMainnet = {
   id: 355110,
-  name: 'Bitfinity Mainnet',
-  network: 'bitfinity-mainnet',
+  name: "Bitfinity Mainnet",
+  network: "bitfinity-mainnet",
   nativeCurrency: {
     decimals: 18,
-    name: 'BTF',
-    symbol: 'BTF',
+    name: "BTF",
+    symbol: "BTF",
   },
   rpcUrls: {
     default: {
-      http: ['https://mainnet.bitfinity.network'],
+      http: ["https://mainnet.bitfinity.network"],
     },
     public: {
-      http: ['https://mainnet.bitfinity.network'],
+      http: ["https://mainnet.bitfinity.network"],
     },
   },
   blockExplorers: {
-    default: { name: 'Bitfinity Explorer', url: 'https://explorer.bitfinity.network' },
+    default: {
+      name: "Bitfinity Explorer",
+      url: "https://explorer.bitfinity.network",
+    },
   },
   testnet: false,
-  iconUrl: '/logo/png/BITFINITY.png',
-  iconBackground: '#fff',
-} as const;
-
-// Legacy Hedera chains (kept for reference)
-export const hederaTestnet = {
-  id: 296,
-  name: 'Hedera Testnet',
-  network: 'hedera-testnet',
-=======
->>>>>>> abb4d61a3524e7d4b23106919160f13888445b70
-  nativeCurrency: {
-    decimals: 18,
-    name: 'Bitfinity Token',
-    symbol: 'BTF',
-  },
-  rpcUrls: {
-    default: {
-      http: ['https://testnet.bitfinity.network'],
-    },
-    public: {
-      http: ['https://testnet.bitfinity.network'],
-    },
-  },
-  blockExplorers: {
-    default: { name: 'Bitfinity Explorer', url: 'https://explorer.testnet.bitfinity.network' },
-  },
-  testnet: true,
-  iconUrl: '/logo/png/BITFINITY.png',
-  iconBackground: '#000',
-} as const;
-
-export const bitfinityMainnet = {
-  id: 355110,
-  name: 'Bitfinity Mainnet',
-  network: 'bitfinity-mainnet',
-  nativeCurrency: {
-    decimals: 18,
-    name: 'Bitfinity Token',
-    symbol: 'BTF',
-  },
-  rpcUrls: {
-    default: {
-      http: ['https://mainnet.bitfinity.network'],
-    },
-    public: {
-      http: ['https://mainnet.bitfinity.network'],
-    },
-  },
-  blockExplorers: {
-    default: { name: 'Bitfinity Explorer', url: 'https://explorer.bitfinity.network' },
-  },
-  testnet: false,
-  iconUrl: '/logo/png/BITFINITY.png',
-  iconBackground: '#000',
+  iconUrl: "/logo/png/BITFINITY.png",
+  iconBackground: "#fff",
 } as const;
 
 // Legacy RainbowKit configuration - now replaced by the main configuration in rainbowkit.tsx
 // This config is kept for reference but the active configuration includes Bitfinity EVM networks
 
 export const config = getDefaultConfig({
-  appName: 'Liquidity Nigerian Stock Trading',
+  appName: "Liquidity Nigerian Stock Trading",
   projectId,
   chains: [
-<<<<<<< HEAD
-    // Primary Bitfinity EVM chains
-=======
-    // Include Bitfinity EVM networks for Nigerian stock trading
->>>>>>> abb4d61a3524e7d4b23106919160f13888445b70
+    // Primary Bitfinity EVM chains for Nigerian stock trading
     bitfinityTestnet,
     bitfinityMainnet,
     // Include popular chains for broader wallet support

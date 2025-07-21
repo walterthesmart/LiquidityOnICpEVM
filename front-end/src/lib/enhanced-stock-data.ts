@@ -3,16 +3,12 @@
  * Combines Nigerian stock data with Bitfinity EVM token deployment information
  */
 
-import { NIGERIAN_STOCKS_DATA } from '@/db/nigerian-stocks-data';
-import { 
-  getStockBySymbol, 
-  NigerianStockData,
-  NIGERIAN_STOCKS 
-} from '@/lib/bitfinity-config';
-import { bitfinityEVM } from '@/lib/bitfinity-evm';
-import { Stock } from '@/db/schema';
+import { NIGERIAN_STOCKS_DATA } from "@/db/nigerian-stocks-data";
+import { getStockBySymbol, NIGERIAN_STOCKS } from "@/lib/bitfinity-config";
+import { bitfinityEVM } from "@/lib/bitfinity-evm";
+import { Stock } from "@/db/schema";
 
-export interface EnhancedStockData extends Omit<Stock, 'id' | 'tokenID'> {
+export interface EnhancedStockData extends Omit<Stock, "id" | "tokenID"> {
   // Bitfinity EVM integration fields
   bitfinityExplorerUrl?: string;
   isBitfinityDeployed: boolean;
@@ -21,36 +17,42 @@ export interface EnhancedStockData extends Omit<Stock, 'id' | 'tokenID'> {
   contractAddress?: string;
 
   // Enhanced metadata
-  blockchain: 'bitfinity-evm';
-  tokenStandard: 'ERC20'; // ERC20 standard
-  deploymentStatus: 'deployed' | 'pending' | 'not_deployed';
-  
+  blockchain: "bitfinity-evm";
+  tokenStandard: "ERC20"; // ERC20 standard
+  deploymentStatus: "deployed" | "pending" | "not_deployed";
+
   // Additional fields from Bitfinity config
-  sector?: string;
   description?: string;
+
+  // Override sector to make it required (from Stock schema)
+  sector: string;
 }
 
 /**
  * Get enhanced stock data by symbol
  */
-export async function getEnhancedStockData(symbol: string): Promise<EnhancedStockData | null> {
+export async function getEnhancedStockData(
+  symbol: string,
+): Promise<EnhancedStockData | null> {
   try {
     // Get base stock data from database
-    const baseStock = NIGERIAN_STOCKS_DATA.find(stock => stock.symbol === symbol);
+    const baseStock = NIGERIAN_STOCKS_DATA.find(
+      (stock) => stock.symbol === symbol,
+    );
     if (!baseStock) {
       return null;
     }
 
     // Get Bitfinity config data
     const bitfinityStock = getStockBySymbol(symbol);
-    
+
     // Check if token is deployed on Bitfinity
     const tokenAddress = await bitfinityEVM.getTokenAddress(symbol);
     const isDeployed = tokenAddress !== null;
-    
+
     let contractAddress: string | undefined;
     let explorerUrl: string | undefined;
-    
+
     if (isDeployed && tokenAddress) {
       contractAddress = tokenAddress;
       explorerUrl = bitfinityEVM.getTokenUrl(tokenAddress);
@@ -64,20 +66,23 @@ export async function getEnhancedStockData(symbol: string): Promise<EnhancedStoc
       bitfinityNetwork: bitfinityEVM.getNetworkConfig().name,
       bitfinityDecimals: 18, // Standard ERC20 decimals
       contractAddress,
-      
+
+      // Legacy field for compatibility
+      hederaTokenAddress: null, // Not used in Bitfinity EVM
+
       // Metadata
-      blockchain: 'bitfinity-evm',
-      tokenStandard: 'ERC20',
-      deploymentStatus: isDeployed ? 'deployed' : 'not_deployed',
-      
+      blockchain: "bitfinity-evm",
+      tokenStandard: "ERC20",
+      deploymentStatus: isDeployed ? "deployed" : "not_deployed",
+
       // Additional fields from config
-      sector: bitfinityStock?.sector,
+      sector: bitfinityStock?.sector || "Unknown",
       description: bitfinityStock?.description,
     };
 
     return enhancedData;
   } catch (error) {
-    console.error('Error getting enhanced stock data:', error);
+    console.error("Error getting enhanced stock data:", error);
     return null;
   }
 }
@@ -87,23 +92,25 @@ export async function getEnhancedStockData(symbol: string): Promise<EnhancedStoc
  */
 export async function getAllEnhancedStockData(): Promise<EnhancedStockData[]> {
   const enhancedStocks: EnhancedStockData[] = [];
-  
+
   for (const stock of NIGERIAN_STOCKS_DATA) {
     const enhancedData = await getEnhancedStockData(stock.symbol);
     if (enhancedData) {
       enhancedStocks.push(enhancedData);
     }
   }
-  
+
   return enhancedStocks;
 }
 
 /**
  * Get enhanced stock data by sector
  */
-export async function getEnhancedStockDataBySector(sector: string): Promise<EnhancedStockData[]> {
+export async function getEnhancedStockDataBySector(
+  sector: string,
+): Promise<EnhancedStockData[]> {
   const allStocks = await getAllEnhancedStockData();
-  return allStocks.filter(stock => stock.sector === sector);
+  return allStocks.filter((stock) => stock.sector === sector);
 }
 
 /**
@@ -111,7 +118,7 @@ export async function getEnhancedStockDataBySector(sector: string): Promise<Enha
  */
 export async function getDeployedStocks(): Promise<EnhancedStockData[]> {
   const allStocks = await getAllEnhancedStockData();
-  return allStocks.filter(stock => stock.isBitfinityDeployed);
+  return allStocks.filter((stock) => stock.isBitfinityDeployed);
 }
 
 /**
@@ -119,24 +126,30 @@ export async function getDeployedStocks(): Promise<EnhancedStockData[]> {
  */
 export async function getDeploymentStats() {
   const allStocks = await getAllEnhancedStockData();
-  const deployed = allStocks.filter(stock => stock.isBitfinityDeployed);
-  
-  const sectorStats = allStocks.reduce((acc, stock) => {
-    const sector = stock.sector || 'Unknown';
-    if (!acc[sector]) {
-      acc[sector] = { total: 0, deployed: 0 };
-    }
-    acc[sector].total++;
-    if (stock.isBitfinityDeployed) {
-      acc[sector].deployed++;
-    }
-    return acc;
-  }, {} as Record<string, { total: number; deployed: number }>);
+  const deployed = allStocks.filter((stock) => stock.isBitfinityDeployed);
+
+  const sectorStats = allStocks.reduce(
+    (acc, stock) => {
+      const sector = stock.sector || "Unknown";
+      if (!acc[sector]) {
+        acc[sector] = { total: 0, deployed: 0 };
+      }
+      acc[sector].total++;
+      if (stock.isBitfinityDeployed) {
+        acc[sector].deployed++;
+      }
+      return acc;
+    },
+    {} as Record<string, { total: number; deployed: number }>,
+  );
 
   return {
     totalStocks: allStocks.length,
     deployedStocks: deployed.length,
     deploymentPercentage: (deployed.length / allStocks.length) * 100,
+    deployed: deployed.length,
+    pending: allStocks.filter((stock) => stock.deploymentStatus === "pending")
+      .length,
     sectorStats,
     network: bitfinityEVM.getNetworkConfig().name,
   };
@@ -145,16 +158,18 @@ export async function getDeploymentStats() {
 /**
  * Search enhanced stock data
  */
-export async function searchEnhancedStocks(query: string): Promise<EnhancedStockData[]> {
+export async function searchEnhancedStocks(
+  query: string,
+): Promise<EnhancedStockData[]> {
   const allStocks = await getAllEnhancedStockData();
   const lowercaseQuery = query.toLowerCase();
-  
-  return allStocks.filter(stock => 
-    stock.symbol.toLowerCase().includes(lowercaseQuery) ||
-    stock.name.toLowerCase().includes(lowercaseQuery) ||
-    stock.companyName?.toLowerCase().includes(lowercaseQuery) ||
-    stock.sector?.toLowerCase().includes(lowercaseQuery) ||
-    stock.description?.toLowerCase().includes(lowercaseQuery)
+
+  return allStocks.filter(
+    (stock) =>
+      stock.symbol.toLowerCase().includes(lowercaseQuery) ||
+      stock.name.toLowerCase().includes(lowercaseQuery) ||
+      stock.sector?.toLowerCase().includes(lowercaseQuery) ||
+      stock.description?.toLowerCase().includes(lowercaseQuery),
   );
 }
 
@@ -170,8 +185,9 @@ export async function getStockPriceWithBitfinity(symbol: string) {
 
     // Get current price from existing price service
     // This would integrate with your existing Nigerian stock price service
-    const basePrice = enhancedData.currentPrice || 0;
-    
+    // Note: currentPrice would come from price service integration
+    const basePrice = 0; // TODO: Integrate with price service
+
     // If deployed on Bitfinity, get additional token metrics
     let tokenMetrics = null;
     if (enhancedData.isBitfinityDeployed && enhancedData.contractAddress) {
@@ -186,7 +202,7 @@ export async function getStockPriceWithBitfinity(symbol: string) {
           };
         }
       } catch (error) {
-        console.error('Error getting token metrics:', error);
+        console.error("Error getting token metrics:", error);
       }
     }
 
@@ -197,7 +213,7 @@ export async function getStockPriceWithBitfinity(symbol: string) {
       lastUpdated: new Date().toISOString(),
     };
   } catch (error) {
-    console.error('Error getting stock price with Bitfinity:', error);
+    console.error("Error getting stock price with Bitfinity:", error);
     return null;
   }
 }
@@ -212,18 +228,22 @@ export function validateStockSymbol(symbol: string): {
   errors: string[];
 } {
   const errors: string[] = [];
-  
-  const inDatabase = NIGERIAN_STOCKS_DATA.some(stock => stock.symbol === symbol);
-  const inBitfinityConfig = NIGERIAN_STOCKS.some(stock => stock.symbol === symbol);
-  
+
+  const inDatabase = NIGERIAN_STOCKS_DATA.some(
+    (stock) => stock.symbol === symbol,
+  );
+  const inBitfinityConfig = NIGERIAN_STOCKS.some(
+    (stock) => stock.symbol === symbol,
+  );
+
   if (!inDatabase) {
-    errors.push('Stock not found in database');
+    errors.push("Stock not found in database");
   }
-  
+
   if (!inBitfinityConfig) {
-    errors.push('Stock not found in Bitfinity configuration');
+    errors.push("Stock not found in Bitfinity configuration");
   }
-  
+
   return {
     isValid: inDatabase && inBitfinityConfig,
     inDatabase,
@@ -237,7 +257,7 @@ export function validateStockSymbol(symbol: string): {
  */
 export async function getMigrationStatus() {
   const allStocks = await getAllEnhancedStockData();
-  
+
   const migrationStats = {
     total: allStocks.length,
     migrated: 0,
@@ -245,28 +265,106 @@ export async function getMigrationStatus() {
     failed: 0,
     byStatus: {} as Record<string, number>,
   };
-  
-  allStocks.forEach(stock => {
+
+  allStocks.forEach((stock) => {
     const status = stock.deploymentStatus;
-    migrationStats.byStatus[status] = (migrationStats.byStatus[status] || 0) + 1;
-    
+    migrationStats.byStatus[status] =
+      (migrationStats.byStatus[status] || 0) + 1;
+
     switch (status) {
-      case 'deployed':
+      case "deployed":
         migrationStats.migrated++;
         break;
-      case 'pending':
+      case "pending":
         migrationStats.pending++;
         break;
-      case 'not_deployed':
+      case "not_deployed":
         migrationStats.failed++;
         break;
     }
   });
-  
+
   return {
     ...migrationStats,
     migrationPercentage: (migrationStats.migrated / migrationStats.total) * 100,
     network: bitfinityEVM.getNetworkConfig().name,
     timestamp: new Date().toISOString(),
   };
+}
+
+/**
+ * Get enhanced Nigerian stocks (alias for getAllEnhancedStockData)
+ */
+export async function getEnhancedNigerianStocks(): Promise<
+  EnhancedStockData[]
+> {
+  return getAllEnhancedStockData();
+}
+
+/**
+ * Get enhanced stock by symbol (alias for getEnhancedStockData)
+ */
+export async function getEnhancedStockBySymbol(
+  symbol: string,
+): Promise<EnhancedStockData | null> {
+  return getEnhancedStockData(symbol);
+}
+
+/**
+ * Get stocks by deployment status
+ */
+export async function getStocksByDeploymentStatus(
+  status: "deployed" | "pending" | "not_deployed",
+): Promise<EnhancedStockData[]> {
+  const allStocks = await getAllEnhancedStockData();
+  return allStocks.filter(
+    (stock: EnhancedStockData) => stock.deploymentStatus === status,
+  );
+}
+
+/**
+ * Get stocks by sector with deployment info
+ */
+export async function getStocksBySectorWithHederaInfo(
+  sector: string,
+): Promise<EnhancedStockData[]> {
+  const allStocks = await getAllEnhancedStockData();
+  return allStocks.filter(
+    (stock: EnhancedStockData) => stock.sector === sector,
+  );
+}
+
+/**
+ * Validate and get enhanced stock
+ */
+export async function validateAndGetEnhancedStock(
+  symbol: string,
+): Promise<EnhancedStockData | null> {
+  if (!symbol || typeof symbol !== "string") {
+    return null;
+  }
+  return getEnhancedStockData(symbol.toUpperCase());
+}
+
+// Note: searchEnhancedStocks is already defined above as an async function
+
+/**
+ * Get deployed Hedera stocks (alias for deployed stocks)
+ */
+export async function getDeployedHederaStocks(): Promise<EnhancedStockData[]> {
+  return getDeployedStocks();
+}
+
+/**
+ * Get pending Hedera stocks (alias for pending deployment status)
+ */
+export async function getPendingHederaStocks(): Promise<EnhancedStockData[]> {
+  return getStocksByDeploymentStatus("pending");
+}
+
+/**
+ * Get Hedera deployment stats (alias for deployment stats)
+ */
+export async function getHederaDeploymentStats() {
+  return getDeploymentStats();
 }

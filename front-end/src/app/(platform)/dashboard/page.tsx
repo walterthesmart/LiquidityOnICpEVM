@@ -36,12 +36,12 @@ const DashBoardPage = () => {
 
   const handleCopy = async () => {
     if (!activeAddress) return;
-    
+
     try {
       await navigator.clipboard.writeText(activeAddress);
       setCopied(true);
       toast.success("Address copied to clipboard!");
-      
+
       // Reset after 2 seconds
       setTimeout(() => setCopied(false), 2000);
     } catch (err) {
@@ -52,27 +52,29 @@ const DashBoardPage = () => {
 
   const fetchData = useCallback(async () => {
     if (!isConnected || !activeAddress) return;
-    
+
     try {
       setLoading(true);
       setError(null);
 
       const fromDate = getDateFromRange(dateRange);
-      const mode: GraphDataMode = dateRange === "1w" || dateRange === "1m" 
-        ? GraphDataMode.WEEKLY 
-        : GraphDataMode.MONTHLY;
+      const mode: GraphDataMode =
+        dateRange === "1w" || dateRange === "1m"
+          ? GraphDataMode.WEEKLY
+          : GraphDataMode.MONTHLY;
 
-      const [holdings, invested, portfolioValue, performance] = await Promise.all([
-        getStockHoldings(activeAddress),
-        getInitialInvestment({ user_address: activeAddress }),
-        getTotalPortfolioValue(activeAddress),
-        getGraphData({
-          user_address: activeAddress,
-          from: fromDate,
-          to: new Date(),
-          mode,
-        }),
-      ]);
+      const [holdings, invested, portfolioValue, performance] =
+        await Promise.all([
+          getStockHoldings(activeAddress),
+          getInitialInvestment({ user_address: activeAddress }),
+          getTotalPortfolioValue(activeAddress),
+          getGraphData({
+            user_address: activeAddress,
+            from: fromDate,
+            to: new Date(),
+            mode,
+          }),
+        ]);
 
       setPortfolio(holdings);
       setTotalInvested(invested);
@@ -81,7 +83,7 @@ const DashBoardPage = () => {
         performance.map((item) => ({
           ...item,
           name: formatDateForDisplay(item.date, dateRange),
-        }))
+        })),
       );
     } catch (err) {
       console.error("Fetch error:", err);
@@ -98,21 +100,29 @@ const DashBoardPage = () => {
   const getDateFromRange = (range: DateRange): Date => {
     const date = new Date();
     switch (range) {
-      case "1w": date.setDate(date.getDate() - 7); break;
-      case "1m": date.setMonth(date.getMonth() - 1); break;
+      case "1w":
+        date.setDate(date.getDate() - 7);
+        break;
+      case "1m":
+        date.setMonth(date.getMonth() - 1);
+        break;
     }
     return date;
   };
 
   const formatDateForDisplay = (date: Date, range: DateRange) => {
     if (range === "1w" || range === "1m") {
-      return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+      return date.toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+      });
     }
   };
 
   const totalProfit = currentValue - totalInvested;
-  const profitPercentage = totalInvested !== 0 ? (totalProfit / totalInvested) * 100 : 0;
- 
+  const profitPercentage =
+    totalInvested !== 0 ? (totalProfit / totalInvested) * 100 : 0;
+
   if (!isConnected) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh]">
@@ -160,26 +170,26 @@ const DashBoardPage = () => {
         <div className="flex items-center gap-2">
           <Wallet className="h-5 w-5 text-gray-500" />
           <div className="flex items-center gap-1 bg-gray-100 rounded-full group">
-                <span className="text-sm px-3 py-1">
-                  {activeAddress
-                    ? `${activeAddress.substring(0, 6)}...${activeAddress.substring(activeAddress.length - 4)}`
-                    : "Disconnected"}
-                </span>
-                {activeAddress && (
-                  <button
-                    onClick={handleCopy}
-                    disabled={copied}
-                    className="cursor-pointer p-1 rounded-full hover:bg-gray-200 transition-colors"
-                    aria-label={copied ? "Copied!" : "Copy address"}
-                  >
-                    {copied ? (
-                      <Check className="h-4 w-4 text-green-500" />
-                    ) : (
-                      <Copy className="h-4 w-4 text-gray-500 group-hover:text-gray-700" />
-                    )}
-                  </button>
+            <span className="text-sm px-3 py-1">
+              {activeAddress
+                ? `${activeAddress.substring(0, 6)}...${activeAddress.substring(activeAddress.length - 4)}`
+                : "Disconnected"}
+            </span>
+            {activeAddress && (
+              <button
+                onClick={handleCopy}
+                disabled={copied}
+                className="cursor-pointer p-1 rounded-full hover:bg-gray-200 transition-colors"
+                aria-label={copied ? "Copied!" : "Copy address"}
+              >
+                {copied ? (
+                  <Check className="h-4 w-4 text-green-500" />
+                ) : (
+                  <Copy className="h-4 w-4 text-gray-500 group-hover:text-gray-700" />
                 )}
-              </div>
+              </button>
+            )}
+          </div>
         </div>
       </div>
 
@@ -191,17 +201,17 @@ const DashBoardPage = () => {
         portfolio={portfolio}
       />
 
-{activeAddress && (
+      {activeAddress && (
         <>
-      <PortfolioPerformance
-        dateRange={dateRange}
-        setDateRange={setDateRange}
-        performanceData={performanceData}
-        loading={loading}
-        netInvestment={totalInvested}
-      />
+          <PortfolioPerformance
+            dateRange={dateRange}
+            setDateRange={setDateRange}
+            performanceData={performanceData}
+            loading={loading}
+            netInvestment={totalInvested}
+          />
 
-      <AssetHoldings
+          <AssetHoldings
             portfolio={portfolio}
             userAddress={activeAddress}
             isEvmConnected={isConnected}
@@ -215,4 +225,4 @@ const DashBoardPage = () => {
   );
 };
 
-export default DashBoardPage;                                           
+export default DashBoardPage;

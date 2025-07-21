@@ -1,27 +1,27 @@
 /**
  * Turso Database Connection
- * 
+ *
  * This file handles the connection to Turso (SQLite) database
  * using Drizzle ORM and libSQL client.
  */
 
-import { drizzle } from 'drizzle-orm/libsql';
-import { createClient } from '@libsql/client';
-import * as schema from './schema';
+import { drizzle } from "drizzle-orm/libsql";
+import { createClient } from "@libsql/client";
+import * as schema from "./schema";
 
 // Load environment variables
-import '../../envConfig';
+import "../../envConfig";
 
 // Database configuration - using production Turso database
 const databaseUrl = process.env.TURSO_DATABASE_URL;
 const authToken = process.env.TURSO_AUTH_TOKEN;
 
 if (!databaseUrl) {
-  throw new Error('TURSO_DATABASE_URL environment variable is required');
+  throw new Error("TURSO_DATABASE_URL environment variable is required");
 }
 
 if (!authToken) {
-  throw new Error('TURSO_AUTH_TOKEN environment variable is required');
+  throw new Error("TURSO_AUTH_TOKEN environment variable is required");
 }
 
 // Create libSQL client
@@ -37,7 +37,10 @@ export const db = drizzle(client, { schema });
 let isConnected = false;
 
 // Health check function
-export const checkDatabaseHealth = async (): Promise<{ healthy: boolean; error?: string }> => {
+export const checkDatabaseHealth = async (): Promise<{
+  healthy: boolean;
+  error?: string;
+}> => {
   try {
     // Simple query to test connection
     await db.select().from(schema.stocks).limit(1);
@@ -45,8 +48,9 @@ export const checkDatabaseHealth = async (): Promise<{ healthy: boolean; error?:
     return { healthy: true };
   } catch (error) {
     isConnected = false;
-    const errorMessage = error instanceof Error ? error.message : 'Unknown database error';
-    console.error('Database health check failed:', errorMessage);
+    const errorMessage =
+      error instanceof Error ? error.message : "Unknown database error";
+    console.error("Database health check failed:", errorMessage);
     return { healthy: false, error: errorMessage };
   }
 };
@@ -61,10 +65,11 @@ export const ensureConnection = async (): Promise<void> => {
     if (!healthCheck.healthy) {
       throw new Error(`Database connection failed: ${healthCheck.error}`);
     }
-    console.log('Successfully connected to Turso database');
+    console.log("Successfully connected to Turso database");
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : 'Unknown connection error';
-    console.error('Failed to connect to Turso database:', errorMessage);
+    const errorMessage =
+      error instanceof Error ? error.message : "Unknown connection error";
+    console.error("Failed to connect to Turso database:", errorMessage);
     throw new Error(`Database connection failed: ${errorMessage}`);
   }
 };

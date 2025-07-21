@@ -1,61 +1,59 @@
 /**
  * Stock Logo Mapping Utility
- * 
+ *
  * This utility provides functions to map stock symbols to their corresponding
  * logo files and handle fallback cases for missing logos.
  */
-
-
 
 // Stock symbol to logo file mapping
 // Based on available files in public/logo/png/ and deployed stocks
 // Updated to include all available stock logos
 const STOCK_LOGO_MAP: Record<string, string> = {
   // Stocks with specific logos available (verified from public/logo/png/)
-  'ACCESS': 'ACCESS.png',
-  'AIRTELAFRI': 'AIRTEL.png',
-  'BUACEMENT': 'BUACEMENT.png',
-  'BUAFOODS': 'BUAFOODS.png',
-  'CADBURY': 'CADBURY.png',
-  'CHAMPION': 'CHAMPION.png',
-  'CONOIL': 'CONOIL.png',
-  'CWG': 'CWG.png',
-  'DANGCEM': 'DANGCEM.png', // Updated from .jpeg to .png
-  'DANGSUGAR': 'DANGSUGAR.png',
-  'ETERNA': 'ETERNA.png',
-  'FBNH': 'FBNH.png',
-  'FIDSON': 'FIDSON.png',
-  'FLOURMILL': 'FLOURMILLS.png', // Note: file is named FLOURMILLS.png
-  'GEREGU': 'GEREGU.png',
-  'GTCO': 'GTCO.png',
-  'GUINNESS': 'GUINESS.png', // Note: file is named GUINESS.png (missing 'N')
-  'LIVESTOCK': 'LIVESTOCK.png',
-  'MAYBAKER': 'MAYBAKER.png',
-  'MTNN': 'MTNN.png', // Updated from .jpg to .png
-  'NB': 'NB.png',
-  'NESTLE': 'NESTLE.png',
-  'OANDO': 'OANDO.png',
-  'OKOMUOIL': 'OKOMUOIL.png',
-  'PRESCO': 'PRESCO.png',
-  'PZ': 'PZ.png',
-  'SEPLAT': 'SEPLAT.png',
-  'STANBIC': 'STANBIC.png',
-  'TOTAL': 'TOTAL.png',
-  'TRANSCOHOT': 'TRANSCORP.png', // Note: file is named TRANSCORP.png
-  'UACN': 'UACN.png',
-  'UBA': 'UBA.png',
-  'UNILEVER': 'UNILEVER.png',
-  'WAPCO': 'WAPCO.jpg', // This one is actually .jpg
-  'ZENITHBANK': 'ZENITH.png',
+  ACCESS: "ACCESS.png",
+  AIRTELAFRI: "AIRTEL.png",
+  BUACEMENT: "BUACEMENT.png",
+  BUAFOODS: "BUAFOODS.png",
+  CADBURY: "CADBURY.png",
+  CHAMPION: "CHAMPION.png",
+  CONOIL: "CONOIL.png",
+  CWG: "CWG.png",
+  DANGCEM: "DANGCEM.png", // Updated from .jpeg to .png
+  DANGSUGAR: "DANGSUGAR.png",
+  ETERNA: "ETERNA.png",
+  FBNH: "FBNH.png",
+  FIDSON: "FIDSON.png",
+  FLOURMILL: "FLOURMILLS.png", // Note: file is named FLOURMILLS.png
+  GEREGU: "GEREGU.png",
+  GTCO: "GTCO.png",
+  GUINNESS: "GUINESS.png", // Note: file is named GUINESS.png (missing 'N')
+  LIVESTOCK: "LIVESTOCK.png",
+  MAYBAKER: "MAYBAKER.png",
+  MTNN: "MTNN.png", // Updated from .jpg to .png
+  NB: "NB.png",
+  NESTLE: "NESTLE.png",
+  OANDO: "OANDO.png",
+  OKOMUOIL: "OKOMUOIL.png",
+  PRESCO: "PRESCO.png",
+  PZ: "PZ.png",
+  SEPLAT: "SEPLAT.png",
+  STANBIC: "STANBIC.png",
+  TOTAL: "TOTAL.png",
+  TRANSCOHOT: "TRANSCORP.png", // Note: file is named TRANSCORP.png
+  UACN: "UACN.png",
+  UBA: "UBA.png",
+  UNILEVER: "UNILEVER.png",
+  WAPCO: "WAPCO.jpg", // This one is actually .jpg
+  ZENITHBANK: "ZENITH.png",
 
   // Stocks without specific logos (will use fallback)
-  'INTBREW': 'logo-no-background.png', // No specific logo found
-  'LAFARGE': 'logo-no-background.png', // No specific logo found
-  'TRANSPOWER': 'logo-no-background.png', // No specific logo found
+  INTBREW: "logo-no-background.png", // No specific logo found
+  LAFARGE: "logo-no-background.png", // No specific logo found
+  TRANSPOWER: "logo-no-background.png", // No specific logo found
 };
 
 // Fallback logo for stocks without specific logos
-const FALLBACK_LOGO = '/logo/png/logo-no-background.png';
+const FALLBACK_LOGO = "/logo/png/logo-no-background.png";
 
 /**
  * Get the logo path for a given stock symbol
@@ -64,11 +62,11 @@ const FALLBACK_LOGO = '/logo/png/logo-no-background.png';
  */
 export function getStockLogoPath(symbol: string): string {
   const logoFile = STOCK_LOGO_MAP[symbol.toUpperCase()];
-  
+
   if (logoFile) {
     return `/logo/png/${logoFile}`;
   }
-  
+
   return FALLBACK_LOGO;
 }
 

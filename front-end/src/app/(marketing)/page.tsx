@@ -69,8 +69,10 @@ export default function LandingPage() {
         <div className="grid gap-8   items-center">
           <div className="space-y-6 w-full ">
             <h1 className="text-4xl  md:hidden my-auto max-w-xl font-bold tracking-tight">
-              Trade stocks with <span className="text-primary">Tokenized Naira</span> and{" "}
-              <span className="text-primary">HBAR</span> on <span className="text-primary">Hedera</span>
+              Trade stocks with{" "}
+              <span className="text-primary">Tokenized Naira</span> and{" "}
+              <span className="text-primary">HBAR</span> on{" "}
+              <span className="text-primary">Hedera</span>
             </h1>
             <TypewriterEffectSmooth
               words={words}
@@ -78,9 +80,9 @@ export default function LandingPage() {
               cursorClassName="bg-primary my-auto"
             />
             <p className="text-lg mx-auto  md:text-xl lg:text-2xl text-muted-foreground md:max-w-5xl  text-left md:text-center ">
-              Connect your wallet and start investing in Nigerian stocks using tokenized Naira
-              or HBAR on the Hedera network. Track your portfolio and trade when you&apos;re
-              ready.
+              Connect your wallet and start investing in Nigerian stocks using
+              tokenized Naira or HBAR on the Hedera network. Track your
+              portfolio and trade when you&apos;re ready.
             </p>
             <div className="md:flex gap-4  justify-center items-center grid">
               <Button

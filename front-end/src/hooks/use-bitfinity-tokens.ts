@@ -3,11 +3,11 @@
  * Provides easy access to deployed Nigerian stock tokens on Bitfinity EVM
  */
 
-import { useState, useEffect, useMemo } from 'react';
-import { useAccount, usePublicClient } from 'wagmi';
-import { Address } from 'viem';
-import { bitfinityEVM, formatTokenAmount } from '@/lib/bitfinity-evm';
-import { getStockBySymbol, NigerianStockData } from '@/lib/bitfinity-config';
+import { useState, useEffect, useMemo } from "react";
+import { useAccount } from "wagmi";
+import { Address } from "viem";
+import { bitfinityEVM, formatTokenAmount } from "@/lib/bitfinity-evm";
+import { getStockBySymbol, NigerianStockData } from "@/lib/bitfinity-config";
 
 export interface TokenInfo {
   address: Address;
@@ -46,14 +46,20 @@ export function useBitfinityToken(symbol: string): UseBitfinityTokenReturn {
       setError(null);
 
       const tokenInfo = await bitfinityEVM.getTokenInfo(symbol);
-      if (!tokenInfo || tokenInfo.tokenAddress === '0x0000000000000000000000000000000000000000') {
+      if (
+        !tokenInfo ||
+        tokenInfo.tokenAddress === "0x0000000000000000000000000000000000000000"
+      ) {
         setToken(null);
         return;
       }
 
-      let balance = '0';
+      let balance = "0";
       if (userAddress) {
-        balance = await bitfinityEVM.getTokenBalance(tokenInfo.tokenAddress as Address, userAddress);
+        balance = await bitfinityEVM.getTokenBalance(
+          tokenInfo.tokenAddress as Address,
+          userAddress,
+        );
       }
 
       const stockData = getStockBySymbol(symbol);
@@ -71,8 +77,10 @@ export function useBitfinityToken(symbol: string): UseBitfinityTokenReturn {
         stockData,
       });
     } catch (err) {
-      console.error('Error fetching token info:', err);
-      setError(err instanceof Error ? err.message : 'Failed to fetch token info');
+      console.error("Error fetching token info:", err);
+      setError(
+        err instanceof Error ? err.message : "Failed to fetch token info",
+      );
       setToken(null);
     } finally {
       setLoading(false);
@@ -118,11 +126,14 @@ export function useAllBitfinityTokens() {
       for (const address of tokenAddresses) {
         try {
           // Get token info from contract
-          const tokenInfo = await bitfinityEVM.getTokenInfo(''); // We'll need to modify this
+          const tokenInfo = await bitfinityEVM.getTokenInfo(""); // We'll need to modify this
           if (tokenInfo) {
-            let balance = '0';
+            let balance = "0";
             if (userAddress) {
-              balance = await bitfinityEVM.getTokenBalance(address, userAddress);
+              balance = await bitfinityEVM.getTokenBalance(
+                address,
+                userAddress,
+              );
             }
 
             const stockData = getStockBySymbol(tokenInfo.symbol);
@@ -147,8 +158,8 @@ export function useAllBitfinityTokens() {
 
       setTokens(tokenInfos);
     } catch (err) {
-      console.error('Error fetching all tokens:', err);
-      setError(err instanceof Error ? err.message : 'Failed to fetch tokens');
+      console.error("Error fetching all tokens:", err);
+      setError(err instanceof Error ? err.message : "Failed to fetch tokens");
     } finally {
       setLoading(false);
     }
@@ -190,26 +201,32 @@ export function useTokenBalances(symbols: string[]) {
         try {
           const tokenAddress = await bitfinityEVM.getTokenAddress(symbol);
           if (tokenAddress) {
-            const balance = await bitfinityEVM.getTokenBalance(tokenAddress, userAddress);
+            const balance = await bitfinityEVM.getTokenBalance(
+              tokenAddress,
+              userAddress,
+            );
             return { symbol, balance };
           }
-          return { symbol, balance: '0' };
+          return { symbol, balance: "0" };
         } catch (err) {
           console.error(`Error fetching balance for ${symbol}:`, err);
-          return { symbol, balance: '0' };
+          return { symbol, balance: "0" };
         }
       });
 
       const results = await Promise.all(balancePromises);
-      const balanceMap = results.reduce((acc, { symbol, balance }) => {
-        acc[symbol] = balance;
-        return acc;
-      }, {} as Record<string, string>);
+      const balanceMap = results.reduce(
+        (acc, { symbol, balance }) => {
+          acc[symbol] = balance;
+          return acc;
+        },
+        {} as Record<string, string>,
+      );
 
       setBalances(balanceMap);
     } catch (err) {
-      console.error('Error fetching balances:', err);
-      setError(err instanceof Error ? err.message : 'Failed to fetch balances');
+      console.error("Error fetching balances:", err);
+      setError(err instanceof Error ? err.message : "Failed to fetch balances");
     } finally {
       setLoading(false);
     }
@@ -217,7 +234,7 @@ export function useTokenBalances(symbols: string[]) {
 
   useEffect(() => {
     fetchBalances();
-  }, [userAddress, symbols.join(',')]);
+  }, [userAddress, symbols.join(",")]);
 
   return {
     balances,
@@ -234,7 +251,7 @@ export function useTokensBySector(sector: string) {
   const { tokens, loading, error, refetch } = useAllBitfinityTokens();
 
   const sectorTokens = useMemo(() => {
-    return tokens.filter(token => token.stockData?.sector === sector);
+    return tokens.filter((token) => token.stockData?.sector === sector);
   }, [tokens, sector]);
 
   return {
@@ -255,11 +272,12 @@ export function useTokenSearch(query: string) {
     if (!query.trim()) return tokens;
 
     const lowercaseQuery = query.toLowerCase();
-    return tokens.filter(token => 
-      token.symbol.toLowerCase().includes(lowercaseQuery) ||
-      token.name.toLowerCase().includes(lowercaseQuery) ||
-      token.companyName.toLowerCase().includes(lowercaseQuery) ||
-      token.stockData?.sector.toLowerCase().includes(lowercaseQuery)
+    return tokens.filter(
+      (token) =>
+        token.symbol.toLowerCase().includes(lowercaseQuery) ||
+        token.name.toLowerCase().includes(lowercaseQuery) ||
+        token.companyName.toLowerCase().includes(lowercaseQuery) ||
+        token.stockData?.sector.toLowerCase().includes(lowercaseQuery),
     );
   }, [tokens, query]);
 
@@ -276,7 +294,7 @@ export function useTokenSearch(query: string) {
  */
 export function useBitfinityNetwork() {
   const networkConfig = bitfinityEVM.getNetworkConfig();
-  
+
   return {
     network: networkConfig,
     explorerUrl: networkConfig.blockExplorer,

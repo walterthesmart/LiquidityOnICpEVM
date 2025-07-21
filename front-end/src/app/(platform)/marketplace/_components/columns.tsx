@@ -48,7 +48,7 @@ export const columns: ColumnDef<StockData>[] = [
               onError={(e) => {
                 // Fallback to default logo if image fails to load
                 const target = e.target as HTMLImageElement;
-                target.src = '/logo/png/logo-no-background.png';
+                target.src = "/logo/png/logo-no-background.png";
               }}
             />
           </div>
@@ -78,9 +78,7 @@ export const columns: ColumnDef<StockData>[] = [
   {
     accessorKey: "change",
     header: () => {
-      return (
-        <div className="hidden sm:block">Change</div>
-      );
+      return <div className="hidden sm:block">Change</div>;
     },
     cell: ({ row }) => {
       const change = row.original.change;
@@ -89,12 +87,13 @@ export const columns: ColumnDef<StockData>[] = [
 
       return (
         <div
-          className={`hidden sm:flex items-center gap-1 ${isZero
+          className={`hidden sm:flex items-center gap-1 ${
+            isZero
               ? "text-gray-500"
               : isPositive
                 ? "text-green-600"
                 : "text-red-600"
-            }`}
+          }`}
         >
           {isZero ? (
             <CircleMinus className="w-4 h-4 text-inherit" strokeWidth={1.25} />

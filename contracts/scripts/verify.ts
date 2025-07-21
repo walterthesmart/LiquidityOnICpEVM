@@ -143,7 +143,7 @@ async function main() {
     }
     
     // Test a sample transaction (if not on mainnet)
-    if (network.name.includes('testnet') || network.chainId === 31337) {
+    if (network.name.includes('testnet') || network.chainId === BigInt(31337)) {
       console.log("\n🧪 Testing Sample Transaction...");
       
       if (deploymentData.deployedTokens.length > 0) {

@@ -10,11 +10,10 @@ export async function makePaymentRequest(
   try {
     let paystack_secret_key: string = "";
     if (process.env.NODE_ENV === "production") {
-      paystack_secret_key = process.env.LIVE_PAYSTACK_SECRET_KEY
+      paystack_secret_key = process.env.LIVE_PAYSTACK_SECRET_KEY;
     } else {
-      paystack_secret_key = process.env.TEST_PAYSTACK_SECRET_KEY
+      paystack_secret_key = process.env.TEST_PAYSTACK_SECRET_KEY;
     }
-
 
     const response = await axios.post(
       process.env.PAYSTACK_URL,

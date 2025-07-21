@@ -1,4 +1,6 @@
-import { ethers } from "hardhat";
+import hre from "hardhat";
+// @ts-ignore - Hardhat runtime environment extension
+const ethers = hre.ethers;
 import * as fs from "fs";
 import * as path from "path";
 

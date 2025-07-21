@@ -26,7 +26,7 @@ import { store_stock_purchase } from "@/server-actions/buy/stock_holdings";
 import { usePaystack } from "@/hooks/use-paystack";
 import { makePaymentRequest } from "@/server-actions/paystack/makePaymentRequest";
 import { Errors } from "@/constants/errors";
-import {sendTokensToUserBitfinity} from "@/server-actions/contracts/send_token_user";
+import { sendTokensToUserBitfinity } from "@/server-actions/contracts/send_token_user";
 import updateUserStockHoldings from "@/server-actions/stocks/update_stock_holdings";
 import { useEffect } from "react";
 
@@ -128,7 +128,6 @@ export function BuyStocksForm({
         callback: async (response) => {
           toast.success(`Payment complete! Reference:${response.reference}`);
           try {
-
             //store the stock purchase using the reference
             if (!address) {
               toast.warning("Connect your wallet");
@@ -136,7 +135,6 @@ export function BuyStocksForm({
             }
 
             const user_wallet = address;
-
 
             await store_stock_purchase({
               stock_symbol: data.stock_symbol,
@@ -286,8 +284,8 @@ export function BuyStocksForm({
               ₦{" "}
               {quantity
                 ? (entry.price * quantity).toLocaleString("en-NG", {
-                  minimumFractionDigits: 2,
-                })
+                    minimumFractionDigits: 2,
+                  })
                 : 0}
             </span>
           </div>
@@ -297,8 +295,8 @@ export function BuyStocksForm({
               ₦{" "}
               {quantity
                 ? commission.toLocaleString("en-NG", {
-                  minimumFractionDigits: 2,
-                })
+                    minimumFractionDigits: 2,
+                  })
                 : 0}
             </span>
           </div>

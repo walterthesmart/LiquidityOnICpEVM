@@ -1,4 +1,6 @@
-import { ethers } from "hardhat";
+import hre from "hardhat";
+// @ts-ignore - Hardhat runtime environment extension
+const ethers = hre.ethers;
 import { NigerianStockFactory } from "../typechain-types";
 import * as fs from "fs";
 import * as path from "path";
@@ -246,7 +248,7 @@ async function main() {
   
   const [deployer] = await ethers.getSigners();
   console.log("📝 Deploying contracts with account:", deployer.address);
-  
+
   const balance = await ethers.provider.getBalance(deployer.address);
   console.log("💰 Account balance:", ethers.formatEther(balance), "BTF");
 

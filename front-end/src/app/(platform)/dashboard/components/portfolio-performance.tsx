@@ -1,6 +1,12 @@
 "use client";
 import React, { useMemo } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
   LineChart,
@@ -10,7 +16,7 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
-  ReferenceLine
+  ReferenceLine,
 } from "recharts";
 import { PerformanceData, DateRange } from "./types";
 
@@ -27,26 +33,26 @@ export const PortfolioPerformance = ({
   setDateRange,
   performanceData,
   loading,
-  netInvestment
+  netInvestment,
 }: PortfolioPerformanceProps) => {
   // Process data based on date range
   const processedData = useMemo(() => {
     if (!performanceData || performanceData.length === 0) return [];
 
     // Make sure all dates are Date objects
-    const formattedData = performanceData.map(item => ({
+    const formattedData = performanceData.map((item) => ({
       date: item.date instanceof Date ? item.date : new Date(item.date),
       value: Number(item.value),
-      name: item.name
+      name: item.name,
     }));
 
     // Sort data by date
     formattedData.sort((a, b) => a.date.getTime() - b.date.getTime());
 
     // Calculate relative values starting from net investment
-    const relativeData = formattedData.map(item => ({
+    const relativeData = formattedData.map((item) => ({
       ...item,
-      relativeValue: item.value - netInvestment
+      relativeValue: item.value - netInvestment,
     }));
 
     // Filter and format based on date range
@@ -54,16 +60,16 @@ export const PortfolioPerformance = ({
       case "1w": {
         const oneWeekAgo = new Date();
         oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
-        
+
         const weekData = relativeData.filter(
-          item => item.date.getTime() >= oneWeekAgo.getTime()
+          (item) => item.date.getTime() >= oneWeekAgo.getTime(),
         );
 
         // Group by day
         const dayGroups = new Map();
         const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
-        weekData.forEach(item => {
+        weekData.forEach((item) => {
           const dayIdx = item.date.getDay();
           const day = dayNames[dayIdx];
 
@@ -73,12 +79,15 @@ export const PortfolioPerformance = ({
               value: item.value,
               relativeValue: item.relativeValue,
               count: 1,
-              dayIdx: dayIdx
+              dayIdx: dayIdx,
             });
           } else {
             const group = dayGroups.get(day);
-            group.value = (group.value * group.count + item.value) / (group.count + 1);
-            group.relativeValue = (group.relativeValue * group.count + item.relativeValue) / (group.count + 1);
+            group.value =
+              (group.value * group.count + item.value) / (group.count + 1);
+            group.relativeValue =
+              (group.relativeValue * group.count + item.relativeValue) /
+              (group.count + 1);
             group.count += 1;
           }
         });
@@ -91,19 +100,19 @@ export const PortfolioPerformance = ({
             const relPosB = (b.dayIdx - currentDayIdx + 7) % 7;
             return relPosA - relPosB;
           })
-          .map(group => ({
+          .map((group) => ({
             name: group.date,
             value: parseFloat(group.value.toFixed(2)),
-            relativeValue: parseFloat(group.relativeValue.toFixed(2))
+            relativeValue: parseFloat(group.relativeValue.toFixed(2)),
           }));
       }
 
       case "1m": {
         const oneMonthAgo = new Date();
         oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
-        
+
         const monthData = relativeData.filter(
-          item => item.date.getTime() >= oneMonthAgo.getTime()
+          (item) => item.date.getTime() >= oneMonthAgo.getTime(),
         );
 
         // Group by week
@@ -117,17 +126,22 @@ export const PortfolioPerformance = ({
           weekEnd.setDate(now.getDate() - i * 7);
 
           const weekData = monthData.filter(
-            item => item.date.getTime() >= weekStart.getTime() && 
-                   item.date.getTime() < weekEnd.getTime()
+            (item) =>
+              item.date.getTime() >= weekStart.getTime() &&
+              item.date.getTime() < weekEnd.getTime(),
           );
 
           if (weekData.length > 0) {
-            const avgValue = weekData.reduce((sum, item) => sum + item.value, 0) / weekData.length;
-            const avgRelative = weekData.reduce((sum, item) => sum + item.relativeValue, 0) / weekData.length;
+            const avgValue =
+              weekData.reduce((sum, item) => sum + item.value, 0) /
+              weekData.length;
+            const avgRelative =
+              weekData.reduce((sum, item) => sum + item.relativeValue, 0) /
+              weekData.length;
             weeklyData.unshift({
               name: `Week ${i + 1}`,
               value: parseFloat(avgValue.toFixed(2)),
-              relativeValue: parseFloat(avgRelative.toFixed(2))
+              relativeValue: parseFloat(avgRelative.toFixed(2)),
             });
           }
         }
@@ -136,18 +150,19 @@ export const PortfolioPerformance = ({
       }
 
       default:
-        return relativeData.map(item => ({
+        return relativeData.map((item) => ({
           name: item.name || item.date.toLocaleDateString(),
           value: item.value,
-          relativeValue: item.relativeValue
+          relativeValue: item.relativeValue,
         }));
     }
   }, [performanceData, dateRange, netInvestment]);
 
   // Calculate min/max values for Y-axis
-  const values = processedData.map(item => item.value);
+  const values = processedData.map((item) => item.value);
   const minValue = values.length > 0 ? Math.min(...values) * 0.99 : 0;
-  const maxValue = values.length > 0 ? Math.max(...values) * 1.01 : netInvestment * 1.1;
+  const maxValue =
+    values.length > 0 ? Math.max(...values) * 1.01 : netInvestment * 1.1;
 
   return (
     <Card className="mb-8">
@@ -172,14 +187,16 @@ export const PortfolioPerformance = ({
         </div>
       </CardHeader>
       <CardContent>
-        <div className="h-[350px]"> {/* Increased height for better visibility */}
+        <div className="h-[350px]">
+          {" "}
+          {/* Increased height for better visibility */}
           {loading ? (
             <div className="flex items-center justify-center h-full">
               <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary"></div>
             </div>
           ) : processedData.length > 0 ? (
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart 
+              <LineChart
                 data={processedData}
                 margin={{
                   top: 20,
@@ -188,39 +205,42 @@ export const PortfolioPerformance = ({
                   bottom: 20,
                 }}
               >
-                <CartesianGrid 
-                  strokeDasharray="3 3" 
-                  horizontal={true} 
-                  vertical={false} 
+                <CartesianGrid
+                  strokeDasharray="3 3"
+                  horizontal={true}
+                  vertical={false}
                   stroke="#f0f0f0"
                 />
-                <XAxis 
-                  dataKey="name" 
-                  axisLine={{ stroke: '#ccc' }}
-                  tickLine={{ stroke: '#ccc' }}
+                <XAxis
+                  dataKey="name"
+                  axisLine={{ stroke: "#ccc" }}
+                  tickLine={{ stroke: "#ccc" }}
                   tickMargin={10}
                 />
-                <YAxis 
+                <YAxis
                   domain={[minValue, maxValue]}
-                  axisLine={{ stroke: '#ccc' }}
-                  tickLine={{ stroke: '#ccc' }}
+                  axisLine={{ stroke: "#ccc" }}
+                  tickLine={{ stroke: "#ccc" }}
                   tickFormatter={(value) => value.toLocaleString()}
                   tick={{ dx: -10 }}
                   label={{
-                    value: 'KSH',
+                    value: "KSH",
                     angle: -90,
-                    position: 'insideLeft',
+                    position: "insideLeft",
                     offset: 0,
-                    style: { textAnchor: 'middle' }
+                    style: { textAnchor: "middle" },
                   }}
                 />
                 <Tooltip
-                  formatter={(value) => [`KSH ${Number(value).toLocaleString()}`, "Value"]}
+                  formatter={(value) => [
+                    `KSH ${Number(value).toLocaleString()}`,
+                    "Value",
+                  ]}
                   labelFormatter={(label) => `Date: ${label}`}
                   contentStyle={{
-                    backgroundColor: '#fff',
-                    border: '1px solid #ccc',
-                    borderRadius: '4px'
+                    backgroundColor: "#fff",
+                    border: "1px solid #ccc",
+                    borderRadius: "4px",
                   }}
                 />
                 <Line
@@ -231,15 +251,15 @@ export const PortfolioPerformance = ({
                   dot={{ r: 4 }}
                   activeDot={{ r: 6 }}
                 />
-                <ReferenceLine 
-                  y={netInvestment} 
-                  stroke="#82ca9d" 
+                <ReferenceLine
+                  y={netInvestment}
+                  stroke="#82ca9d"
                   label={{
-                    value: 'Net Investment',
-                    position: 'left',
-                    fill: '#82ca9d',
+                    value: "Net Investment",
+                    position: "left",
+                    fill: "#82ca9d",
                     fontSize: 8,
-                    width: 10
+                    width: 10,
                   }}
                 />
               </LineChart>

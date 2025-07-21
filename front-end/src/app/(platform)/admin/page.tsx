@@ -1,22 +1,28 @@
 "use client";
 
-import { useState, useEffect } from 'react';
-import { useAccount } from 'wagmi';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Badge } from '@/components/ui/badge';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+import { useState, useEffect } from "react";
+import { useAccount } from "wagmi";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Badge } from "@/components/ui/badge";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
   Table,
   TableBody,
   TableCell,
   TableHead,
   TableHeader,
-  TableRow
-} from '@/components/ui/table';
+  TableRow,
+} from "@/components/ui/table";
 import {
   Dialog,
   DialogContent,
@@ -24,15 +30,15 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from '@/components/ui/dialog';
+} from "@/components/ui/dialog";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
-import { Switch } from '@/components/ui/switch';
+} from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
 import {
   BarChart3,
   TrendingUp,
@@ -44,10 +50,10 @@ import {
   Play,
   Shield,
   AlertTriangle,
-  XCircle
-} from 'lucide-react';
-import { bitfinityService } from '@/lib/bitfinity-contract-service';
-import { toast } from '@/hooks/use-toast';
+  XCircle,
+} from "lucide-react";
+import { bitfinityService } from "@/lib/bitfinity-contract-service";
+import { toast } from "@/hooks/use-toast";
 import { TokenizeStockForm } from "./_components/tokenize-stock-form";
 
 interface AdminStats {
@@ -76,7 +82,7 @@ export default function AdminDashboard() {
     try {
       setIsAdmin(true); // For demo purposes
     } catch (error) {
-      console.error('Failed to check admin status:', error);
+      console.error("Failed to check admin status:", error);
       setIsAdmin(false);
     }
   };
@@ -92,12 +98,12 @@ export default function AdminDashboard() {
           totalMarketCap: `₦${(Number(factoryStats.totalMarketCap) / 1e12).toFixed(2)}T`,
           activeTokens: Number(factoryStats.totalSymbols),
           totalUsers: 1250,
-          totalVolume: '₦45.2B',
-          totalTransactions: 8934
+          totalVolume: "₦45.2B",
+          totalTransactions: 8934,
         });
       }
     } catch (error) {
-      console.error('Failed to load admin data:', error);
+      console.error("Failed to load admin data:", error);
     } finally {
       setLoading(false);
     }
@@ -154,7 +160,9 @@ export default function AdminDashboard() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Tokens</CardTitle>
+              <CardTitle className="text-sm font-medium">
+                Total Tokens
+              </CardTitle>
               <BarChart3 className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
@@ -166,14 +174,14 @@ export default function AdminDashboard() {
           </Card>
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Market Cap</CardTitle>
+              <CardTitle className="text-sm font-medium">
+                Total Market Cap
+              </CardTitle>
               <DollarSign className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{stats.totalMarketCap}</div>
-              <p className="text-xs text-muted-foreground">
-                Across all tokens
-              </p>
+              <p className="text-xs text-muted-foreground">Across all tokens</p>
             </CardContent>
           </Card>
           <Card>
@@ -183,9 +191,7 @@ export default function AdminDashboard() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{stats.totalUsers}</div>
-              <p className="text-xs text-muted-foreground">
-                Active traders
-              </p>
+              <p className="text-xs text-muted-foreground">Active traders</p>
             </CardContent>
           </Card>
           <Card>
@@ -237,9 +243,7 @@ export default function AdminDashboard() {
           <Card>
             <CardHeader>
               <CardTitle>System Settings</CardTitle>
-              <CardDescription>
-                Configure system-wide settings
-              </CardDescription>
+              <CardDescription>Configure system-wide settings</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-6">

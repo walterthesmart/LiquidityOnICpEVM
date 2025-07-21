@@ -59,9 +59,11 @@ export async function getInitialInvestment(
       PaymentStatus.PAID,
     );
     let totalInvestment = 0;
-    const sharesHeld: {[symbol: string]: number} = {};
-    const currentHoldings = await database.getStocksOwnedByUser(args.user_address);
-    
+    const sharesHeld: { [symbol: string]: number } = {};
+    const currentHoldings = await database.getStocksOwnedByUser(
+      args.user_address,
+    );
+
     // Initialize sharesHeld with current holdings
     if (currentHoldings) {
       for (const stock of currentHoldings.stocks) {
@@ -72,7 +74,7 @@ export async function getInitialInvestment(
     // Process transactions in reverse order (newest first)
     for (let i = transactions.length - 1; i >= 0; i--) {
       const trans = transactions[i];
-      
+
       if (args.date && trans.purchase_date > args.date) {
         continue;
       }
@@ -81,14 +83,16 @@ export async function getInitialInvestment(
         // Only count this buy if we still hold some of these shares
         const sharesStillHeld = sharesHeld[trans.stock_symbol] || 0;
         const sharesToCount = Math.min(sharesStillHeld, trans.amount_shares);
-        
+
         if (sharesToCount > 0) {
-          totalInvestment += sharesToCount * (trans.buy_price / trans.amount_shares);
+          totalInvestment +=
+            sharesToCount * (trans.buy_price / trans.amount_shares);
           sharesHeld[trans.stock_symbol] = sharesStillHeld - sharesToCount;
         }
       } else if (trans.transaction_type === "sell") {
         // For sells, add back the shares (since we're processing in reverse)
-        sharesHeld[trans.stock_symbol] = (sharesHeld[trans.stock_symbol] || 0) + trans.amount_shares;
+        sharesHeld[trans.stock_symbol] =
+          (sharesHeld[trans.stock_symbol] || 0) + trans.amount_shares;
       }
     }
 
@@ -157,7 +161,10 @@ export async function getStockHoldings(
     const stockHoldings: StockHoldings[] = [];
     const ownedStocks = await database.getStocksOwnedByUser(user_address);
     const stockPrices = await getStockPrices();
-    const transactions = await database.getStockPurchases(user_address, PaymentStatus.PAID);
+    const transactions = await database.getStockPurchases(
+      user_address,
+      PaymentStatus.PAID,
+    );
 
     if (ownedStocks) {
       for (const stock of ownedStocks.stocks) {
@@ -169,39 +176,49 @@ export async function getStockHoldings(
 
         // Get all buy transactions for this stock, sorted by date (newest first)
         const buyTransactions = transactions
-          .filter(t => t.stock_symbol === stock.symbol && t.transaction_type === "buy")
-          .sort((a, b) => b.purchase_date.getTime() - a.purchase_date.getTime());
+          .filter(
+            (t) =>
+              t.stock_symbol === stock.symbol && t.transaction_type === "buy",
+          )
+          .sort(
+            (a, b) => b.purchase_date.getTime() - a.purchase_date.getTime(),
+          );
 
         // Calculate remaining shares and track their purchase prices
         let remainingShares = stock.number_stocks;
-        const purchaseLots: {pricePerShare: number, shares: number}[] = [];
-        
+        const purchaseLots: { pricePerShare: number; shares: number }[] = [];
+
         for (const trans of buyTransactions) {
           if (remainingShares <= 0) break;
-          
-          const sharesFromThisPurchase = Math.min(remainingShares, trans.amount_shares);
+
+          const sharesFromThisPurchase = Math.min(
+            remainingShares,
+            trans.amount_shares,
+          );
           purchaseLots.push({
             pricePerShare: trans.buy_price / trans.amount_shares, // Actual price paid per share
-            shares: sharesFromThisPurchase
+            shares: sharesFromThisPurchase,
           });
           remainingShares -= sharesFromThisPurchase;
         }
 
         // Calculate total invested using actual purchase prices
         let totalInvested = 0;
-        purchaseLots.forEach(lot => {
+        purchaseLots.forEach((lot) => {
           totalInvested += lot.pricePerShare * lot.shares;
         });
 
         // Use the price from the first purchase that contributed shares
-        const actualBuyPricePerShare = purchaseLots.length > 0 
-          ? purchaseLots[0].pricePerShare 
-          : 0;
+        const actualBuyPricePerShare =
+          purchaseLots.length > 0 ? purchaseLots[0].pricePerShare : 0;
 
         // Calculate profit/loss based on actual purchase price
-        const profit = actualBuyPricePerShare > 0 
-          ? ((currentPrice - actualBuyPricePerShare) / actualBuyPricePerShare) * 100 
-          : 0;
+        const profit =
+          actualBuyPricePerShare > 0
+            ? ((currentPrice - actualBuyPricePerShare) /
+                actualBuyPricePerShare) *
+              100
+            : 0;
 
         if (stock.number_stocks > 0) {
           stockHoldings.push({

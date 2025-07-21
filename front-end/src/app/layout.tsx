@@ -22,7 +22,7 @@ export const metadata: Metadata = {
   },
   description: siteConfig.description,
   viewport: {
-    width: 'device-width',
+    width: "device-width",
     initialScale: 1,
     maximumScale: 1,
   },

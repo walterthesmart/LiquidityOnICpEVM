@@ -30,7 +30,7 @@ export function PlatformSidebar() {
       label: "Dashboard",
       href: "/dashboard",
       icon: <IconBrandTabler className=" h-5 w-5 shrink-0" />,
-    },  
+    },
     // {
     //   label: "Settings",
     //   href: "/settings",

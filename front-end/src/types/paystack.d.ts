@@ -28,4 +28,4 @@ declare namespace Paystack {
   }
 }
 
-declare global { }
+declare global {}

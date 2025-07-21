@@ -25,7 +25,7 @@ import {
 import { IconSwitch, IconFlagBitcoin } from "@tabler/icons-react";
 import { useState } from "react";
 import { bitfinityService } from "@/lib/bitfinity-contract-service";
-import { useAccount } from 'wagmi';
+import { useAccount } from "wagmi";
 import { Spinner } from "@/components/ui/spinner";
 
 // Define the form schema with Zod for Bitfinity EVM
@@ -43,9 +43,7 @@ const stockFormSchema = z.object({
     .string()
     .min(2, "Company name must be at least 2 characters")
     .max(200, "Company name must be 200 characters or less"),
-  sector: z
-    .string()
-    .min(1, "Sector is required"),
+  sector: z.string().min(1, "Sector is required"),
   totalShares: z
     .string()
     .transform((val) => parseInt(val))
@@ -108,13 +106,15 @@ export const TokenizeStockForm = () => {
         totalShares: BigInt(data.totalShares),
         marketCap: BigInt(data.marketCap),
         isActive: true,
-        lastUpdated: BigInt(Math.floor(Date.now() / 1000))
+        lastUpdated: BigInt(Math.floor(Date.now() / 1000)),
       };
 
       // Note: In a real implementation, you would call the factory contract
       // to deploy the new token. For now, we'll show a success message.
 
-      toast.success(`Stock token ${data.symbol} deployment initiated on Bitfinity EVM!`);
+      toast.success(
+        `Stock token ${data.symbol} deployment initiated on Bitfinity EVM!`,
+      );
       form.reset();
     } catch (error) {
       console.error("Error tokenizing stock:", error);
@@ -128,13 +128,16 @@ export const TokenizeStockForm = () => {
     <div className="container mx-auto max-w-3xl px-4 py-2 justify-self-center">
       <div className="mb-4 flex items-center gap-2">
         <IconFlagBitcoin className="h-6 w-6 text-primary" />
-        <h1 className="text-2xl font-bold">Stock Tokenization on Bitfinity EVM</h1>
+        <h1 className="text-2xl font-bold">
+          Stock Tokenization on Bitfinity EVM
+        </h1>
       </div>
       <Card className="shadow-sm">
         <CardHeader>
           <CardTitle>Deploy New Stock Token</CardTitle>
           <CardDescription>
-            Deploy a new Nigerian stock token on Bitfinity EVM by filling out the details below.
+            Deploy a new Nigerian stock token on Bitfinity EVM by filling out
+            the details below.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -201,7 +204,8 @@ export const TokenizeStockForm = () => {
                       <Input placeholder="Industrial Goods" {...field} />
                     </FormControl>
                     <FormDescription>
-                      Enter the business sector (e.g., Banking, Oil & Gas, Consumer Goods)
+                      Enter the business sector (e.g., Banking, Oil & Gas,
+                      Consumer Goods)
                     </FormDescription>
                     <FormMessage />
                   </FormItem>
@@ -257,27 +261,32 @@ export const TokenizeStockForm = () => {
                   <FormItem>
                     <FormLabel>Initial Token Supply</FormLabel>
                     <FormControl>
-                      <Input
-                        type="number"
-                        placeholder="1000000"
-                        {...field}
-                      />
+                      <Input type="number" placeholder="1000000" {...field} />
                     </FormControl>
                     <FormDescription>
-                      Initial supply of tokens to mint (will be sent to admin address)
+                      Initial supply of tokens to mint (will be sent to admin
+                      address)
                     </FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
               />
 
-              <Button type="submit" className="w-full font-semibold md:w-auto" disabled={!isConnected}>
+              <Button
+                type="submit"
+                className="w-full font-semibold md:w-auto"
+                disabled={!isConnected}
+              >
                 {isSubmitting ? (
                   <Spinner className="mr-1 h-4 w-4 text-white" />
                 ) : (
                   <IconFlagBitcoin className="mr-1 h-4 w-4" strokeWidth={2} />
                 )}
-                {isSubmitting ? "Deploying Token..." : isConnected ? "Deploy Stock Token" : "Connect Wallet First"}
+                {isSubmitting
+                  ? "Deploying Token..."
+                  : isConnected
+                    ? "Deploy Stock Token"
+                    : "Connect Wallet First"}
               </Button>
             </form>
           </Form>

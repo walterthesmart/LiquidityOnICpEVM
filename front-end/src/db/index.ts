@@ -7,15 +7,13 @@
  */
 
 // Import Turso database operations
-import tursoDatabase from './turso-operations';
+import tursoDatabase from "./turso-operations";
 
 // Re-export the database instance as default
 export default tursoDatabase;
 
 // Re-export types for compatibility
-export type {
-  GetStocksArgs
-} from './turso-operations';
+export type { GetStocksArgs } from "./turso-operations";
 
 export type {
   STOCKS,
@@ -23,5 +21,5 @@ export type {
   STOCKPRICESV2,
   STOCKPURCHASES,
   USERSTOCKS,
-  userstock
-} from './schema';
+  userstock,
+} from "./schema";

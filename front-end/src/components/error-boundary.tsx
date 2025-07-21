@@ -1,10 +1,10 @@
 "use client";
 
-import React, { Component, ErrorInfo, ReactNode } from 'react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { AlertTriangle, RefreshCw } from 'lucide-react';
-import { logError } from '@/lib/utils';
+import React, { Component, ErrorInfo, ReactNode } from "react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { AlertTriangle, RefreshCw } from "lucide-react";
+import { logError } from "@/lib/utils";
 
 interface Props {
   children: ReactNode;
@@ -29,7 +29,7 @@ export class ErrorBoundary extends Component<Props, State> {
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    logError('ErrorBoundary', error, {
+    logError("ErrorBoundary", error, {
       componentStack: errorInfo.componentStack,
       errorBoundary: this.constructor.name,
     });
@@ -61,31 +61,37 @@ export class ErrorBoundary extends Component<Props, State> {
           </CardHeader>
           <CardContent className="space-y-4">
             <p className="text-gray-600">
-              An unexpected error occurred. This might be due to a network issue or a temporary problem.
+              An unexpected error occurred. This might be due to a network issue
+              or a temporary problem.
             </p>
-            
-            {process.env.NODE_ENV === 'development' && this.state.error && (
+
+            {process.env.NODE_ENV === "development" && this.state.error && (
               <details className="bg-gray-50 p-4 rounded-md">
-                <summary className="cursor-pointer font-medium">Error Details (Development)</summary>
+                <summary className="cursor-pointer font-medium">
+                  Error Details (Development)
+                </summary>
                 <pre className="mt-2 text-sm text-red-600 whitespace-pre-wrap">
                   {this.state.error.message}
                   {this.state.error.stack && (
                     <>
-                      {'\n\nStack Trace:\n'}
+                      {"\n\nStack Trace:\n"}
                       {this.state.error.stack}
                     </>
                   )}
                 </pre>
               </details>
             )}
-            
+
             <div className="flex gap-2">
-              <Button onClick={this.handleRetry} className="flex items-center gap-2">
+              <Button
+                onClick={this.handleRetry}
+                className="flex items-center gap-2"
+              >
                 <RefreshCw className="h-4 w-4" />
                 Try Again
               </Button>
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 onClick={() => window.location.reload()}
               >
                 Reload Page
@@ -103,7 +109,7 @@ export class ErrorBoundary extends Component<Props, State> {
 // Hook version for functional components
 export function useErrorHandler() {
   return (error: Error, errorInfo?: Record<string, unknown>) => {
-    logError('useErrorHandler', error, errorInfo);
+    logError("useErrorHandler", error, errorInfo);
   };
 }
 
@@ -112,9 +118,12 @@ export function NetworkErrorBoundary({ children }: { children: ReactNode }) {
   return (
     <ErrorBoundary
       onError={(error) => {
-        if (error.message.includes('fetch') || error.message.includes('network')) {
-          logError('NetworkErrorBoundary', error, {
-            type: 'network_error',
+        if (
+          error.message.includes("fetch") ||
+          error.message.includes("network")
+        ) {
+          logError("NetworkErrorBoundary", error, {
+            type: "network_error",
             isOnline: navigator.onLine,
           });
         }
@@ -129,7 +138,8 @@ export function NetworkErrorBoundary({ children }: { children: ReactNode }) {
           </CardHeader>
           <CardContent className="space-y-4">
             <p className="text-gray-600">
-              Unable to connect to the server. Please check your internet connection and try again.
+              Unable to connect to the server. Please check your internet
+              connection and try again.
             </p>
             <div className="flex gap-2">
               <Button onClick={() => window.location.reload()}>

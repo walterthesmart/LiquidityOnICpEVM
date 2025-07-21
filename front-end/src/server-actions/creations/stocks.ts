@@ -1,23 +1,27 @@
 "use server";
 import { Errors, MyError } from "@/constants/errors";
 import { Chains } from "@/constants/status";
-import smartContract from "@/contract";
+// Legacy contract import removed - migrated to Bitfinity EVM
 import database from "@/db";
 import { CreateStockTokenArgs } from "@/types/stocks";
 
 export async function createStockOnHedera(args: CreateStockTokenArgs) {
   try {
     //Check if the stock with the symbol exists
-    const stockExists = await database.checkIfStockExists(args.symbol, Chains.HEDERA);
+    const stockExists = await database.checkIfStockExists(
+      args.symbol,
+      Chains.HEDERA,
+    );
     if (stockExists) {
       return;
     }
 
-    //Call the function to create the token onchain
-    const tokenId = await smartContract.createStockOnHedera({
-      assetName: args.name,
-      supply: args.totalShares
-    });
+    //TODO: Migrate to Bitfinity EVM contract deployment
+    // This function needs to be updated to use the new Bitfinity contract service
+    console.log("Legacy Hedera function called:", args);
+    throw new MyError("Stock creation has been migrated to Bitfinity EVM. Please use the admin panel.");
+
+    const tokenId = "MIGRATED_TO_BITFINITY";
 
     //Save the stock token to the database
     await database.createStockInDB({
@@ -29,7 +33,7 @@ export async function createStockOnHedera(args: CreateStockTokenArgs) {
       exchange: "NGX",
       sector: "Technology",
       isActive: true,
-      lastUpdated: new Date()
+      lastUpdated: new Date(),
     });
   } catch (err) {
     console.log("Error creating stock", err);

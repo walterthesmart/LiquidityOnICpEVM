@@ -20,41 +20,42 @@ interface PaymentTransactionData {
 }
 
 // Paystack API configuration
-const PAYSTACK_BASE_URL = process.env.PAYSTACK_URL || 'https://api.paystack.co';
-const PAYSTACK_SECRET_KEY = process.env.NODE_ENV === 'production' 
-  ? process.env.LIVE_PAYSTACK_SECRET_KEY 
-  : process.env.TEST_PAYSTACK_SECRET_KEY;
+const PAYSTACK_BASE_URL = process.env.PAYSTACK_URL || "https://api.paystack.co";
+const PAYSTACK_SECRET_KEY =
+  process.env.NODE_ENV === "production"
+    ? process.env.LIVE_PAYSTACK_SECRET_KEY
+    : process.env.TEST_PAYSTACK_SECRET_KEY;
 
 // Nigerian payment methods
-export type NigerianPaymentMethod = 
-  | 'card' 
-  | 'bank_transfer' 
-  | 'ussd' 
-  | 'mobile_money'
-  | 'qr'
-  | 'bank';
+export type NigerianPaymentMethod =
+  | "card"
+  | "bank_transfer"
+  | "ussd"
+  | "mobile_money"
+  | "qr"
+  | "bank";
 
 // Payment status types
-export type PaymentStatus = 
-  | 'pending' 
-  | 'processing' 
-  | 'success' 
-  | 'failed' 
-  | 'cancelled'
-  | 'abandoned';
+export type PaymentStatus =
+  | "pending"
+  | "processing"
+  | "success"
+  | "failed"
+  | "cancelled"
+  | "abandoned";
 
 // Paystack transaction interface
 export interface PaystackTransaction {
   reference: string;
   amount: number; // in kobo (1 NGN = 100 kobo)
-  currency: 'NGN';
+  currency: "NGN";
   email: string;
   callback_url?: string;
   metadata?: {
     stock_symbol: string;
     shares_amount: number;
     user_wallet: string;
-    transaction_type: 'buy' | 'sell';
+    transaction_type: "buy" | "sell";
   };
   channels?: NigerianPaymentMethod[];
 }
@@ -78,53 +79,56 @@ export interface PaymentResponse {
 
 // Nigerian banks for bank transfer
 export const NIGERIAN_BANKS = [
-  { code: '044', name: 'Access Bank' },
-  { code: '014', name: 'Afribank Nigeria Plc' },
-  { code: '023', name: 'Citibank Nigeria Limited' },
-  { code: '050', name: 'Ecobank Nigeria Plc' },
-  { code: '011', name: 'First Bank of Nigeria Limited' },
-  { code: '214', name: 'First City Monument Bank Plc' },
-  { code: '070', name: 'Fidelity Bank Plc' },
-  { code: '058', name: 'Guaranty Trust Bank Plc' },
-  { code: '030', name: 'Heritage Banking Company Ltd' },
-  { code: '082', name: 'Keystone Bank Limited' },
-  { code: '076', name: 'Polaris Bank Limited' },
-  { code: '221', name: 'Stanbic IBTC Bank Plc' },
-  { code: '068', name: 'Standard Chartered Bank Nigeria Ltd' },
-  { code: '232', name: 'Sterling Bank Plc' },
-  { code: '033', name: 'United Bank For Africa Plc' },
-  { code: '032', name: 'Union Bank of Nigeria Plc' },
-  { code: '035', name: 'Wema Bank Plc' },
-  { code: '057', name: 'Zenith Bank Plc' }
+  { code: "044", name: "Access Bank" },
+  { code: "014", name: "Afribank Nigeria Plc" },
+  { code: "023", name: "Citibank Nigeria Limited" },
+  { code: "050", name: "Ecobank Nigeria Plc" },
+  { code: "011", name: "First Bank of Nigeria Limited" },
+  { code: "214", name: "First City Monument Bank Plc" },
+  { code: "070", name: "Fidelity Bank Plc" },
+  { code: "058", name: "Guaranty Trust Bank Plc" },
+  { code: "030", name: "Heritage Banking Company Ltd" },
+  { code: "082", name: "Keystone Bank Limited" },
+  { code: "076", name: "Polaris Bank Limited" },
+  { code: "221", name: "Stanbic IBTC Bank Plc" },
+  { code: "068", name: "Standard Chartered Bank Nigeria Ltd" },
+  { code: "232", name: "Sterling Bank Plc" },
+  { code: "033", name: "United Bank For Africa Plc" },
+  { code: "032", name: "Union Bank of Nigeria Plc" },
+  { code: "035", name: "Wema Bank Plc" },
+  { code: "057", name: "Zenith Bank Plc" },
 ];
 
 /**
  * Initialize a payment transaction with Paystack
  */
 export async function initializePayment(
-  transaction: PaystackTransaction
+  transaction: PaystackTransaction,
 ): Promise<PaymentResponse> {
   try {
-    const response = await fetch(`${PAYSTACK_BASE_URL}/transaction/initialize`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${PAYSTACK_SECRET_KEY}`,
-        'Content-Type': 'application/json',
+    const response = await fetch(
+      `${PAYSTACK_BASE_URL}/transaction/initialize`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${PAYSTACK_SECRET_KEY}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(transaction),
       },
-      body: JSON.stringify(transaction),
-    });
+    );
 
     const data = await response.json();
 
     if (data.status) {
       return {
         success: true,
-        message: 'Payment initialized successfully',
+        message: "Payment initialized successfully",
         data: {
           authorization_url: data.data.authorization_url,
           access_code: data.data.access_code,
           reference: data.data.reference,
-          status: 'pending',
+          status: "pending",
           amount: transaction.amount,
           currency: transaction.currency,
           transaction_date: new Date(),
@@ -133,16 +137,16 @@ export async function initializePayment(
     } else {
       return {
         success: false,
-        message: data.message || 'Payment initialization failed',
+        message: data.message || "Payment initialization failed",
         error: data.message,
       };
     }
   } catch (error) {
-    console.error('Payment initialization error:', error);
+    console.error("Payment initialization error:", error);
     return {
       success: false,
-      message: 'Network error during payment initialization',
-      error: error instanceof Error ? error.message : 'Unknown error',
+      message: "Network error during payment initialization",
+      error: error instanceof Error ? error.message : "Unknown error",
     };
   }
 }
@@ -150,15 +154,20 @@ export async function initializePayment(
 /**
  * Verify a payment transaction with Paystack
  */
-export async function verifyPayment(reference: string): Promise<PaymentResponse> {
+export async function verifyPayment(
+  reference: string,
+): Promise<PaymentResponse> {
   try {
-    const response = await fetch(`${PAYSTACK_BASE_URL}/transaction/verify/${reference}`, {
-      method: 'GET',
-      headers: {
-        'Authorization': `Bearer ${PAYSTACK_SECRET_KEY}`,
-        'Content-Type': 'application/json',
+    const response = await fetch(
+      `${PAYSTACK_BASE_URL}/transaction/verify/${reference}`,
+      {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${PAYSTACK_SECRET_KEY}`,
+          "Content-Type": "application/json",
+        },
       },
-    });
+    );
 
     const data = await response.json();
 
@@ -166,7 +175,7 @@ export async function verifyPayment(reference: string): Promise<PaymentResponse>
       const transaction = data.data;
       return {
         success: true,
-        message: 'Payment verification successful',
+        message: "Payment verification successful",
         data: {
           reference: transaction.reference,
           status: transaction.status as PaymentStatus,
@@ -179,16 +188,16 @@ export async function verifyPayment(reference: string): Promise<PaymentResponse>
     } else {
       return {
         success: false,
-        message: data.message || 'Payment verification failed',
+        message: data.message || "Payment verification failed",
         error: data.message,
       };
     }
   } catch (error) {
-    console.error('Payment verification error:', error);
+    console.error("Payment verification error:", error);
     return {
       success: false,
-      message: 'Network error during payment verification',
-      error: error instanceof Error ? error.message : 'Unknown error',
+      message: "Network error during payment verification",
+      error: error instanceof Error ? error.message : "Unknown error",
     };
   }
 }
@@ -202,23 +211,23 @@ export async function createStockPurchasePayment(
   stockSymbol: string,
   sharesAmount: number,
   totalAmountNGN: number,
-  callbackUrl?: string
+  callbackUrl?: string,
 ): Promise<PaymentResponse> {
   const reference = `stock_${stockSymbol}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-  
+
   const transaction: PaystackTransaction = {
     reference,
     amount: Math.round(totalAmountNGN * 100), // Convert to kobo
-    currency: 'NGN',
+    currency: "NGN",
     email: userEmail,
     callback_url: callbackUrl,
     metadata: {
       stock_symbol: stockSymbol,
       shares_amount: sharesAmount,
       user_wallet: userWallet,
-      transaction_type: 'buy',
+      transaction_type: "buy",
     },
-    channels: ['card', 'bank', 'ussd', 'qr', 'mobile_money'],
+    channels: ["card", "bank", "ussd", "qr", "mobile_money"],
   };
 
   return await initializePayment(transaction);
@@ -236,44 +245,47 @@ export async function processStockSalePayment(
   },
   stockSymbol: string,
   sharesAmount: number,
-  totalAmountNGN: number
+  totalAmountNGN: number,
 ): Promise<PaymentResponse> {
   try {
     // Create a transfer recipient
-    const recipientResponse = await fetch(`${PAYSTACK_BASE_URL}/transferrecipient`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${PAYSTACK_SECRET_KEY}`,
-        'Content-Type': 'application/json',
+    const recipientResponse = await fetch(
+      `${PAYSTACK_BASE_URL}/transferrecipient`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${PAYSTACK_SECRET_KEY}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          type: "nuban",
+          name: userBankAccount.account_name,
+          account_number: userBankAccount.account_number,
+          bank_code: userBankAccount.bank_code,
+          currency: "NGN",
+        }),
       },
-      body: JSON.stringify({
-        type: 'nuban',
-        name: userBankAccount.account_name,
-        account_number: userBankAccount.account_number,
-        bank_code: userBankAccount.bank_code,
-        currency: 'NGN',
-      }),
-    });
+    );
 
     const recipientData = await recipientResponse.json();
 
     if (!recipientData.status) {
       return {
         success: false,
-        message: 'Failed to create transfer recipient',
+        message: "Failed to create transfer recipient",
         error: recipientData.message,
       };
     }
 
     // Initiate transfer
     const transferResponse = await fetch(`${PAYSTACK_BASE_URL}/transfer`, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Authorization': `Bearer ${PAYSTACK_SECRET_KEY}`,
-        'Content-Type': 'application/json',
+        Authorization: `Bearer ${PAYSTACK_SECRET_KEY}`,
+        "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        source: 'balance',
+        source: "balance",
         amount: Math.round(totalAmountNGN * 100), // Convert to kobo
         recipient: recipientData.data.recipient_code,
         reason: `Stock sale: ${sharesAmount} shares of ${stockSymbol}`,
@@ -286,28 +298,28 @@ export async function processStockSalePayment(
     if (transferData.status) {
       return {
         success: true,
-        message: 'Transfer initiated successfully',
+        message: "Transfer initiated successfully",
         data: {
           reference: transferData.data.reference,
-          status: 'processing',
+          status: "processing",
           amount: totalAmountNGN * 100,
-          currency: 'NGN',
+          currency: "NGN",
           transaction_date: new Date(),
         },
       };
     } else {
       return {
         success: false,
-        message: transferData.message || 'Transfer failed',
+        message: transferData.message || "Transfer failed",
         error: transferData.message,
       };
     }
   } catch (error) {
-    console.error('Stock sale payment error:', error);
+    console.error("Stock sale payment error:", error);
     return {
       success: false,
-      message: 'Network error during stock sale payment',
-      error: error instanceof Error ? error.message : 'Unknown error',
+      message: "Network error during stock sale payment",
+      error: error instanceof Error ? error.message : "Unknown error",
     };
   }
 }
@@ -315,13 +327,15 @@ export async function processStockSalePayment(
 /**
  * Get list of Nigerian banks for bank transfer
  */
-export async function getNigerianBanks(): Promise<Array<{ code: string; name: string }>> {
+export async function getNigerianBanks(): Promise<
+  Array<{ code: string; name: string }>
+> {
   try {
     const response = await fetch(`${PAYSTACK_BASE_URL}/bank`, {
-      method: 'GET',
+      method: "GET",
       headers: {
-        'Authorization': `Bearer ${PAYSTACK_SECRET_KEY}`,
-        'Content-Type': 'application/json',
+        Authorization: `Bearer ${PAYSTACK_SECRET_KEY}`,
+        "Content-Type": "application/json",
       },
     });
 
@@ -329,7 +343,7 @@ export async function getNigerianBanks(): Promise<Array<{ code: string; name: st
 
     if (data.status && data.data) {
       return data.data
-        .filter((bank: { country: string }) => bank.country === 'Nigeria')
+        .filter((bank: { country: string }) => bank.country === "Nigeria")
         .map((bank: { code: string; name: string }) => ({
           code: bank.code,
           name: bank.name,
@@ -339,7 +353,7 @@ export async function getNigerianBanks(): Promise<Array<{ code: string; name: st
       return NIGERIAN_BANKS;
     }
   } catch (error) {
-    console.error('Error fetching banks:', error);
+    console.error("Error fetching banks:", error);
     return NIGERIAN_BANKS;
   }
 }
@@ -349,18 +363,18 @@ export async function getNigerianBanks(): Promise<Array<{ code: string; name: st
  */
 export async function validateBankAccount(
   accountNumber: string,
-  bankCode: string
+  bankCode: string,
 ): Promise<{ valid: boolean; accountName?: string; error?: string }> {
   try {
     const response = await fetch(
       `${PAYSTACK_BASE_URL}/bank/resolve?account_number=${accountNumber}&bank_code=${bankCode}`,
       {
-        method: 'GET',
+        method: "GET",
         headers: {
-          'Authorization': `Bearer ${PAYSTACK_SECRET_KEY}`,
-          'Content-Type': 'application/json',
+          Authorization: `Bearer ${PAYSTACK_SECRET_KEY}`,
+          "Content-Type": "application/json",
         },
-      }
+      },
     );
 
     const data = await response.json();
@@ -373,14 +387,14 @@ export async function validateBankAccount(
     } else {
       return {
         valid: false,
-        error: data.message || 'Invalid account details',
+        error: data.message || "Invalid account details",
       };
     }
   } catch (error) {
-    console.error('Bank account validation error:', error);
+    console.error("Bank account validation error:", error);
     return {
       valid: false,
-      error: 'Network error during validation',
+      error: "Network error during validation",
     };
   }
 }
@@ -389,9 +403,9 @@ export async function validateBankAccount(
  * Format Nigerian Naira amount
  */
 export function formatNGN(amount: number): string {
-  return new Intl.NumberFormat('en-NG', {
-    style: 'currency',
-    currency: 'NGN',
+  return new Intl.NumberFormat("en-NG", {
+    style: "currency",
+    currency: "NGN",
     minimumFractionDigits: 2,
   }).format(amount);
 }
@@ -413,7 +427,7 @@ export function nairaToKobo(naira: number): number {
 /**
  * Generate payment reference
  */
-export function generatePaymentReference(prefix: string = 'Liquidity'): string {
+export function generatePaymentReference(prefix: string = "Liquidity"): string {
   const timestamp = Date.now();
   const random = Math.random().toString(36).substr(2, 9);
   return `${prefix}_${timestamp}_${random}`;
@@ -423,15 +437,15 @@ export function generatePaymentReference(prefix: string = 'Liquidity'): string {
  * Save payment transaction to database
  */
 export async function savePaymentTransaction(
-  paymentData: PaymentTransactionData
+  paymentData: PaymentTransactionData,
 ): Promise<boolean> {
   try {
     // This would typically use your database connection
     // For now, it's a placeholder that should be implemented
-    console.log('Saving payment transaction:', paymentData);
+    console.log("Saving payment transaction:", paymentData);
     return true;
   } catch (error) {
-    console.error('Error saving payment transaction:', error);
+    console.error("Error saving payment transaction:", error);
     return false;
   }
 }

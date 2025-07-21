@@ -15,7 +15,6 @@ import { ArrowRight } from "lucide-react";
 import Link from "next/link";
 
 export function FeaturesSection() {
-
   return (
     <section className="z-20 pt-16 pb-12 md:pt-28 md:pb-20 px-8">
       <motion.div

@@ -76,8 +76,8 @@ export function StockChart({ timeframe, chartdata }: StockChartProps) {
             else if (
               sampled.length > 0 &&
               last24HoursData[i].time.getTime() -
-              sampled[sampled.length - 1].time.getTime() >
-              3600000
+                sampled[sampled.length - 1].time.getTime() >
+                3600000
             ) {
               sampled.push(last24HoursData[i]);
             }

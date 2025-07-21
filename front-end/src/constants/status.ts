@@ -1,10 +1,10 @@
 export enum PaymentStatus {
-    PENDING = "Pending",
-    PAID = "Paid",
-    FAILED = "Failed"
+  PENDING = "Pending",
+  PAID = "Paid",
+  FAILED = "Failed",
 }
 
 export enum Chains {
-    HEDERA = "hedera",
-    AVALANCHE = "avalanche"
+  HEDERA = "hedera",
+  AVALANCHE = "avalanche",
 }

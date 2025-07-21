@@ -3,7 +3,7 @@ export interface StockData {
   symbol: string;
   name: string;
   price: number;
-  tokenID: string
+  tokenID: string;
   change: number;
   chain: string;
 }
