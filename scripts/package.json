@@ -15,7 +15,9 @@
     "test": "node test-minting.js",
     "test:integration": "node test-integration.js",
     "test:integration:full": "node test-integration.js --full-test",
-    "test:sepolia": "node test-integration.js --network sepolia"
+    "test:sepolia": "node test-integration.js --network sepolia",
+    "test:frontend": "node test-frontend-integration.js",
+    "test:frontend:verbose": "node test-frontend-integration.js --verbose"
   },
   "keywords": [
     "bitfinity",

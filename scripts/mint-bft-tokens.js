@@ -43,7 +43,7 @@ const NETWORKS = {
   // Ethereum Networks
   sepolia: {
     name: 'Ethereum Sepolia Testnet',
-    rpcUrl: 'https://sepolia.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161',
+    rpcUrl: 'https://ethereum-sepolia-rpc.publicnode.com',
     chainId: 11155111,
     explorer: 'https://sepolia.etherscan.io',
     currency: 'ETH',

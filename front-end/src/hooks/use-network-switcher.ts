@@ -8,14 +8,18 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useAccount, useChainId, useSwitchChain } from "wagmi";
-import { 
-  SUPPORTED_NETWORKS, 
-  getNetworkByChainId, 
+import {
+  getNetworkByChainId,
   getContractAddresses,
   isTestnet,
   formatNetworkName,
   getSupportedChainIds
 } from "@/lib/bitfinity-config";
+import {
+  getFactoryAddress,
+  getTokenAddress,
+  getAvailableTokens,
+} from "@/abis";
 import { toast } from "@/hooks/use-toast";
 
 export interface NetworkInfo {
@@ -213,13 +217,14 @@ export function useNetworkContracts() {
   const chainId = useChainId();
   
   const contractAddresses = getContractAddresses(chainId);
-  const hasContracts = !!contractAddresses?.factoryAddress;
-  
+  const factoryAddress = getFactoryAddress(chainId);
+  const hasContracts = !!factoryAddress;
+
   return {
     chainId,
     contractAddresses,
     hasContracts,
-    factoryAddress: contractAddresses?.factoryAddress || "",
+    factoryAddress,
     tokenAddresses: contractAddresses?.tokens || {},
   };
 }
@@ -228,37 +233,38 @@ export function useNetworkContracts() {
  * Hook for network-aware token operations
  */
 export function useNetworkAwareTokens() {
-  const { contractAddresses, hasContracts, chainId } = useNetworkContracts();
+  const { hasContracts, chainId } = useNetworkContracts();
   const { currentNetwork } = useNetworkSwitcher();
   
   // Get available tokens for current network
-  const getAvailableTokens = useCallback(() => {
-    if (!hasContracts || !contractAddresses?.tokens) {
+  const getNetworkAvailableTokens = useCallback(() => {
+    if (!hasContracts) {
       return [];
     }
-    
-    return Object.entries(contractAddresses.tokens).map(([symbol, address]) => ({
+
+    const availableTokenSymbols = getAvailableTokens(chainId);
+    return availableTokenSymbols.map(symbol => ({
       symbol,
-      address,
+      address: getTokenAddress(chainId, symbol),
       chainId,
       networkName: currentNetwork?.name || "Unknown",
     }));
-  }, [hasContracts, contractAddresses, chainId, currentNetwork]);
+  }, [hasContracts, chainId, currentNetwork]);
   
   // Check if a specific token is available on current network
   const isTokenAvailable = useCallback((symbol: string) => {
-    return !!contractAddresses?.tokens?.[symbol];
-  }, [contractAddresses]);
-  
+    return getAvailableTokens(chainId).includes(symbol);
+  }, [chainId]);
+
   // Get token address by symbol
-  const getTokenAddress = useCallback((symbol: string) => {
-    return contractAddresses?.tokens?.[symbol] || "";
-  }, [contractAddresses]);
+  const getNetworkTokenAddress = useCallback((symbol: string) => {
+    return getTokenAddress(chainId, symbol);
+  }, [chainId]);
   
   return {
-    availableTokens: getAvailableTokens(),
+    availableTokens: getNetworkAvailableTokens(),
     isTokenAvailable,
-    getTokenAddress,
+    getTokenAddress: getNetworkTokenAddress,
     hasContracts,
     chainId,
   };

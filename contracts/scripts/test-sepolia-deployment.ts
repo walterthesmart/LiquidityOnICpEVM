@@ -53,9 +53,9 @@ async function testFactoryContract(deploymentData: DeploymentData) {
   
   // Test 2: Check deployed symbols count
   console.log("   Testing deployed tokens count...");
-  const deployedSymbolsCount = await factory.getDeployedTokensCount();
-  expect(deployedSymbolsCount).to.equal(BigInt(deploymentData.tokens.length));
-  console.log(`   ✅ Deployed tokens count: ${deployedSymbolsCount}`);
+  const stats = await factory.getFactoryStats();
+  expect(stats._totalSymbols).to.equal(BigInt(deploymentData.tokens.length));
+  console.log(`   ✅ Deployed tokens count: ${stats._totalSymbols}`);
   
   // Test 3: Check if factory is not paused
   console.log("   Testing factory pause state...");
@@ -101,9 +101,9 @@ async function testTokenContracts(deploymentData: DeploymentData, factory: any) 
       const factoryTokenAddress = await factory.stockTokens(tokenData.symbol);
       expect(factoryTokenAddress.toLowerCase()).to.equal(tokenData.address.toLowerCase());
       console.log(`      ✅ Registered in factory`);
-      
+
       // Test 5: Check if token is valid in factory
-      const isValidToken = await factory.isValidStockToken(tokenData.address);
+      const isValidToken = await factory.isValidToken(tokenData.address);
       expect(isValidToken).to.be.true;
       console.log(`      ✅ Valid token in factory`);
       

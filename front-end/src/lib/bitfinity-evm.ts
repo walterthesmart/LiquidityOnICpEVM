@@ -17,6 +17,13 @@ import {
   getNetworkByChainId,
   getContractAddresses,
 } from "./bitfinity-config";
+import {
+  NigerianStockTokenFactoryABI,
+  NigerianStockTokenABI,
+  getFactoryAddress,
+  getTokenAddress,
+  getAvailableTokens,
+} from "../abis";
 
 // Contract ABIs (simplified for key functions)
 export const NIGERIAN_STOCK_TOKEN_ABI = [
@@ -216,7 +223,7 @@ export class MultiNetworkEVMService {
 
       const address = await this.publicClient!.readContract({
         address: factoryAddress as Address,
-        abi: NIGERIAN_STOCK_FACTORY_ABI,
+        abi: NigerianStockTokenFactoryABI,
         functionName: "getTokenAddress",
         args: [symbol],
       });
@@ -240,7 +247,7 @@ export class MultiNetworkEVMService {
     try {
       const balance = await this.publicClient!.readContract({
         address: tokenAddress,
-        abi: NIGERIAN_STOCK_TOKEN_ABI,
+        abi: NigerianStockTokenABI,
         functionName: "balanceOf",
         args: [userAddress],
       });
@@ -258,8 +265,7 @@ export class MultiNetworkEVMService {
   async getTokenInfo(symbol: string) {
     try {
       const chainId = this.getChainId();
-      const contractAddresses = getContractAddresses(chainId);
-      const factoryAddress = contractAddresses?.factoryAddress;
+      const factoryAddress = getFactoryAddress(chainId);
 
       if (!factoryAddress) {
         throw new Error(
@@ -269,7 +275,7 @@ export class MultiNetworkEVMService {
 
       const tokenInfo = await this.publicClient!.readContract({
         address: factoryAddress as Address,
-        abi: NIGERIAN_STOCK_FACTORY_ABI,
+        abi: NigerianStockTokenFactoryABI,
         functionName: "getTokenInfo",
         args: [symbol],
       });
@@ -306,7 +312,7 @@ export class MultiNetworkEVMService {
 
       const tokens = await this.publicClient!.readContract({
         address: factoryAddress as Address,
-        abi: NIGERIAN_STOCK_FACTORY_ABI,
+        abi: NigerianStockTokenFactoryABI,
         functionName: "getAllTokens",
       });
 
@@ -322,6 +328,22 @@ export class MultiNetworkEVMService {
    */
   isTestnet(): boolean {
     return SUPPORTED_NETWORKS[this.network]?.testnet ?? false;
+  }
+
+  /**
+   * Get all available tokens for current network
+   */
+  getAvailableTokens(): string[] {
+    const chainId = this.getChainId();
+    return getAvailableTokens(chainId);
+  }
+
+  /**
+   * Get token address by symbol for current network
+   */
+  getTokenAddress(symbol: string): string {
+    const chainId = this.getChainId();
+    return getTokenAddress(chainId, symbol);
   }
 
   /**
