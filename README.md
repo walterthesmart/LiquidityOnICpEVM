@@ -1,17 +1,42 @@
 
 # Liquidity - Nigerian Stock Trading Platform 🇳🇬
 
-Liquidity is a decentralized stock trading platform that allows users to trade tokenized stocks from the Nigerian Stock Exchange (NGX) on the Hedera Hashgraph network. The platform provides a seamless experience for Nigerian investors to buy and sell blue-chip stock tokens using HBAR and traditional Nigerian payment methods.
+Liquidity is a decentralized stock trading platform that allows users to trade tokenized stocks from the Nigerian Stock Exchange (NGX) across multiple blockchain networks. The platform provides a seamless experience for Nigerian investors to buy and sell blue-chip stock tokens with modern DeFi capabilities.
+
+## 🌐 Multi-Network Support
+
+The platform now supports multiple blockchain networks for enhanced testing and broader ecosystem compatibility:
+
+### Primary Networks
+- **Bitfinity EVM Testnet** (Chain ID: 355113) - Primary development and testing network
+- **Bitfinity EVM Mainnet** (Chain ID: 355110) - Production network for live trading
+- **Ethereum Sepolia Testnet** (Chain ID: 11155111) - Additional testing environment
+
+### Legacy Support
+- **Hedera Hashgraph** - Original implementation with HTS tokens
+
+This multi-network architecture enables comprehensive testing, cross-chain compatibility, and provides users with multiple options for accessing Nigerian stock tokens.
 
 ## 🚀 Key Features
 
-- **Hedera Hashgraph Integration**: Fast, secure, and low-cost transactions
+### Multi-Network Capabilities
+- **Bitfinity EVM Integration**: Fast, secure, and low-cost transactions on ICP-based EVM
+- **Ethereum Sepolia Support**: Additional testing environment with Ethereum ecosystem compatibility
+- **Network Switching**: Seamless switching between supported networks
+- **Cross-Network Testing**: Comprehensive testing across multiple EVM environments
+
+### Core Features
 - **Tokenized NGX Stocks**: Access to major Nigerian companies like Dangote Cement, MTN Nigeria, Zenith Bank
-- **Multiple Wallet Support**: HashPack, Blade, Kabila, and MetaMask compatibility
+- **Multiple Wallet Support**: MetaMask, WalletConnect, and other EVM-compatible wallets
 - **Real-time Price Updates**: Live NGX stock prices and market data
 - **Nigerian Payment Methods**: Paystack integration with cards, bank transfers, USSD
-- **Portfolio Management**: Track your Nigerian stock holdings and performance
+- **Portfolio Management**: Track your Nigerian stock holdings across networks
 - **Security Features**: Advanced rate limiting, blacklisting, and emergency controls
+
+### Developer Features
+- **Multi-Network Deployment**: Deploy contracts to Bitfinity EVM and Ethereum Sepolia
+- **Network Utilities**: Balance checking, faucet integration, and network detection
+- **Comprehensive Testing**: Automated testing across all supported networks
 
 ## 📈 Supported Nigerian Stocks
 
@@ -169,6 +194,83 @@ npm run deploy:testnet
 
 ```bash
 npm run deploy:mainnet
+```
+
+## 🌐 Multi-Network EVM Deployment
+
+The platform now supports deployment to multiple EVM-compatible networks. Follow these instructions for Bitfinity EVM and Ethereum Sepolia deployments.
+
+### Prerequisites for EVM Deployment
+
+1. **Install EVM contract dependencies:**
+```bash
+cd contracts  # or backend for alternative setup
+npm install
+```
+
+2. **Set up environment variables:**
+```bash
+cp .env.example .env
+```
+
+3. **Configure your `.env` file:**
+```env
+# Bitfinity EVM Configuration
+BITFINITY_PRIVATE_KEY=your_bitfinity_private_key_here
+BITFINITY_API_KEY=your_bitfinity_api_key_here
+
+# Ethereum Sepolia Configuration
+SEPOLIA_PRIVATE_KEY=your_sepolia_private_key_here
+SEPOLIA_RPC_URL=https://sepolia.infura.io/v3/your_infura_project_id
+ETHERSCAN_API_KEY=your_etherscan_api_key_here
+```
+
+### Deploy to Bitfinity EVM Testnet
+
+```bash
+# Compile contracts
+npm run compile
+
+# Deploy to Bitfinity Testnet
+npm run deploy:testnet
+
+# Verify contracts (optional)
+npm run verify:testnet
+```
+
+### Deploy to Ethereum Sepolia
+
+```bash
+# Check Sepolia ETH balance first
+cd ../scripts
+node sepolia-eth-utils.js --address YOUR_ADDRESS --action balance
+
+# Get Sepolia ETH from faucets if needed
+node sepolia-eth-utils.js --action faucet
+
+# Deploy to Sepolia
+cd ../contracts
+npm run deploy:sepolia
+
+# Test deployment
+npx hardhat run scripts/test-sepolia-deployment.ts --network sepolia
+```
+
+### Network Utilities
+
+```bash
+cd scripts
+
+# Check balances across networks
+npm run balance:sepolia -- --address YOUR_ADDRESS
+node mint-bft-tokens.js --action balance --network bitfinity_testnet --address YOUR_ADDRESS
+
+# Get faucet information
+npm run faucet:sepolia
+node mint-bft-tokens.js --action faucet --network sepolia
+
+# Mint BFT tokens (Bitfinity only)
+node mint-bft-tokens.js --network bitfinity_testnet --address YOUR_ADDRESS --amount 10
 ```
 
 ## 🔧 API Endpoints

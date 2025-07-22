@@ -3,7 +3,7 @@
  * Network settings and contract addresses for Nigerian Stock Exchange tokens
  */
 
-export interface BitfinityNetworkConfig {
+export interface NetworkConfig {
   chainId: number;
   name: string;
   rpcUrl: string;
@@ -13,10 +13,11 @@ export interface BitfinityNetworkConfig {
     symbol: string;
     decimals: number;
   };
+  testnet?: boolean;
 }
 
-export const BITFINITY_NETWORKS: Record<string, BitfinityNetworkConfig> = {
-  testnet: {
+export const SUPPORTED_NETWORKS: Record<string, NetworkConfig> = {
+  bitfinity_testnet: {
     chainId: 355113,
     name: "Bitfinity Testnet",
     rpcUrl: "https://testnet.bitfinity.network",
@@ -26,8 +27,9 @@ export const BITFINITY_NETWORKS: Record<string, BitfinityNetworkConfig> = {
       symbol: "BTF",
       decimals: 18,
     },
+    testnet: true,
   },
-  mainnet: {
+  bitfinity_mainnet: {
     chainId: 355110,
     name: "Bitfinity Mainnet",
     rpcUrl: "https://mainnet.bitfinity.network",
@@ -37,10 +39,29 @@ export const BITFINITY_NETWORKS: Record<string, BitfinityNetworkConfig> = {
       symbol: "BTF",
       decimals: 18,
     },
+    testnet: false,
+  },
+  sepolia: {
+    chainId: 11155111,
+    name: "Ethereum Sepolia Testnet",
+    rpcUrl: "https://sepolia.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161",
+    blockExplorer: "https://sepolia.etherscan.io",
+    nativeCurrency: {
+      name: "Ethereum",
+      symbol: "ETH",
+      decimals: 18,
+    },
+    testnet: true,
   },
 };
 
-export const DEFAULT_NETWORK = "testnet";
+// Backward compatibility
+export const BITFINITY_NETWORKS = {
+  testnet: SUPPORTED_NETWORKS.bitfinity_testnet,
+  mainnet: SUPPORTED_NETWORKS.bitfinity_mainnet,
+};
+
+export const DEFAULT_NETWORK = "bitfinity_testnet";
 
 /**
  * Contract addresses (to be updated after deployment)
@@ -51,6 +72,7 @@ export interface ContractAddresses {
 }
 
 export const CONTRACT_ADDRESSES: Record<string, ContractAddresses> = {
+  // Local development (Hardhat)
   "31337": {
     factoryAddress: "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0",
     tokens: {
@@ -94,6 +116,27 @@ export const CONTRACT_ADDRESSES: Record<string, ContractAddresses> = {
       CWG: "0xea50f1A4E432FfcfBA47E9AC37401D0C07CCC739",
       TRANSCOHOT: "0x6Bc9a0cD10C8F69de903504EC2676e1B4a3aDA49",
     },
+  },
+  // Ethereum Sepolia Testnet (to be updated after deployment)
+  "11155111": {
+    factoryAddress: "", // Will be updated after deployment
+    tokens: {
+      DANGCEM: "",
+      MTNN: "",
+      ZENITHBANK: "",
+      GTCO: "",
+      ACCESS: "",
+    },
+  },
+  // Bitfinity Testnet (to be updated after deployment)
+  "355113": {
+    factoryAddress: "", // Will be updated after deployment
+    tokens: {},
+  },
+  // Bitfinity Mainnet (to be updated after deployment)
+  "355110": {
+    factoryAddress: "", // Will be updated after deployment
+    tokens: {},
   },
 };
 
@@ -447,4 +490,88 @@ export function getStocksBySector(sector: string): NigerianStockData[] {
  */
 export function getAllSectors(): string[] {
   return [...new Set(NIGERIAN_STOCKS.map((stock) => stock.sector))];
+}
+
+/**
+ * Network utility functions
+ */
+
+/**
+ * Get network configuration by chain ID
+ */
+export function getNetworkByChainId(chainId: number): NetworkConfig | undefined {
+  return Object.values(SUPPORTED_NETWORKS).find(network => network.chainId === chainId);
+}
+
+/**
+ * Get network configuration by key
+ */
+export function getNetworkByKey(key: string): NetworkConfig | undefined {
+  return SUPPORTED_NETWORKS[key];
+}
+
+/**
+ * Check if a network is a testnet
+ */
+export function isTestnet(chainId: number): boolean {
+  const network = getNetworkByChainId(chainId);
+  return network?.testnet ?? false;
+}
+
+/**
+ * Get contract addresses for a specific chain ID
+ */
+export function getContractAddresses(chainId: number): ContractAddresses | undefined {
+  return CONTRACT_ADDRESSES[chainId.toString()];
+}
+
+/**
+ * Get all supported chain IDs
+ */
+export function getSupportedChainIds(): number[] {
+  return Object.values(SUPPORTED_NETWORKS).map(network => network.chainId);
+}
+
+/**
+ * Get testnet networks only
+ */
+export function getTestnetNetworks(): Record<string, NetworkConfig> {
+  return Object.fromEntries(
+    Object.entries(SUPPORTED_NETWORKS).filter(([, network]) => network.testnet)
+  );
+}
+
+/**
+ * Get mainnet networks only
+ */
+export function getMainnetNetworks(): Record<string, NetworkConfig> {
+  return Object.fromEntries(
+    Object.entries(SUPPORTED_NETWORKS).filter(([, network]) => !network.testnet)
+  );
+}
+
+/**
+ * Format network name for display
+ */
+export function formatNetworkName(chainId: number): string {
+  const network = getNetworkByChainId(chainId);
+  return network?.name ?? `Unknown Network (${chainId})`;
+}
+
+/**
+ * Get block explorer URL for a transaction
+ */
+export function getTransactionUrl(chainId: number, txHash: string): string {
+  const network = getNetworkByChainId(chainId);
+  if (!network) return "";
+  return `${network.blockExplorer}/tx/${txHash}`;
+}
+
+/**
+ * Get block explorer URL for an address
+ */
+export function getAddressUrl(chainId: number, address: string): string {
+  const network = getNetworkByChainId(chainId);
+  if (!network) return "";
+  return `${network.blockExplorer}/address/${address}`;
 }

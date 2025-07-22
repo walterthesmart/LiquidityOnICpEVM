@@ -30,9 +30,17 @@ const config: HardhatUserConfig = {
       gas: "auto",
     },
     bitfinity_mainnet: {
-      url: "https://mainnet.bitfinity.network", 
+      url: "https://mainnet.bitfinity.network",
       chainId: 355110,
       accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : [],
+      gasPrice: "auto",
+      gas: "auto",
+    },
+    // Ethereum Sepolia Testnet
+    sepolia: {
+      url: process.env.SEPOLIA_RPC_URL || "https://sepolia.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161",
+      chainId: 11155111,
+      accounts: process.env.SEPOLIA_PRIVATE_KEY ? [process.env.SEPOLIA_PRIVATE_KEY] : [],
       gasPrice: "auto",
       gas: "auto",
     },
@@ -50,10 +58,11 @@ const config: HardhatUserConfig = {
     currency: "USD",
   },
   etherscan: {
-    // Bitfinity block explorer configuration
+    // Block explorer configuration
     apiKey: {
       bitfinity_testnet: "no-api-key-needed",
       bitfinity_mainnet: "no-api-key-needed",
+      sepolia: process.env.ETHERSCAN_API_KEY || "dummy",
     },
     customChains: [
       {
@@ -65,11 +74,19 @@ const config: HardhatUserConfig = {
         },
       },
       {
-        network: "bitfinity_mainnet", 
+        network: "bitfinity_mainnet",
         chainId: 355110,
         urls: {
           apiURL: "https://explorer.bitfinity.network/api",
           browserURL: "https://explorer.bitfinity.network",
+        },
+      },
+      {
+        network: "sepolia",
+        chainId: 11155111,
+        urls: {
+          apiURL: "https://api-sepolia.etherscan.io/api",
+          browserURL: "https://sepolia.etherscan.io",
         },
       },
     ],

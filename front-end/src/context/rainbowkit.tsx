@@ -7,7 +7,7 @@ import {
   darkTheme,
 } from "@rainbow-me/rainbowkit";
 import { WagmiProvider } from "wagmi";
-import { mainnet, polygon, optimism, arbitrum, base } from "wagmi/chains";
+import { mainnet, polygon, optimism, arbitrum, base, sepolia } from "wagmi/chains";
 import { bitfinityTestnet, bitfinityMainnet } from "@/config";
 import { QueryClientProvider, QueryClient } from "@tanstack/react-query";
 import { ReactNode } from "react";
@@ -20,9 +20,10 @@ const config = getDefaultConfig({
   projectId:
     process.env.NEXT_PUBLIC_PROJECT_ID || "b56e18d47c72ab683b10814fe9495694",
   chains: [
-    // Bitfinity EVM networks for Nigerian stock trading
+    // Primary networks for Nigerian stock trading
     bitfinityTestnet,
     bitfinityMainnet,
+    sepolia, // Ethereum Sepolia testnet for additional testing
     // Popular EVM chains for broader wallet support
     mainnet,
     polygon,

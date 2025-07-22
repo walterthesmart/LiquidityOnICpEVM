@@ -11,9 +11,11 @@ import {
   Address,
 } from "viem";
 import {
-  BITFINITY_NETWORKS,
+  SUPPORTED_NETWORKS,
   CONTRACT_ADDRESSES,
   DEFAULT_NETWORK,
+  getNetworkByChainId,
+  getContractAddresses,
 } from "./bitfinity-config";
 
 // Contract ABIs (simplified for key functions)
@@ -140,9 +142,10 @@ export const NIGERIAN_STOCK_FACTORY_ABI = [
 ] as const;
 
 /**
- * Bitfinity EVM Service Class
+ * Multi-Network EVM Service Class
+ * Supports Bitfinity EVM and Ethereum Sepolia networks
  */
-export class BitfinityEVMService {
+export class MultiNetworkEVMService {
   private network: string;
   private publicClient: ReturnType<typeof createPublicClient> | null = null;
   // Wallet client removed - using wagmi hooks for wallet interactions
@@ -153,7 +156,7 @@ export class BitfinityEVMService {
   }
 
   private initializeClients() {
-    const networkConfig = BITFINITY_NETWORKS[this.network];
+    const networkConfig = SUPPORTED_NETWORKS[this.network];
     if (!networkConfig) {
       throw new Error(`Unsupported network: ${this.network}`);
     }
@@ -175,6 +178,28 @@ export class BitfinityEVMService {
       },
       transport: http(networkConfig.rpcUrl),
     });
+  }
+
+  /**
+   * Switch to a different network
+   */
+  switchNetwork(network: string) {
+    this.network = network;
+    this.initializeClients();
+  }
+
+  /**
+   * Get current network configuration
+   */
+  getNetworkConfig() {
+    return SUPPORTED_NETWORKS[this.network];
+  }
+
+  /**
+   * Get current chain ID
+   */
+  getChainId(): number {
+    return SUPPORTED_NETWORKS[this.network]?.chainId || 0;
   }
 
   /**
@@ -232,10 +257,13 @@ export class BitfinityEVMService {
    */
   async getTokenInfo(symbol: string) {
     try {
-      const factoryAddress = CONTRACT_ADDRESSES[this.network]?.factoryAddress;
+      const chainId = this.getChainId();
+      const contractAddresses = getContractAddresses(chainId);
+      const factoryAddress = contractAddresses?.factoryAddress;
+
       if (!factoryAddress) {
         throw new Error(
-          `Factory address not configured for network: ${this.network}`,
+          `Factory address not configured for chain ID: ${chainId}`,
         );
       }
 
@@ -266,10 +294,13 @@ export class BitfinityEVMService {
    */
   async getAllTokens(): Promise<Address[]> {
     try {
-      const factoryAddress = CONTRACT_ADDRESSES[this.network]?.factoryAddress;
+      const chainId = this.getChainId();
+      const contractAddresses = getContractAddresses(chainId);
+      const factoryAddress = contractAddresses?.factoryAddress;
+
       if (!factoryAddress) {
         throw new Error(
-          `Factory address not configured for network: ${this.network}`,
+          `Factory address not configured for chain ID: ${chainId}`,
         );
       }
 
@@ -287,10 +318,10 @@ export class BitfinityEVMService {
   }
 
   /**
-   * Get network configuration
+   * Check if current network is a testnet
    */
-  getNetworkConfig() {
-    return BITFINITY_NETWORKS[this.network];
+  isTestnet(): boolean {
+    return SUPPORTED_NETWORKS[this.network]?.testnet ?? false;
   }
 
   /**
@@ -326,8 +357,11 @@ export class BitfinityEVMService {
   }
 }
 
-// Export singleton instance
-export const bitfinityEVM = new BitfinityEVMService();
+// Export singleton instance (backward compatibility)
+export const bitfinityEVM = new MultiNetworkEVMService();
+
+// Export class for direct usage
+export { MultiNetworkEVMService as BitfinityEVMService };
 
 // Export utility functions
 export function formatTokenAmount(
