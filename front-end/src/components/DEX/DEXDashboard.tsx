@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useAccount, useNetwork, useContractRead } from 'wagmi';
+import { useAccount, useChainId, useReadContract } from 'wagmi';
 import { StockNGNDEXABI, NigerianStockTokenABI, getStockNGNDEXAddress } from '../../abis';
 import { formatEther } from 'ethers';
 
@@ -36,28 +36,32 @@ interface PairWithInfo extends TradingPair {
 
 const DEXDashboard: React.FC<DEXDashboardProps> = ({ className = '' }) => {
   const { isConnected } = useAccount();
-  const { chain } = useNetwork();
+  const chainId = useChainId();
   const [pairs, setPairs] = useState<PairWithInfo[]>([]);
   const [loading, setLoading] = useState(true);
   const [sortBy, setSortBy] = useState<'volume' | 'liquidity' | 'price'>('liquidity');
 
-  const dexAddress = chain?.id ? getStockNGNDEXAddress(chain.id) : '';
+  const dexAddress = chainId ? getStockNGNDEXAddress(chainId) : '';
 
   // Get all stock tokens
-  const { data: allStockTokens } = useContractRead({
+  const { data: allStockTokens } = useReadContract({
     address: dexAddress as `0x${string}`,
     abi: StockNGNDEXABI,
     functionName: 'getAllStockTokens',
-    enabled: !!dexAddress,
+    query: {
+      enabled: !!dexAddress,
+    },
   }) as { data: string[] | undefined };
 
   // Get DEX statistics
-  const { data: dexStats } = useContractRead({
+  const { data: dexStats } = useReadContract({
     address: dexAddress as `0x${string}`,
     abi: StockNGNDEXABI,
     functionName: 'getDEXStats',
-    enabled: !!dexAddress,
-    watch: true,
+    query: {
+      enabled: !!dexAddress,
+      refetchInterval: 5000, // Replaces watch: true
+    },
   }) as { data: [bigint, bigint, bigint, bigint] | undefined };
 
   // Load trading pairs data

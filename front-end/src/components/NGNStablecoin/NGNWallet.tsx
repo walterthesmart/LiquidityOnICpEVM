@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { ethers } from 'ethers';
-import { useAccount, useNetwork, useContractRead, useContractWrite, usePrepareContractWrite } from 'wagmi';
+import { useAccount, useChainId, useReadContract, useWriteContract } from 'wagmi';
 import { NGNStablecoinABI, getNGNStablecoinAddress } from '../../abis';
 import { formatEther, parseEther } from 'ethers';
+import { formatNetworkName } from '../../lib/bitfinity-config';
 
 interface NGNWalletProps {
   className?: string;
@@ -21,79 +22,82 @@ interface NGNTokenInfo {
 
 const NGNWallet: React.FC<NGNWalletProps> = ({ className = '' }) => {
   const { address, isConnected } = useAccount();
-  const { chain } = useNetwork();
+  const chainId = useChainId();
   const [transferAmount, setTransferAmount] = useState('');
   const [transferTo, setTransferTo] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
-  const ngnAddress = chain?.id ? getNGNStablecoinAddress(chain.id) : '';
+  const ngnAddress = chainId ? getNGNStablecoinAddress(chainId) : '';
 
   // Read NGN balance
-  const { data: balance, refetch: refetchBalance } = useContractRead({
+  const { data: balance, refetch: refetchBalance } = useReadContract({
     address: ngnAddress as `0x${string}`,
     abi: NGNStablecoinABI,
     functionName: 'balanceOf',
     args: [address],
-    enabled: !!address && !!ngnAddress,
-    watch: true,
+    query: {
+      enabled: !!address && !!ngnAddress,
+      refetchInterval: 5000, // Replaces watch: true
+    },
   });
 
   // Read NGN token info
-  const { data: tokenInfo } = useContractRead({
+  const { data: tokenInfo } = useReadContract({
     address: ngnAddress as `0x${string}`,
     abi: NGNStablecoinABI,
     functionName: 'getTokenInfo',
-    enabled: !!ngnAddress,
+    query: {
+      enabled: !!ngnAddress,
+    },
   }) as { data: NGNTokenInfo | undefined };
 
-  // Prepare transfer transaction
-  const { config: transferConfig } = usePrepareContractWrite({
-    address: ngnAddress as `0x${string}`,
-    abi: NGNStablecoinABI,
-    functionName: 'transfer',
-    args: [transferTo as `0x${string}`, transferAmount ? parseEther(transferAmount) : 0n],
-    enabled: !!transferTo && !!transferAmount && !!ngnAddress,
-  });
-
-  const { write: executeTransfer, isLoading: isTransferLoading } = useContractWrite({
-    ...transferConfig,
-    onSuccess: (data) => {
-      setSuccess(`Transfer successful! Transaction hash: ${data.hash}`);
-      setTransferAmount('');
-      setTransferTo('');
-      refetchBalance();
-    },
-    onError: (error) => {
-      setError(`Transfer failed: ${error.message}`);
+  // Contract write hook
+  const { writeContract: writeContractFn, isPending: isTransferLoading } = useWriteContract({
+    mutation: {
+      onSuccess: (data: string) => {
+        setSuccess(`Transfer successful! Transaction hash: ${data}`);
+        setTransferAmount('');
+        setTransferTo('');
+        refetchBalance();
+      },
+      onError: (error: Error) => {
+        setError(`Transfer failed: ${error.message}`);
+      },
     },
   });
 
   // Check if transfer is allowed
-  const { data: canTransferData } = useContractRead({
+  const { data: canTransferData } = useReadContract({
     address: ngnAddress as `0x${string}`,
     abi: NGNStablecoinABI,
     functionName: 'canTransfer',
     args: [address, transferTo as `0x${string}`, transferAmount ? parseEther(transferAmount) : 0n],
-    enabled: !!address && !!transferTo && !!transferAmount && !!ngnAddress,
+    query: {
+      enabled: !!address && !!transferTo && !!transferAmount && !!ngnAddress,
+    },
   }) as { data: [boolean, string] | undefined };
 
   const handleTransfer = useCallback(() => {
-    if (!executeTransfer) return;
-    
     setError(null);
     setSuccess(null);
     setIsLoading(true);
-    
+
     try {
-      executeTransfer();
-    } catch (err: any) {
-      setError(`Transfer failed: ${err.message}`);
+      writeContractFn({
+        address: ngnAddress as `0x${string}`,
+        abi: NGNStablecoinABI,
+        functionName: 'transfer',
+        args: [transferTo as `0x${string}`, transferAmount ? parseEther(transferAmount) : 0n],
+      });
+    } catch (err: unknown) {
+      const error = err as Error;
+      setError(`Transfer failed: ${error.message}`);
     } finally {
       setIsLoading(false);
     }
-  }, [executeTransfer]);
+  }, [writeContractFn, ngnAddress, transferTo, transferAmount]);
 
   const formatBalance = (balance: bigint | undefined): string => {
     if (!balance) return '0.00';
@@ -153,7 +157,7 @@ const NGNWallet: React.FC<NGNWalletProps> = ({ className = '' }) => {
             ₦{formatBalance(balance as bigint)}
           </p>
           <p className="text-xs text-gray-500 mt-1">
-            {balance ? formatEther(balance) : '0'} NGN
+            {balance ? formatEther(balance as bigint) : '0'} NGN
           </p>
         </div>
       </div>
@@ -185,7 +189,7 @@ const NGNWallet: React.FC<NGNWalletProps> = ({ className = '' }) => {
           </div>
           <div className="bg-gray-50 rounded-lg p-3">
             <p className="text-xs text-gray-600">Network</p>
-            <p className="text-sm font-semibold">{chain?.name || 'Unknown'}</p>
+            <p className="text-sm font-semibold">{formatNetworkName(chainId)}</p>
           </div>
         </div>
       )}
@@ -234,7 +238,7 @@ const NGNWallet: React.FC<NGNWalletProps> = ({ className = '' }) => {
 
           <button
             onClick={handleTransfer}
-            disabled={!executeTransfer || isLoading || isTransferLoading || !canTransferData?.[0]}
+            disabled={isLoading || isTransferLoading || !canTransferData?.[0]}
             className="w-full bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             {isLoading || isTransferLoading ? 'Sending...' : 'Send NGN'}

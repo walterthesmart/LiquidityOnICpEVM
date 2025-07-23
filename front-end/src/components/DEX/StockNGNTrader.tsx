@@ -1,6 +1,5 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { ethers } from 'ethers';
-import { useAccount, useNetwork, useContractRead, useContractWrite, usePrepareContractWrite } from 'wagmi';
+import React, { useState, useCallback } from 'react';
+import { useAccount, useChainId, useReadContract, useWriteContract } from 'wagmi';
 import { StockNGNDEXABI, NGNStablecoinABI, NigerianStockTokenABI, getStockNGNDEXAddress, getNGNStablecoinAddress } from '../../abis';
 import { formatEther, parseEther } from 'ethers';
 
@@ -31,7 +30,7 @@ interface StockInfo {
 
 const StockNGNTrader: React.FC<StockNGNTraderProps> = ({ className = '' }) => {
   const { address, isConnected } = useAccount();
-  const { chain } = useNetwork();
+  const chainId = useChainId();
   const [selectedStock, setSelectedStock] = useState<string>('');
   const [tradeDirection, setTradeDirection] = useState<'ngnToStock' | 'stockToNgn'>('ngnToStock');
   const [inputAmount, setInputAmount] = useState('');
@@ -40,168 +39,150 @@ const StockNGNTrader: React.FC<StockNGNTraderProps> = ({ className = '' }) => {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
-  const dexAddress = chain?.id ? getStockNGNDEXAddress(chain.id) : '';
-  const ngnAddress = chain?.id ? getNGNStablecoinAddress(chain.id) : '';
+  const dexAddress = chainId ? getStockNGNDEXAddress(chainId) : '';
+  const ngnAddress = chainId ? getNGNStablecoinAddress(chainId) : '';
 
   // Get all available stock tokens
-  const { data: allStockTokens } = useContractRead({
+  const { data: allStockTokens } = useReadContract({
     address: dexAddress as `0x${string}`,
     abi: StockNGNDEXABI,
     functionName: 'getAllStockTokens',
-    enabled: !!dexAddress,
+    query: {
+      enabled: !!dexAddress,
+    },
   }) as { data: string[] | undefined };
 
   // Get trading pair info for selected stock
-  const { data: tradingPair } = useContractRead({
+  const { data: tradingPair } = useReadContract({
     address: dexAddress as `0x${string}`,
     abi: StockNGNDEXABI,
     functionName: 'getTradingPair',
     args: [selectedStock],
-    enabled: !!selectedStock && !!dexAddress,
+    query: {
+      enabled: !!selectedStock && !!dexAddress,
+    },
   }) as { data: TradingPair | undefined };
 
   // Get stock token info
-  const { data: stockInfo } = useContractRead({
+  const { data: stockInfo } = useReadContract({
     address: selectedStock as `0x${string}`,
     abi: NigerianStockTokenABI,
     functionName: 'getStockInfo',
-    enabled: !!selectedStock,
+    query: {
+      enabled: !!selectedStock,
+    },
   }) as { data: StockInfo | undefined };
 
   // Get current price
-  const { data: currentPrice } = useContractRead({
+  const { data: currentPrice } = useReadContract({
     address: dexAddress as `0x${string}`,
     abi: StockNGNDEXABI,
     functionName: 'getCurrentPrice',
     args: [selectedStock],
-    enabled: !!selectedStock && !!dexAddress,
-    watch: true,
+    query: {
+      enabled: !!selectedStock && !!dexAddress,
+      refetchInterval: 5000, // Replaces watch: true
+    },
   });
 
   // Get user balances
-  const { data: ngnBalance, refetch: refetchNGNBalance } = useContractRead({
+  const { data: ngnBalance, refetch: refetchNGNBalance } = useReadContract({
     address: ngnAddress as `0x${string}`,
     abi: NGNStablecoinABI,
     functionName: 'balanceOf',
     args: [address],
-    enabled: !!address && !!ngnAddress,
-    watch: true,
+    query: {
+      enabled: !!address && !!ngnAddress,
+      refetchInterval: 5000, // Replaces watch: true
+    },
   });
 
-  const { data: stockBalance, refetch: refetchStockBalance } = useContractRead({
+  const { data: stockBalance, refetch: refetchStockBalance } = useReadContract({
     address: selectedStock as `0x${string}`,
     abi: NigerianStockTokenABI,
     functionName: 'balanceOf',
     args: [address],
-    enabled: !!address && !!selectedStock,
-    watch: true,
+    query: {
+      enabled: !!address && !!selectedStock,
+      refetchInterval: 5000, // Replaces watch: true
+    },
   });
 
   // Get swap quote
-  const { data: swapQuote } = useContractRead({
+  const { data: swapQuote } = useReadContract({
     address: dexAddress as `0x${string}`,
     abi: StockNGNDEXABI,
     functionName: tradeDirection === 'ngnToStock' ? 'getQuoteNGNToStock' : 'getQuoteStockToNGN',
     args: [selectedStock, inputAmount ? parseEther(inputAmount) : 0n],
-    enabled: !!selectedStock && !!inputAmount && !!dexAddress,
+    query: {
+      enabled: !!selectedStock && !!inputAmount && !!dexAddress,
+    },
   }) as { data: [bigint, bigint, bigint] | undefined };
 
-  // Prepare approval for NGN
-  const { config: ngnApprovalConfig } = usePrepareContractWrite({
-    address: ngnAddress as `0x${string}`,
-    abi: NGNStablecoinABI,
-    functionName: 'approve',
-    args: [dexAddress as `0x${string}`, inputAmount ? parseEther(inputAmount) : 0n],
-    enabled: tradeDirection === 'ngnToStock' && !!inputAmount && !!dexAddress && !!ngnAddress,
-  });
-
-  // Prepare approval for Stock
-  const { config: stockApprovalConfig } = usePrepareContractWrite({
-    address: selectedStock as `0x${string}`,
-    abi: NigerianStockTokenABI,
-    functionName: 'approve',
-    args: [dexAddress as `0x${string}`, inputAmount ? parseEther(inputAmount) : 0n],
-    enabled: tradeDirection === 'stockToNgn' && !!inputAmount && !!selectedStock && !!dexAddress,
-  });
-
-  // Prepare swap transaction
+  // Calculate swap parameters
   const deadline = Math.floor(Date.now() / 1000) + 1800; // 30 minutes
-  const minAmountOut = swapQuote ? 
+  const minAmountOut = swapQuote ?
     (swapQuote[0] * BigInt(100 - parseInt(slippageTolerance))) / 100n : 0n;
 
-  const { config: swapConfig } = usePrepareContractWrite({
-    address: dexAddress as `0x${string}`,
-    abi: StockNGNDEXABI,
-    functionName: tradeDirection === 'ngnToStock' ? 'swapNGNForStock' : 'swapStockForNGN',
-    args: [
-      selectedStock,
-      inputAmount ? parseEther(inputAmount) : 0n,
-      minAmountOut,
-      deadline
-    ],
-    enabled: !!selectedStock && !!inputAmount && !!swapQuote && !!dexAddress,
-  });
-
   // Contract write hooks
-  const { write: approveNGN, isLoading: isApprovingNGN } = useContractWrite({
-    ...ngnApprovalConfig,
-    onSuccess: () => {
-      setSuccess('NGN approval successful! You can now execute the swap.');
-    },
-    onError: (error) => {
-      setError(`NGN approval failed: ${error.message}`);
-    },
-  });
-
-  const { write: approveStock, isLoading: isApprovingStock } = useContractWrite({
-    ...stockApprovalConfig,
-    onSuccess: () => {
-      setSuccess('Stock approval successful! You can now execute the swap.');
-    },
-    onError: (error) => {
-      setError(`Stock approval failed: ${error.message}`);
-    },
-  });
-
-  const { write: executeSwap, isLoading: isSwapping } = useContractWrite({
-    ...swapConfig,
-    onSuccess: (data) => {
-      setSuccess(`Swap successful! Transaction hash: ${data.hash}`);
-      setInputAmount('');
-      refetchNGNBalance();
-      refetchStockBalance();
-    },
-    onError: (error) => {
-      setError(`Swap failed: ${error.message}`);
+  const { writeContract: writeContractFn, isPending: isWritePending } = useWriteContract({
+    mutation: {
+      onSuccess: (data: string) => {
+        setSuccess(`Transaction successful! Hash: ${data}`);
+        setInputAmount('');
+        refetchNGNBalance();
+        refetchStockBalance();
+      },
+      onError: (error: Error) => {
+        setError(`Transaction failed: ${error.message}`);
+      },
     },
   });
 
   const handleApproval = useCallback(() => {
     setError(null);
     setSuccess(null);
-    
-    if (tradeDirection === 'ngnToStock' && approveNGN) {
-      approveNGN();
-    } else if (tradeDirection === 'stockToNgn' && approveStock) {
-      approveStock();
+
+    if (tradeDirection === 'ngnToStock') {
+      writeContractFn({
+        address: ngnAddress as `0x${string}`,
+        abi: NGNStablecoinABI,
+        functionName: 'approve',
+        args: [dexAddress as `0x${string}`, inputAmount ? parseEther(inputAmount) : 0n],
+      });
+    } else if (tradeDirection === 'stockToNgn') {
+      writeContractFn({
+        address: selectedStock as `0x${string}`,
+        abi: NigerianStockTokenABI,
+        functionName: 'approve',
+        args: [dexAddress as `0x${string}`, inputAmount ? parseEther(inputAmount) : 0n],
+      });
     }
-  }, [tradeDirection, approveNGN, approveStock]);
+  }, [tradeDirection, writeContractFn, ngnAddress, dexAddress, selectedStock, inputAmount]);
 
   const handleSwap = useCallback(() => {
-    if (!executeSwap) return;
-    
     setError(null);
     setSuccess(null);
     setIsLoading(true);
-    
+
     try {
-      executeSwap();
+      writeContractFn({
+        address: dexAddress as `0x${string}`,
+        abi: StockNGNDEXABI,
+        functionName: tradeDirection === 'ngnToStock' ? 'swapNGNForStock' : 'swapStockForNGN',
+        args: [
+          selectedStock,
+          inputAmount ? parseEther(inputAmount) : 0n,
+          minAmountOut,
+          deadline
+        ],
+      });
     } catch (err: any) {
       setError(`Swap failed: ${err.message}`);
     } finally {
       setIsLoading(false);
     }
-  }, [executeSwap]);
+  }, [writeContractFn, dexAddress, tradeDirection, selectedStock, inputAmount, minAmountOut, deadline]);
 
   const formatBalance = (balance: bigint | undefined): string => {
     if (!balance) return '0.00';
@@ -310,7 +291,7 @@ const StockNGNTrader: React.FC<StockNGNTraderProps> = ({ className = '' }) => {
               <p className="text-xs text-gray-500">{stockInfo.sector}</p>
             </div>
             <div className="text-right">
-              <p className="text-sm font-medium">₦{formatPrice(currentPrice)}</p>
+              <p className="text-sm font-medium">₦{formatPrice(currentPrice as bigint)}</p>
               <p className="text-xs text-gray-500">per token</p>
             </div>
           </div>
@@ -397,21 +378,21 @@ const StockNGNTrader: React.FC<StockNGNTraderProps> = ({ className = '' }) => {
           <div className="space-y-2">
             <button
               onClick={handleApproval}
-              disabled={isApprovingNGN || isApprovingStock || !inputAmount}
+              disabled={isWritePending || !inputAmount}
               className="w-full bg-yellow-600 text-white py-2 px-4 rounded-md hover:bg-yellow-700 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
-              {isApprovingNGN || isApprovingStock 
-                ? 'Approving...' 
+              {isWritePending
+                ? 'Approving...'
                 : `Approve ${tradeDirection === 'ngnToStock' ? 'NGN' : stockInfo?.symbol || 'Stock'}`
               }
             </button>
 
             <button
               onClick={handleSwap}
-              disabled={!executeSwap || isLoading || isSwapping || !swapQuote}
+              disabled={isLoading || isWritePending || !swapQuote}
               className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
-              {isLoading || isSwapping ? 'Swapping...' : 'Execute Swap'}
+              {isLoading || isWritePending ? 'Swapping...' : 'Execute Swap'}
             </button>
           </div>
         </div>

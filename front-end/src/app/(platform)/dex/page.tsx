@@ -1,13 +1,14 @@
 'use client';
 
 import React, { useState } from 'react';
-import { useAccount, useNetwork } from 'wagmi';
+import { useAccount, useChainId } from 'wagmi';
 import { NGNWallet } from '../../../components/NGNStablecoin';
 import { StockNGNTrader, DEXDashboard } from '../../../components/DEX';
+import { formatNetworkName } from '../../../lib/bitfinity-config';
 
 export default function DEXPage() {
   const { isConnected } = useAccount();
-  const { chain } = useNetwork();
+  const chainId = useChainId();
   const [activeTab, setActiveTab] = useState<'dashboard' | 'trade' | 'wallet'>('dashboard');
 
   const tabs = [
@@ -32,10 +33,10 @@ export default function DEXPage() {
             </div>
             
             <div className="flex items-center space-x-4">
-              {chain && (
+              {chainId && (
                 <div className="flex items-center space-x-2 bg-gray-100 rounded-lg px-3 py-2">
                   <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-                  <span className="text-sm font-medium text-gray-700">{chain.name}</span>
+                  <span className="text-sm font-medium text-gray-700">{formatNetworkName(chainId)}</span>
                 </div>
               )}
             </div>
@@ -253,7 +254,7 @@ export default function DEXPage() {
                         </div>
                         <div>
                           <p className="font-medium text-gray-900">Network</p>
-                          <p>{chain?.name || 'Unknown'}</p>
+                          <p>{formatNetworkName(chainId)}</p>
                         </div>
                       </div>
                     </div>

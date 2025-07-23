@@ -86,7 +86,7 @@ export async function fetchWithRetry(
   retries = 3,
   delay = 1000,
 ): Promise<Response> {
-  let lastError: Error;
+  let lastError: Error = new Error('Unknown error');
   const diagnostics = getNetworkDiagnostics();
 
   for (let i = 0; i <= retries; i++) {
