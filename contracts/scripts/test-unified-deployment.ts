@@ -4,7 +4,7 @@ import { resolve } from "path";
 
 /**
  * Test script to verify unified deployment results
- * 
+ *
  * This script:
  * 1. Loads the latest deployment results
  * 2. Verifies all contracts are deployed and working
@@ -36,12 +36,12 @@ async function testDeployment(): Promise<void> {
   // Get current network
   const network = await ethers.provider.getNetwork();
   const networkName = network.name.toLowerCase().replace(/\s+/g, "-");
-  
+
   console.log(`📡 Network: ${network.name} (Chain ID: ${network.chainId})`);
 
   // Load deployment results
   const deploymentFile = resolve(__dirname, "../deployments", `${networkName}-latest.json`);
-  
+
   if (!existsSync(deploymentFile)) {
     console.error(`❌ No deployment file found: ${deploymentFile}`);
     console.log("   Please run the unified deployment script first.");
@@ -67,7 +67,7 @@ async function testDeployment(): Promise<void> {
         ngnContract.name(),
         ngnContract.symbol(),
         ngnContract.decimals(),
-        ngnContract.totalSupply()
+        ngnContract.totalSupply(),
       ]);
 
       console.log(`   ✅ Name: ${name}`);
@@ -114,7 +114,7 @@ async function testDeployment(): Promise<void> {
 
       const ngnToken = await dexContract.ngnToken();
       console.log(`   ✅ NGN Token Address: ${ngnToken}`);
-      
+
       if (deploymentResult.contracts.ngnStablecoin) {
         const expectedNGN = deploymentResult.contracts.ngnStablecoin.address;
         if (ngnToken.toLowerCase() === expectedNGN.toLowerCase()) {
@@ -145,20 +145,24 @@ async function testDeployment(): Promise<void> {
 
       const [ngnToken, dexContract] = await Promise.all([
         managerContract.ngnToken(),
-        managerContract.dexContract()
+        managerContract.dexContract(),
       ]);
 
       console.log(`   ✅ NGN Token: ${ngnToken}`);
       console.log(`   ✅ DEX Contract: ${dexContract}`);
 
       // Verify links are correct
-      if (deploymentResult.contracts.ngnStablecoin && 
-          ngnToken.toLowerCase() === deploymentResult.contracts.ngnStablecoin.address.toLowerCase()) {
+      if (
+        deploymentResult.contracts.ngnStablecoin &&
+        ngnToken.toLowerCase() === deploymentResult.contracts.ngnStablecoin.address.toLowerCase()
+      ) {
         console.log(`   ✅ NGN Token correctly linked`);
       }
 
-      if (deploymentResult.contracts.stockNGNDEX && 
-          dexContract.toLowerCase() === deploymentResult.contracts.stockNGNDEX.address.toLowerCase()) {
+      if (
+        deploymentResult.contracts.stockNGNDEX &&
+        dexContract.toLowerCase() === deploymentResult.contracts.stockNGNDEX.address.toLowerCase()
+      ) {
         console.log(`   ✅ DEX Contract correctly linked`);
       }
 
@@ -176,15 +180,9 @@ async function testDeployment(): Promise<void> {
     console.log("\n🧪 Testing Stock Tokens...");
     for (const token of deploymentResult.stockTokens) {
       try {
-        const tokenContract = await ethers.getContractAt(
-          "NigerianStockToken",
-          token.address
-        );
+        const tokenContract = await ethers.getContractAt("NigerianStockToken", token.address);
 
-        const [name, symbol] = await Promise.all([
-          tokenContract.name(),
-          tokenContract.symbol()
-        ]);
+        const [name, symbol] = await Promise.all([tokenContract.name(), tokenContract.symbol()]);
 
         console.log(`   ✅ ${symbol}: ${name} at ${token.address}`);
       } catch (error) {
@@ -206,7 +204,7 @@ async function testDeployment(): Promise<void> {
     "NigerianStockTokenFactory.json",
     "NigerianStockToken.json",
     "StockNGNDEX.json",
-    "TradingPairManager.json"
+    "TradingPairManager.json",
   ];
 
   let abisFound = 0;
@@ -228,18 +226,18 @@ async function testDeployment(): Promise<void> {
   }
 
   // Summary
-  console.log("\n" + "=".repeat(50));
+  console.log(`\n${"=".repeat(50)}`);
   console.log("🧪 TEST SUMMARY");
   console.log("=".repeat(50));
   console.log(`✅ Tests Passed: ${testsPassed}`);
   console.log(`❌ Tests Failed: ${testsFailed}`);
-  
+
   if (testsFailed === 0) {
     console.log("\n🎉 All tests passed! Deployment is working correctly.");
   } else {
     console.log("\n⚠️  Some tests failed. Please check the deployment.");
   }
-  
+
   console.log("\n🔗 Next Steps:");
   console.log("1. Update front-end configuration with contract addresses");
   console.log("2. Create trading pairs for stock tokens");

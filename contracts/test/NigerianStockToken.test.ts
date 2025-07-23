@@ -1,14 +1,12 @@
 import { expect } from "chai";
 import { ethers } from "hardhat";
 import { loadFixture } from "@nomicfoundation/hardhat-network-helpers";
-import { NigerianStockToken, NigerianStockTokenFactory } from "../typechain-types";
-import { SignerWithAddress } from "@nomicfoundation/hardhat-ethers/signers";
 
 describe("NigerianStockToken", function () {
   // Test fixtures
   async function deployTokenFixture() {
     const [owner, admin, user1, user2, minter, burner, pauser] = await ethers.getSigners();
-    
+
     const stockMetadata = {
       symbol: "DANGCEM",
       companyName: "Dangote Cement Plc",
@@ -16,7 +14,7 @@ describe("NigerianStockToken", function () {
       totalShares: ethers.parseEther("17040000000"), // 17.04 billion
       marketCap: 7710000000000n, // 7.71 trillion NGN
       isActive: true,
-      lastUpdated: Math.floor(Date.now() / 1000)
+      lastUpdated: Math.floor(Date.now() / 1000),
     };
 
     const NigerianStockToken = await ethers.getContractFactory("NigerianStockToken");
@@ -30,27 +28,17 @@ describe("NigerianStockToken", function () {
 
     await token.waitForDeployment();
 
-    return { 
-      token, 
-      owner, 
-      admin, 
-      user1, 
-      user2, 
-      minter, 
-      burner, 
-      pauser, 
-      stockMetadata 
+    return {
+      token,
+      owner,
+      admin,
+      user1,
+      user2,
+      minter,
+      burner,
+      pauser,
+      stockMetadata,
     };
-  }
-
-  async function deployFactoryFixture() {
-    const [owner, admin] = await ethers.getSigners();
-    
-    const NigerianStockTokenFactory = await ethers.getContractFactory("NigerianStockTokenFactory");
-    const factory = await NigerianStockTokenFactory.deploy(admin.address);
-    await factory.waitForDeployment();
-
-    return { factory, owner, admin };
   }
 
   describe("Deployment", function () {
@@ -86,7 +74,7 @@ describe("NigerianStockToken", function () {
 
     it("Should revert if admin address is zero", async function () {
       const NigerianStockToken = await ethers.getContractFactory("NigerianStockToken");
-      
+
       const stockMetadata = {
         symbol: "TEST",
         companyName: "Test Company",
@@ -94,7 +82,7 @@ describe("NigerianStockToken", function () {
         totalShares: 1000000n,
         marketCap: 1000000n,
         isActive: true,
-        lastUpdated: Math.floor(Date.now() / 1000)
+        lastUpdated: Math.floor(Date.now() / 1000),
       };
 
       await expect(
@@ -114,7 +102,7 @@ describe("NigerianStockToken", function () {
       const { token, admin, user1 } = await loadFixture(deployTokenFixture);
 
       const MINTER_ROLE = await token.MINTER_ROLE();
-      
+
       await token.connect(admin).grantRole(MINTER_ROLE, user1.address);
       expect(await token.hasRole(MINTER_ROLE, user1.address)).to.be.true;
     });
@@ -123,10 +111,8 @@ describe("NigerianStockToken", function () {
       const { token, user1, user2 } = await loadFixture(deployTokenFixture);
 
       const MINTER_ROLE = await token.MINTER_ROLE();
-      
-      await expect(
-        token.connect(user1).grantRole(MINTER_ROLE, user2.address)
-      ).to.be.reverted;
+
+      await expect(token.connect(user1).grantRole(MINTER_ROLE, user2.address)).to.be.reverted;
     });
   });
 
@@ -144,9 +130,7 @@ describe("NigerianStockToken", function () {
       const { token, user1, user2 } = await loadFixture(deployTokenFixture);
 
       const mintAmount = ethers.parseEther("1000");
-      await expect(
-        token.connect(user1).mint(user2.address, mintAmount)
-      ).to.be.reverted;
+      await expect(token.connect(user1).mint(user2.address, mintAmount)).to.be.reverted;
     });
 
     it("Should revert minting to zero address", async function () {
@@ -161,9 +145,10 @@ describe("NigerianStockToken", function () {
     it("Should revert minting zero amount", async function () {
       const { token, admin, user1 } = await loadFixture(deployTokenFixture);
 
-      await expect(
-        token.connect(admin).mint(user1.address, 0)
-      ).to.be.revertedWithCustomError(token, "InvalidAmount");
+      await expect(token.connect(admin).mint(user1.address, 0)).to.be.revertedWithCustomError(
+        token,
+        "InvalidAmount"
+      );
     });
   });
 
@@ -174,10 +159,10 @@ describe("NigerianStockToken", function () {
       // First mint some tokens to user1
       const mintAmount = ethers.parseEther("1000");
       await token.connect(admin).mint(user1.address, mintAmount);
-      
+
       // User1 approves admin to burn their tokens
       await token.connect(user1).approve(admin.address, mintAmount);
-      
+
       // Admin burns the tokens
       const burnAmount = ethers.parseEther("500");
       await token.connect(admin).burnFrom(user1.address, burnAmount);
@@ -215,14 +200,13 @@ describe("NigerianStockToken", function () {
 
       // Mint some tokens to user1
       await token.connect(admin).mint(user1.address, ethers.parseEther("1000"));
-      
+
       // Pause the contract
       await token.connect(admin).pause();
 
       // Try to transfer - should fail
-      await expect(
-        token.connect(user1).transfer(user2.address, ethers.parseEther("100"))
-      ).to.be.reverted;
+      await expect(token.connect(user1).transfer(user2.address, ethers.parseEther("100"))).to.be
+        .reverted;
     });
   });
 
@@ -231,8 +215,6 @@ describe("NigerianStockToken", function () {
       const { token, admin, user1, user2 } = await loadFixture(deployTokenFixture);
 
       // Mint tokens to admin for distribution
-      const totalAmount = ethers.parseEther("2000");
-      
       const recipients = [user1.address, user2.address];
       const amounts = [ethers.parseEther("500"), ethers.parseEther("300")];
 
@@ -293,7 +275,7 @@ describe("NigerianStockToken", function () {
 
       // Mint tokens to user1
       await token.connect(admin).mint(user1.address, ethers.parseEther("1000"));
-      
+
       // Blacklist user1
       await token.connect(admin).setBlacklist(user1.address, true);
 
@@ -315,7 +297,7 @@ describe("NigerianStockToken", function () {
         totalShares: ethers.parseEther("20000000000"),
         marketCap: 8000000000000n,
         isActive: true,
-        lastUpdated: Math.floor(Date.now() / 1000)
+        lastUpdated: Math.floor(Date.now() / 1000),
       };
 
       await token.connect(admin).updateStockMetadata(newMetadata);
@@ -334,7 +316,7 @@ describe("NigerianStockToken", function () {
       // Send some ETH to the contract
       await admin.sendTransaction({
         to: await token.getAddress(),
-        value: ethers.parseEther("1")
+        value: ethers.parseEther("1"),
       });
 
       const initialBalance = await ethers.provider.getBalance(admin.address);

@@ -38,7 +38,9 @@ const config: HardhatUserConfig = {
     },
     // Ethereum Sepolia Testnet
     sepolia: {
-      url: process.env.SEPOLIA_RPC_URL || "https://sepolia.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161",
+      url:
+        process.env.SEPOLIA_RPC_URL ||
+        "https://sepolia.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161",
       chainId: 11155111,
       accounts: process.env.SEPOLIA_PRIVATE_KEY ? [process.env.SEPOLIA_PRIVATE_KEY] : [],
       gasPrice: "auto",

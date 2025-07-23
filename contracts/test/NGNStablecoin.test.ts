@@ -73,7 +73,7 @@ describe("NGNStablecoin", function () {
   describe("Minting", function () {
     it("Should allow minter to mint tokens", async function () {
       const mintAmount = ethers.parseEther("1000");
-      
+
       await expect(ngnStablecoin.connect(minter).mint(user1.address, mintAmount))
         .to.emit(ngnStablecoin, "Transfer")
         .withArgs(ethers.ZeroAddress, user1.address, mintAmount);
@@ -84,50 +84,54 @@ describe("NGNStablecoin", function () {
 
     it("Should not allow non-minter to mint tokens", async function () {
       const mintAmount = ethers.parseEther("1000");
-      
-      await expect(ngnStablecoin.connect(user1).mint(user1.address, mintAmount))
-        .to.be.revertedWithCustomError(ngnStablecoin, "AccessControlUnauthorizedAccount");
+
+      await expect(
+        ngnStablecoin.connect(user1).mint(user1.address, mintAmount)
+      ).to.be.revertedWithCustomError(ngnStablecoin, "AccessControlUnauthorizedAccount");
     });
 
     it("Should enforce daily minting cap", async function () {
       const dailyCap = ethers.parseEther("10000000");
       const exceedAmount = dailyCap + ethers.parseEther("1");
-      
-      await expect(ngnStablecoin.connect(minter).mint(user1.address, exceedAmount))
-        .to.be.revertedWithCustomError(ngnStablecoin, "MintingCapExceeded");
+
+      await expect(
+        ngnStablecoin.connect(minter).mint(user1.address, exceedAmount)
+      ).to.be.revertedWithCustomError(ngnStablecoin, "MintingCapExceeded");
     });
 
     it("Should enforce max supply limit", async function () {
       const maxSupply = ethers.parseEther("1000000000");
       const exceedAmount = maxSupply + ethers.parseEther("1");
-      
-      await expect(ngnStablecoin.connect(minter).mint(user1.address, exceedAmount))
-        .to.be.revertedWithCustomError(ngnStablecoin, "MaxSupplyExceeded");
+
+      await expect(
+        ngnStablecoin.connect(minter).mint(user1.address, exceedAmount)
+      ).to.be.revertedWithCustomError(ngnStablecoin, "MaxSupplyExceeded");
     });
 
     it("Should reset daily minting cap after 24 hours", async function () {
       const dailyCap = ethers.parseEther("10000000");
-      
+
       // Mint up to daily cap
       await ngnStablecoin.connect(minter).mint(user1.address, dailyCap);
-      
+
       // Should fail to mint more
-      await expect(ngnStablecoin.connect(minter).mint(user1.address, ethers.parseEther("1")))
-        .to.be.revertedWithCustomError(ngnStablecoin, "MintingCapExceeded");
-      
+      await expect(
+        ngnStablecoin.connect(minter).mint(user1.address, ethers.parseEther("1"))
+      ).to.be.revertedWithCustomError(ngnStablecoin, "MintingCapExceeded");
+
       // Fast forward 24 hours
       await ethers.provider.send("evm_increaseTime", [86400]);
       await ethers.provider.send("evm_mine", []);
-      
+
       // Should be able to mint again
-      await expect(ngnStablecoin.connect(minter).mint(user2.address, ethers.parseEther("1000")))
-        .to.not.be.reverted;
+      await expect(ngnStablecoin.connect(minter).mint(user2.address, ethers.parseEther("1000"))).to
+        .not.be.reverted;
     });
 
     it("Should support batch minting", async function () {
       const recipients = [user1.address, user2.address];
       const amounts = [ethers.parseEther("1000"), ethers.parseEther("2000")];
-      
+
       await expect(ngnStablecoin.connect(minter).batchMint(recipients, amounts))
         .to.emit(ngnStablecoin, "Transfer")
         .withArgs(ethers.ZeroAddress, user1.address, amounts[0])
@@ -148,10 +152,10 @@ describe("NGNStablecoin", function () {
     it("Should allow burner to burn tokens", async function () {
       const burnAmount = ethers.parseEther("1000");
       const initialBalance = await ngnStablecoin.balanceOf(user1.address);
-      
+
       // User needs to approve burner
       await ngnStablecoin.connect(user1).approve(burner.address, burnAmount);
-      
+
       await expect(ngnStablecoin.connect(burner).burnFrom(user1.address, burnAmount))
         .to.emit(ngnStablecoin, "Transfer")
         .withArgs(user1.address, ethers.ZeroAddress, burnAmount);
@@ -161,19 +165,21 @@ describe("NGNStablecoin", function () {
 
     it("Should not allow non-burner to burn tokens", async function () {
       const burnAmount = ethers.parseEther("1000");
-      
-      await expect(ngnStablecoin.connect(user2).burnFrom(user1.address, burnAmount))
-        .to.be.revertedWithCustomError(ngnStablecoin, "AccessControlUnauthorizedAccount");
+
+      await expect(
+        ngnStablecoin.connect(user2).burnFrom(user1.address, burnAmount)
+      ).to.be.revertedWithCustomError(ngnStablecoin, "AccessControlUnauthorizedAccount");
     });
 
     it("Should not allow burning more than balance", async function () {
       const balance = await ngnStablecoin.balanceOf(user1.address);
       const burnAmount = balance + ethers.parseEther("1");
-      
+
       await ngnStablecoin.connect(user1).approve(burner.address, burnAmount);
-      
-      await expect(ngnStablecoin.connect(burner).burnFrom(user1.address, burnAmount))
-        .to.be.revertedWithCustomError(ngnStablecoin, "ERC20InsufficientBalance");
+
+      await expect(
+        ngnStablecoin.connect(burner).burnFrom(user1.address, burnAmount)
+      ).to.be.revertedWithCustomError(ngnStablecoin, "ERC20InsufficientBalance");
     });
   });
 
@@ -185,7 +191,7 @@ describe("NGNStablecoin", function () {
 
     it("Should allow normal transfers", async function () {
       const transferAmount = ethers.parseEther("1000");
-      
+
       await expect(ngnStablecoin.connect(user1).transfer(user2.address, transferAmount))
         .to.emit(ngnStablecoin, "Transfer")
         .withArgs(user1.address, user2.address, transferAmount);
@@ -196,20 +202,22 @@ describe("NGNStablecoin", function () {
     it("Should enforce minimum transfer amount", async function () {
       const minAmount = await ngnStablecoin.minTransferAmount();
       const belowMin = minAmount - 1n;
-      
-      await expect(ngnStablecoin.connect(user1).transfer(user2.address, belowMin))
-        .to.be.revertedWithCustomError(ngnStablecoin, "TransferLimitExceeded");
+
+      await expect(
+        ngnStablecoin.connect(user1).transfer(user2.address, belowMin)
+      ).to.be.revertedWithCustomError(ngnStablecoin, "TransferLimitExceeded");
     });
 
     it("Should enforce maximum transfer amount", async function () {
       const maxAmount = await ngnStablecoin.maxTransferAmount();
       const aboveMax = maxAmount + ethers.parseEther("1");
-      
+
       // First mint enough tokens
       await ngnStablecoin.connect(minter).mint(user1.address, aboveMax);
-      
-      await expect(ngnStablecoin.connect(user1).transfer(user2.address, aboveMax))
-        .to.be.revertedWithCustomError(ngnStablecoin, "TransferLimitExceeded");
+
+      await expect(
+        ngnStablecoin.connect(user1).transfer(user2.address, aboveMax)
+      ).to.be.revertedWithCustomError(ngnStablecoin, "TransferLimitExceeded");
     });
 
     it("Should enforce daily transfer limit", async function () {
@@ -230,22 +238,24 @@ describe("NGNStablecoin", function () {
       // Try to transfer more than daily limit but less than max transfer
       const exceedAmount = newDailyLimit + ethers.parseEther("1");
 
-      await expect(ngnStablecoin.connect(user1).transfer(user2.address, exceedAmount))
-        .to.be.revertedWithCustomError(ngnStablecoin, "DailyLimitExceeded");
+      await expect(
+        ngnStablecoin.connect(user1).transfer(user2.address, exceedAmount)
+      ).to.be.revertedWithCustomError(ngnStablecoin, "DailyLimitExceeded");
     });
 
     it("Should block transfers from blacklisted addresses", async function () {
       const transferAmount = ethers.parseEther("1000");
-      
+
       // Blacklist user1
       await ngnStablecoin.connect(admin).setComplianceStatus(
         [user1.address],
         [true], // blacklisted
         [false] // not whitelisted
       );
-      
-      await expect(ngnStablecoin.connect(user1).transfer(user2.address, transferAmount))
-        .to.be.revertedWithCustomError(ngnStablecoin, "BlacklistedAddress");
+
+      await expect(
+        ngnStablecoin.connect(user1).transfer(user2.address, transferAmount)
+      ).to.be.revertedWithCustomError(ngnStablecoin, "BlacklistedAddress");
     });
 
     it("Should allow transfers for DEX contracts even with limits", async function () {
@@ -264,7 +274,9 @@ describe("NGNStablecoin", function () {
       // Transfer from DEX to user1 should work even above normal limits
       await ngnStablecoin.connect(dexContract).transfer(user1.address, transferAmount);
 
-      expect(await ngnStablecoin.balanceOf(user1.address)).to.equal(initialBalance + transferAmount);
+      expect(await ngnStablecoin.balanceOf(user1.address)).to.equal(
+        initialBalance + transferAmount
+      );
     });
   });
 
@@ -274,11 +286,14 @@ describe("NGNStablecoin", function () {
     });
 
     it("Should allow admin to set compliance status", async function () {
-      await expect(ngnStablecoin.connect(admin).setComplianceStatus(
-        [user1.address],
-        [true], // blacklisted
-        [false] // not whitelisted
-      )).to.emit(ngnStablecoin, "ComplianceStatusUpdated")
+      await expect(
+        ngnStablecoin.connect(admin).setComplianceStatus(
+          [user1.address],
+          [true], // blacklisted
+          [false] // not whitelisted
+        )
+      )
+        .to.emit(ngnStablecoin, "ComplianceStatusUpdated")
         .withArgs(user1.address, true, false);
 
       expect(await ngnStablecoin.blacklisted(user1.address)).to.be.true;
@@ -287,33 +302,34 @@ describe("NGNStablecoin", function () {
 
     it("Should enforce whitelist when required", async function () {
       const transferAmount = ethers.parseEther("1000");
-      
+
       // Enable whitelist requirement
       await ngnStablecoin.connect(admin).setWhitelistRequired(true);
-      
+
       // Transfer should fail without whitelist
-      await expect(ngnStablecoin.connect(user1).transfer(user2.address, transferAmount))
-        .to.be.revertedWithCustomError(ngnStablecoin, "NotWhitelisted");
-      
+      await expect(
+        ngnStablecoin.connect(user1).transfer(user2.address, transferAmount)
+      ).to.be.revertedWithCustomError(ngnStablecoin, "NotWhitelisted");
+
       // Whitelist user1
       await ngnStablecoin.connect(admin).setComplianceStatus(
         [user1.address],
         [false], // not blacklisted
         [true] // whitelisted
       );
-      
+
       // Transfer should now work
-      await expect(ngnStablecoin.connect(user1).transfer(user2.address, transferAmount))
-        .to.not.be.reverted;
+      await expect(ngnStablecoin.connect(user1).transfer(user2.address, transferAmount)).to.not.be
+        .reverted;
     });
   });
 
   describe("DEX Integration", function () {
     it("Should authorize DEX contracts", async function () {
-      await expect(ngnStablecoin.connect(admin).authorizeDEXContracts(
-        [dexContract.address],
-        [true]
-      )).to.emit(ngnStablecoin, "DEXContractAuthorized")
+      await expect(
+        ngnStablecoin.connect(admin).authorizeDEXContracts([dexContract.address], [true])
+      )
+        .to.emit(ngnStablecoin, "DEXContractAuthorized")
         .withArgs(dexContract.address, true);
 
       expect(await ngnStablecoin.authorizedDEXContracts(dexContract.address)).to.be.true;
@@ -322,9 +338,9 @@ describe("NGNStablecoin", function () {
 
     it("Should set DEX transfer limits", async function () {
       const newLimit = ethers.parseEther("50000000");
-      
+
       await ngnStablecoin.connect(admin).setDEXTransferLimit(newLimit);
-      
+
       expect(await ngnStablecoin.dexTransferLimit()).to.equal(newLimit);
     });
   });
@@ -336,9 +352,11 @@ describe("NGNStablecoin", function () {
         maxSupply: ethers.parseEther("2000000000"),
         mintingEnabled: false,
       };
-      
-      await expect(ngnStablecoin.connect(admin).updateConfig(newConfig))
-        .to.emit(ngnStablecoin, "StablecoinConfigUpdated");
+
+      await expect(ngnStablecoin.connect(admin).updateConfig(newConfig)).to.emit(
+        ngnStablecoin,
+        "StablecoinConfigUpdated"
+      );
 
       const config = await ngnStablecoin.getConfig();
       expect(config.maxSupply).to.equal(ethers.parseEther("2000000000"));
@@ -349,7 +367,7 @@ describe("NGNStablecoin", function () {
       const newMin = ethers.parseEther("10");
       const newMax = ethers.parseEther("500000");
       const newDaily = ethers.parseEther("5000000");
-      
+
       await expect(ngnStablecoin.connect(admin).setTransferLimits(newMin, newMax, newDaily))
         .to.emit(ngnStablecoin, "TransferLimitsUpdated")
         .withArgs(newMin, newMax, newDaily);
@@ -362,17 +380,18 @@ describe("NGNStablecoin", function () {
     it("Should allow pausing and unpausing", async function () {
       await ngnStablecoin.connect(admin).pause();
       expect(await ngnStablecoin.paused()).to.be.true;
-      
+
       // Minting should be paused
-      await expect(ngnStablecoin.connect(minter).mint(user1.address, ethers.parseEther("1000")))
-        .to.be.revertedWithCustomError(ngnStablecoin, "EnforcedPause");
-      
+      await expect(
+        ngnStablecoin.connect(minter).mint(user1.address, ethers.parseEther("1000"))
+      ).to.be.revertedWithCustomError(ngnStablecoin, "EnforcedPause");
+
       await ngnStablecoin.connect(admin).unpause();
       expect(await ngnStablecoin.paused()).to.be.false;
-      
+
       // Minting should work again
-      await expect(ngnStablecoin.connect(minter).mint(user1.address, ethers.parseEther("1000")))
-        .to.not.be.reverted;
+      await expect(ngnStablecoin.connect(minter).mint(user1.address, ethers.parseEther("1000"))).to
+        .not.be.reverted;
     });
   });
 
@@ -380,10 +399,10 @@ describe("NGNStablecoin", function () {
     it("Should return remaining minting capacity", async function () {
       const dailyCap = ethers.parseEther("10000000");
       const mintAmount = ethers.parseEther("1000000");
-      
+
       // Initially should return full capacity
       expect(await ngnStablecoin.getRemainingMintingCapacity()).to.equal(dailyCap);
-      
+
       // After minting, should return reduced capacity
       await ngnStablecoin.connect(minter).mint(user1.address, mintAmount);
       expect(await ngnStablecoin.getRemainingMintingCapacity()).to.equal(dailyCap - mintAmount);
@@ -391,34 +410,45 @@ describe("NGNStablecoin", function () {
 
     it("Should return remaining daily transfer capacity", async function () {
       const dailyLimit = ethers.parseEther("10000000");
-      
+
       // Mint tokens first
       await ngnStablecoin.connect(minter).mint(user1.address, ethers.parseEther("5000000"));
-      
+
       // Initially should return full capacity
-      expect(await ngnStablecoin.getRemainingDailyTransferCapacity(user1.address)).to.equal(dailyLimit);
-      
+      expect(await ngnStablecoin.getRemainingDailyTransferCapacity(user1.address)).to.equal(
+        dailyLimit
+      );
+
       // After transfer, should return reduced capacity
       const transferAmount = ethers.parseEther("1000000");
       await ngnStablecoin.connect(user1).transfer(user2.address, transferAmount);
-      expect(await ngnStablecoin.getRemainingDailyTransferCapacity(user1.address))
-        .to.equal(dailyLimit - transferAmount);
+      expect(await ngnStablecoin.getRemainingDailyTransferCapacity(user1.address)).to.equal(
+        dailyLimit - transferAmount
+      );
     });
 
     it("Should check if transfer is allowed", async function () {
       const transferAmount = ethers.parseEther("1000");
-      
+
       // Mint tokens first
       await ngnStablecoin.connect(minter).mint(user1.address, ethers.parseEther("10000"));
-      
+
       // Should be allowed initially
-      const [canTransfer, reason] = await ngnStablecoin.canTransfer(user1.address, user2.address, transferAmount);
+      const [canTransfer, reason] = await ngnStablecoin.canTransfer(
+        user1.address,
+        user2.address,
+        transferAmount
+      );
       expect(canTransfer).to.be.true;
       expect(reason).to.equal("Transfer allowed");
-      
+
       // Should not be allowed if blacklisted
       await ngnStablecoin.connect(admin).setComplianceStatus([user1.address], [true], [false]);
-      const [canTransfer2, reason2] = await ngnStablecoin.canTransfer(user1.address, user2.address, transferAmount);
+      const [canTransfer2, reason2] = await ngnStablecoin.canTransfer(
+        user1.address,
+        user2.address,
+        transferAmount
+      );
       expect(canTransfer2).to.be.false;
       expect(reason2).to.equal("Address blacklisted");
     });

@@ -31,7 +31,8 @@
     "./scripts/**/*",
     "./test/**/*",
     "./typechain-types/**/*",
-    "hardhat.config.ts"
+    "hardhat.config.ts",
+    ".eslintrc.js"
   ],
   "exclude": [
     "node_modules",

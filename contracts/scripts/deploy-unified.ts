@@ -1,18 +1,17 @@
 import { ethers } from "hardhat";
 import { writeFileSync, existsSync, mkdirSync, copyFileSync, readFileSync } from "fs";
 import { resolve, join } from "path";
-import { execSync } from "child_process";
 
 /**
  * Unified Multi-EVM Deployment Script
- * 
+ *
  * This script consolidates all contract deployments into a single command:
  * - NGN Stablecoin contract
- * - Stock Token Factory contract  
+ * - Stock Token Factory contract
  * - StockNGNDEX contract
  * - TradingPairManager contract
  * - Stock tokens (if needed)
- * 
+ *
  * Features:
  * - Supports multiple networks (Bitfinity, Sepolia, Hedera, etc.)
  * - Automatic ABI transfer to front-end
@@ -131,7 +130,7 @@ const NETWORK_CONFIGS: Record<string, NetworkConfig> = {
     },
   },
   sepolia: {
-    name: "Ethereum Sepolia Testnet", 
+    name: "Ethereum Sepolia Testnet",
     chainId: 11155111,
     rpcUrl: "https://sepolia.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161",
     blockExplorer: "https://sepolia.etherscan.io",
@@ -148,7 +147,7 @@ const NETWORK_CONFIGS: Record<string, NetworkConfig> = {
     blockExplorer: "https://hashscan.io/testnet",
     nativeCurrency: {
       name: "HBAR",
-      symbol: "HBAR", 
+      symbol: "HBAR",
       decimals: 18,
     },
   },
@@ -342,7 +341,7 @@ async function transferABIs(deploymentResult: DeploymentResult): Promise<void> {
     "NigerianStockTokenFactory.sol/NigerianStockTokenFactory.json",
     "NigerianStockToken.sol/NigerianStockToken.json",
     "StockNGNDEX.sol/StockNGNDEX.json",
-    "TradingPairManager.sol/TradingPairManager.json"
+    "TradingPairManager.sol/TradingPairManager.json",
   ];
 
   deploymentResult.abiTransfer.transferredFiles = [];
@@ -416,7 +415,10 @@ async function updateABIIndex(deploymentResult: DeploymentResult): Promise<void>
     }
 
     // Replace the addresses in the index file
-    const chainIdPattern = new RegExp(`(${chainId}:\\s*{[^}]*?)("factoryAddress":\\s*)"[^"]*"`, 'g');
+    const chainIdPattern = new RegExp(
+      `(${chainId}:\\s*{[^}]*?)("factoryAddress":\\s*)"[^"]*"`,
+      "g"
+    );
     if (addressUpdates.factoryAddress) {
       indexContent = indexContent.replace(chainIdPattern, `$1$2"${addressUpdates.factoryAddress}"`);
     }
@@ -424,7 +426,6 @@ async function updateABIIndex(deploymentResult: DeploymentResult): Promise<void>
     // Write updated content back
     writeFileSync(indexPath, indexContent);
     console.log("   ✅ Updated ABI index with new contract addresses");
-
   } catch (error) {
     console.error(`   ❌ Failed to update ABI index: ${error}`);
     deploymentResult.abiTransfer.errors.push(`Failed to update ABI index: ${error}`);
@@ -452,7 +453,7 @@ async function verifyContracts(deploymentResult: DeploymentResult): Promise<void
       const [name, symbol, decimals] = await Promise.all([
         ngnContract.name(),
         ngnContract.symbol(),
-        ngnContract.decimals()
+        ngnContract.decimals(),
       ]);
 
       console.log(`   ✅ NGN Stablecoin: ${name} (${symbol}) - ${decimals} decimals`);
@@ -497,20 +498,16 @@ async function verifyContracts(deploymentResult: DeploymentResult): Promise<void
     // Verify stock tokens
     for (const token of deploymentResult.stockTokens) {
       console.log(`   Verifying ${token.symbol}...`);
-      const tokenContract = await ethers.getContractAt(
-        "NigerianStockToken",
-        token.address
-      );
+      const tokenContract = await ethers.getContractAt("NigerianStockToken", token.address);
 
       const [name, symbol, totalSupply] = await Promise.all([
         tokenContract.name(),
         tokenContract.symbol(),
-        tokenContract.totalSupply()
+        tokenContract.totalSupply(),
       ]);
 
       console.log(`   ✅ ${symbol}: ${name} - ${ethers.formatEther(totalSupply)} tokens`);
     }
-
   } catch (error) {
     deploymentResult.verification.verified = false;
     const errorMsg = `Contract verification failed: ${error}`;
@@ -549,15 +546,19 @@ async function saveDeploymentResults(deploymentResult: DeploymentResult): Promis
  * Print deployment summary
  */
 function printDeploymentSummary(deploymentResult: DeploymentResult): void {
-  console.log("\n" + "=".repeat(80));
+  console.log(`\n${"=".repeat(80)}`);
   console.log("🎉 DEPLOYMENT SUMMARY");
   console.log("=".repeat(80));
 
-  console.log(`📡 Network: ${deploymentResult.network.name} (Chain ID: ${deploymentResult.network.chainId})`);
+  console.log(
+    `📡 Network: ${deploymentResult.network.name} (Chain ID: ${deploymentResult.network.chainId})`
+  );
   console.log(`👤 Deployer: ${deploymentResult.deployer}`);
   console.log(`⏰ Timestamp: ${deploymentResult.timestamp}`);
   console.log(`⛽ Total Gas Used: ${deploymentResult.totalGasUsed}`);
-  console.log(`💰 Estimated Cost: ${deploymentResult.estimatedCostETH} ${deploymentResult.network.nativeCurrency.symbol}`);
+  console.log(
+    `💰 Estimated Cost: ${deploymentResult.estimatedCostETH} ${deploymentResult.network.nativeCurrency.symbol}`
+  );
 
   console.log("\n📦 DEPLOYED CONTRACTS:");
   if (deploymentResult.contracts.ngnStablecoin) {
@@ -612,16 +613,24 @@ function printDeploymentSummary(deploymentResult: DeploymentResult): void {
   if (deploymentResult.network.blockExplorer) {
     console.log("\n🔗 BLOCK EXPLORER LINKS:");
     if (deploymentResult.contracts.ngnStablecoin) {
-      console.log(`   NGN Stablecoin: ${deploymentResult.network.blockExplorer}/address/${deploymentResult.contracts.ngnStablecoin.address}`);
+      console.log(
+        `   NGN Stablecoin: ${deploymentResult.network.blockExplorer}/address/${deploymentResult.contracts.ngnStablecoin.address}`
+      );
     }
     if (deploymentResult.contracts.stockFactory) {
-      console.log(`   Stock Factory: ${deploymentResult.network.blockExplorer}/address/${deploymentResult.contracts.stockFactory.address}`);
+      console.log(
+        `   Stock Factory: ${deploymentResult.network.blockExplorer}/address/${deploymentResult.contracts.stockFactory.address}`
+      );
     }
     if (deploymentResult.contracts.stockNGNDEX) {
-      console.log(`   StockNGNDEX: ${deploymentResult.network.blockExplorer}/address/${deploymentResult.contracts.stockNGNDEX.address}`);
+      console.log(
+        `   StockNGNDEX: ${deploymentResult.network.blockExplorer}/address/${deploymentResult.contracts.stockNGNDEX.address}`
+      );
     }
     if (deploymentResult.contracts.tradingPairManager) {
-      console.log(`   TradingPairManager: ${deploymentResult.network.blockExplorer}/address/${deploymentResult.contracts.tradingPairManager.address}`);
+      console.log(
+        `   TradingPairManager: ${deploymentResult.network.blockExplorer}/address/${deploymentResult.contracts.tradingPairManager.address}`
+      );
     }
   }
 
@@ -632,7 +641,7 @@ function printDeploymentSummary(deploymentResult: DeploymentResult): void {
   console.log("4. Test swapping functionality");
   console.log("5. Set up monitoring and alerts");
 
-  console.log("\n" + "=".repeat(80));
+  console.log(`\n${"=".repeat(80)}`);
 }
 
 /**
@@ -647,19 +656,22 @@ async function deployUnified(networkName: string): Promise<void> {
   const contractConfig = CONTRACT_CONFIGS[networkName];
 
   if (!networkConfig || !contractConfig) {
-    throw new Error(`Unsupported network: ${networkName}. Supported networks: ${Object.keys(NETWORK_CONFIGS).join(", ")}`);
+    throw new Error(
+      `Unsupported network: ${networkName}. Supported networks: ${Object.keys(NETWORK_CONFIGS).join(", ")}`
+    );
   }
 
   // Get deployer and network info
   const [deployer] = await ethers.getSigners();
-  const network = await ethers.provider.getNetwork();
 
   console.log(`👤 Deployer: ${deployer.address}`);
   const balance = await ethers.provider.getBalance(deployer.address);
   console.log(`💰 Balance: ${ethers.formatEther(balance)} ${networkConfig.nativeCurrency.symbol}`);
 
   if (balance < ethers.parseEther("0.01")) {
-    console.log(`⚠️  Warning: Low ${networkConfig.nativeCurrency.symbol} balance. You may need more for deployment.`);
+    console.log(
+      `⚠️  Warning: Low ${networkConfig.nativeCurrency.symbol} balance. You may need more for deployment.`
+    );
   }
 
   // Initialize deployment result
@@ -689,21 +701,18 @@ async function deployUnified(networkName: string): Promise<void> {
     console.log("\n📦 Step 1: Deploying NGN Stablecoin...");
     const NGNStablecoin = await ethers.getContractFactory("NGNStablecoin");
 
-    const ngnStablecoin = await NGNStablecoin.deploy(
-      deployer.address,
-      {
-        name: contractConfig.ngnStablecoin.name,
-        symbol: contractConfig.ngnStablecoin.symbol,
-        decimals: 18,
-        maxSupply: contractConfig.ngnStablecoin.maxSupply,
-        mintingCap: contractConfig.ngnStablecoin.mintingCap,
-        lastMintReset: 0,
-        currentDayMinted: 0,
-        mintingEnabled: contractConfig.ngnStablecoin.mintingEnabled,
-        burningEnabled: contractConfig.ngnStablecoin.burningEnabled,
-        transfersEnabled: contractConfig.ngnStablecoin.transfersEnabled,
-      }
-    );
+    const ngnStablecoin = await NGNStablecoin.deploy(deployer.address, {
+      name: contractConfig.ngnStablecoin.name,
+      symbol: contractConfig.ngnStablecoin.symbol,
+      decimals: 18,
+      maxSupply: contractConfig.ngnStablecoin.maxSupply,
+      mintingCap: contractConfig.ngnStablecoin.mintingCap,
+      lastMintReset: 0,
+      currentDayMinted: 0,
+      mintingEnabled: contractConfig.ngnStablecoin.mintingEnabled,
+      burningEnabled: contractConfig.ngnStablecoin.burningEnabled,
+      transfersEnabled: contractConfig.ngnStablecoin.transfersEnabled,
+    });
 
     await ngnStablecoin.waitForDeployment();
     const ngnAddress = await ngnStablecoin.getAddress();
@@ -761,7 +770,7 @@ async function deployUnified(networkName: string): Promise<void> {
           totalShares: tokenConfig.totalSupply,
           marketCap: tokenConfig.marketCap,
           isActive: true,
-          lastUpdated: Math.floor(Date.now() / 1000)
+          lastUpdated: Math.floor(Date.now() / 1000),
         };
 
         const deployTx = await stockFactory.deployStockToken(
@@ -777,7 +786,8 @@ async function deployUnified(networkName: string): Promise<void> {
           totalGasUsed += deployReceipt.gasUsed;
 
           // Get the deployed token address from events
-          const deployedEvent = deployReceipt.logs.find(log => {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const deployedEvent = deployReceipt.logs.find((log: any) => {
             try {
               const parsed = stockFactory.interface.parseLog(log);
               return parsed?.name === "StockTokenDeployed";
@@ -803,7 +813,7 @@ async function deployUnified(networkName: string): Promise<void> {
         }
 
         // Small delay to avoid overwhelming the network
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        await new Promise((resolve) => setTimeout(resolve, 1000));
       }
     } else {
       console.log("\n⏭️  Step 2: Skipping Stock Factory deployment (using existing tokens)");
@@ -813,17 +823,13 @@ async function deployUnified(networkName: string): Promise<void> {
     console.log("\n📦 Step 3: Deploying StockNGNDEX...");
     const StockNGNDEX = await ethers.getContractFactory("StockNGNDEX");
 
-    const stockNGNDEX = await StockNGNDEX.deploy(
-      ngnAddress,
-      deployer.address,
-      {
-        defaultFeeRate: contractConfig.dex.defaultFeeRate,
-        maxPriceImpact: contractConfig.dex.maxPriceImpact,
-        minLiquidity: contractConfig.dex.minLiquidity,
-        swapDeadline: contractConfig.dex.swapDeadline,
-        emergencyMode: contractConfig.dex.emergencyMode,
-      }
-    );
+    const stockNGNDEX = await StockNGNDEX.deploy(ngnAddress, deployer.address, {
+      defaultFeeRate: contractConfig.dex.defaultFeeRate,
+      maxPriceImpact: contractConfig.dex.maxPriceImpact,
+      minLiquidity: contractConfig.dex.minLiquidity,
+      swapDeadline: contractConfig.dex.swapDeadline,
+      emergencyMode: contractConfig.dex.emergencyMode,
+    });
 
     await stockNGNDEX.waitForDeployment();
     const dexAddress = await stockNGNDEX.getAddress();
@@ -909,7 +915,6 @@ async function deployUnified(networkName: string): Promise<void> {
     printDeploymentSummary(deploymentResult);
 
     console.log("\n🎉 Unified deployment completed successfully!");
-
   } catch (error) {
     console.error("\n❌ Deployment failed:", error);
     throw error;

@@ -81,10 +81,14 @@ describe("StockNGNDEX", function () {
     await stockNGNDEX.connect(admin).grantRole(LIQUIDITY_PROVIDER_ROLE, liquidityProvider.address);
 
     // Authorize DEX in NGN stablecoin
-    await ngnStablecoin.connect(admin).authorizeDEXContracts([await stockNGNDEX.getAddress()], [true]);
+    await ngnStablecoin
+      .connect(admin)
+      .authorizeDEXContracts([await stockNGNDEX.getAddress()], [true]);
 
     // Mint initial tokens
-    await ngnStablecoin.connect(admin).mint(liquidityProvider.address, ethers.parseEther("1000000"));
+    await ngnStablecoin
+      .connect(admin)
+      .mint(liquidityProvider.address, ethers.parseEther("1000000"));
     await ngnStablecoin.connect(admin).mint(trader1.address, ethers.parseEther("100000"));
     await ngnStablecoin.connect(admin).mint(trader2.address, ethers.parseEther("100000"));
 
@@ -95,7 +99,7 @@ describe("StockNGNDEX", function () {
   describe("Deployment", function () {
     it("Should set the correct initial configuration", async function () {
       expect(await stockNGNDEX.ngnToken()).to.equal(await ngnStablecoin.getAddress());
-      
+
       const config = await stockNGNDEX.config();
       expect(config.defaultFeeRate).to.equal(30);
       expect(config.maxPriceImpact).to.equal(500);
@@ -105,7 +109,8 @@ describe("StockNGNDEX", function () {
     it("Should grant admin roles correctly", async function () {
       expect(await stockNGNDEX.hasRole(ADMIN_ROLE, admin.address)).to.be.true;
       expect(await stockNGNDEX.hasRole(OPERATOR_ROLE, operator.address)).to.be.true;
-      expect(await stockNGNDEX.hasRole(LIQUIDITY_PROVIDER_ROLE, liquidityProvider.address)).to.be.true;
+      expect(await stockNGNDEX.hasRole(LIQUIDITY_PROVIDER_ROLE, liquidityProvider.address)).to.be
+        .true;
     });
   });
 
@@ -120,12 +125,12 @@ describe("StockNGNDEX", function () {
       await stockToken.connect(admin).mint(operator.address, initialStock);
       await stockToken.connect(operator).approve(await stockNGNDEX.getAddress(), initialStock);
 
-      await expect(stockNGNDEX.connect(operator).createTradingPair(
-        await stockToken.getAddress(),
-        initialNGN,
-        initialStock,
-        feeRate
-      )).to.emit(stockNGNDEX, "TradingPairCreated")
+      await expect(
+        stockNGNDEX
+          .connect(operator)
+          .createTradingPair(await stockToken.getAddress(), initialNGN, initialStock, feeRate)
+      )
+        .to.emit(stockNGNDEX, "TradingPairCreated")
         .withArgs(await stockToken.getAddress(), initialNGN, initialStock, feeRate);
 
       const pair = await stockNGNDEX.getTradingPair(await stockToken.getAddress());
@@ -144,32 +149,27 @@ describe("StockNGNDEX", function () {
       await stockToken.connect(admin).mint(operator.address, initialStock);
       await stockToken.connect(operator).approve(await stockNGNDEX.getAddress(), initialStock);
 
-      await stockNGNDEX.connect(operator).createTradingPair(
-        await stockToken.getAddress(),
-        initialNGN,
-        initialStock,
-        30
-      );
+      await stockNGNDEX
+        .connect(operator)
+        .createTradingPair(await stockToken.getAddress(), initialNGN, initialStock, 30);
 
       // Try to create duplicate
-      await expect(stockNGNDEX.connect(operator).createTradingPair(
-        await stockToken.getAddress(),
-        initialNGN,
-        initialStock,
-        30
-      )).to.be.revertedWithCustomError(stockNGNDEX, "TradingPairExists");
+      await expect(
+        stockNGNDEX
+          .connect(operator)
+          .createTradingPair(await stockToken.getAddress(), initialNGN, initialStock, 30)
+      ).to.be.revertedWithCustomError(stockNGNDEX, "TradingPairExists");
     });
 
     it("Should not allow non-operator to create trading pairs", async function () {
       const initialNGN = ethers.parseEther("50000");
       const initialStock = ethers.parseEther("1000");
 
-      await expect(stockNGNDEX.connect(trader1).createTradingPair(
-        await stockToken.getAddress(),
-        initialNGN,
-        initialStock,
-        30
-      )).to.be.revertedWithCustomError(stockNGNDEX, "AccessControlUnauthorizedAccount");
+      await expect(
+        stockNGNDEX
+          .connect(trader1)
+          .createTradingPair(await stockToken.getAddress(), initialNGN, initialStock, 30)
+      ).to.be.revertedWithCustomError(stockNGNDEX, "AccessControlUnauthorizedAccount");
     });
   });
 
@@ -179,30 +179,37 @@ describe("StockNGNDEX", function () {
       const initialNGN = ethers.parseEther("50000");
       const initialStock = ethers.parseEther("1000");
 
-      await ngnStablecoin.connect(liquidityProvider).approve(await stockNGNDEX.getAddress(), initialNGN);
-      await stockToken.connect(liquidityProvider).approve(await stockNGNDEX.getAddress(), initialStock);
+      await ngnStablecoin
+        .connect(liquidityProvider)
+        .approve(await stockNGNDEX.getAddress(), initialNGN);
+      await stockToken
+        .connect(liquidityProvider)
+        .approve(await stockNGNDEX.getAddress(), initialStock);
 
-      await stockNGNDEX.connect(operator).createTradingPair(
-        await stockToken.getAddress(),
-        initialNGN,
-        initialStock,
-        30
-      );
+      await stockNGNDEX
+        .connect(operator)
+        .createTradingPair(await stockToken.getAddress(), initialNGN, initialStock, 30);
     });
 
     it("Should add liquidity successfully", async function () {
       const ngnAmount = ethers.parseEther("10000");
       const stockAmount = ethers.parseEther("200");
 
-      await ngnStablecoin.connect(liquidityProvider).approve(await stockNGNDEX.getAddress(), ngnAmount);
-      await stockToken.connect(liquidityProvider).approve(await stockNGNDEX.getAddress(), stockAmount);
+      await ngnStablecoin
+        .connect(liquidityProvider)
+        .approve(await stockNGNDEX.getAddress(), ngnAmount);
+      await stockToken
+        .connect(liquidityProvider)
+        .approve(await stockNGNDEX.getAddress(), stockAmount);
 
-      await expect(stockNGNDEX.connect(liquidityProvider).addLiquidity(
-        await stockToken.getAddress(),
-        ngnAmount,
-        stockAmount,
-        0 // min liquidity out
-      )).to.emit(stockNGNDEX, "LiquidityAdded");
+      await expect(
+        stockNGNDEX.connect(liquidityProvider).addLiquidity(
+          await stockToken.getAddress(),
+          ngnAmount,
+          stockAmount,
+          0 // min liquidity out
+        )
+      ).to.emit(stockNGNDEX, "LiquidityAdded");
 
       const position = await stockNGNDEX.getLiquidityPosition(
         liquidityProvider.address,
@@ -221,12 +228,14 @@ describe("StockNGNDEX", function () {
       const ngnBalanceBefore = await ngnStablecoin.balanceOf(liquidityProvider.address);
       const stockBalanceBefore = await stockToken.balanceOf(liquidityProvider.address);
 
-      await expect(stockNGNDEX.connect(liquidityProvider).removeLiquidity(
-        await stockToken.getAddress(),
-        liquidityToRemove,
-        0, // min NGN out
-        0  // min stock out
-      )).to.emit(stockNGNDEX, "LiquidityRemoved");
+      await expect(
+        stockNGNDEX.connect(liquidityProvider).removeLiquidity(
+          await stockToken.getAddress(),
+          liquidityToRemove,
+          0, // min NGN out
+          0 // min stock out
+        )
+      ).to.emit(stockNGNDEX, "LiquidityRemoved");
 
       const ngnBalanceAfter = await ngnStablecoin.balanceOf(liquidityProvider.address);
       const stockBalanceAfter = await stockToken.balanceOf(liquidityProvider.address);
@@ -242,15 +251,16 @@ describe("StockNGNDEX", function () {
       const initialNGN = ethers.parseEther("100000");
       const initialStock = ethers.parseEther("2000");
 
-      await ngnStablecoin.connect(liquidityProvider).approve(await stockNGNDEX.getAddress(), initialNGN);
-      await stockToken.connect(liquidityProvider).approve(await stockNGNDEX.getAddress(), initialStock);
+      await ngnStablecoin
+        .connect(liquidityProvider)
+        .approve(await stockNGNDEX.getAddress(), initialNGN);
+      await stockToken
+        .connect(liquidityProvider)
+        .approve(await stockNGNDEX.getAddress(), initialStock);
 
-      await stockNGNDEX.connect(operator).createTradingPair(
-        await stockToken.getAddress(),
-        initialNGN,
-        initialStock,
-        30
-      );
+      await stockNGNDEX
+        .connect(operator)
+        .createTradingPair(await stockToken.getAddress(), initialNGN, initialStock, 30);
     });
 
     it("Should swap NGN for stock tokens", async function () {
@@ -258,7 +268,7 @@ describe("StockNGNDEX", function () {
       const deadline = Math.floor(Date.now() / 1000) + 1800;
 
       // Get quote first
-      const [expectedStockOut, fee] = await stockNGNDEX.getQuoteNGNToStock(
+      const [expectedStockOut] = await stockNGNDEX.getQuoteNGNToStock(
         await stockToken.getAddress(),
         ngnAmountIn
       );
@@ -270,12 +280,11 @@ describe("StockNGNDEX", function () {
 
       await ngnStablecoin.connect(trader1).approve(await stockNGNDEX.getAddress(), ngnAmountIn);
 
-      await expect(stockNGNDEX.connect(trader1).swapNGNForStock(
-        await stockToken.getAddress(),
-        ngnAmountIn,
-        minStockOut,
-        deadline
-      )).to.emit(stockNGNDEX, "SwapExecuted");
+      await expect(
+        stockNGNDEX
+          .connect(trader1)
+          .swapNGNForStock(await stockToken.getAddress(), ngnAmountIn, minStockOut, deadline)
+      ).to.emit(stockNGNDEX, "SwapExecuted");
 
       const stockBalanceAfter = await stockToken.balanceOf(trader1.address);
       const ngnBalanceAfter = await ngnStablecoin.balanceOf(trader1.address);
@@ -289,7 +298,7 @@ describe("StockNGNDEX", function () {
       const deadline = Math.floor(Date.now() / 1000) + 1800;
 
       // Get quote first
-      const [expectedNGNOut, fee] = await stockNGNDEX.getQuoteStockToNGN(
+      const [expectedNGNOut] = await stockNGNDEX.getQuoteStockToNGN(
         await stockToken.getAddress(),
         stockAmountIn
       );
@@ -301,12 +310,11 @@ describe("StockNGNDEX", function () {
 
       await stockToken.connect(trader1).approve(await stockNGNDEX.getAddress(), stockAmountIn);
 
-      await expect(stockNGNDEX.connect(trader1).swapStockForNGN(
-        await stockToken.getAddress(),
-        stockAmountIn,
-        minNGNOut,
-        deadline
-      )).to.emit(stockNGNDEX, "SwapExecuted");
+      await expect(
+        stockNGNDEX
+          .connect(trader1)
+          .swapStockForNGN(await stockToken.getAddress(), stockAmountIn, minNGNOut, deadline)
+      ).to.emit(stockNGNDEX, "SwapExecuted");
 
       const stockBalanceAfter = await stockToken.balanceOf(trader1.address);
       const ngnBalanceAfter = await ngnStablecoin.balanceOf(trader1.address);
@@ -330,12 +338,11 @@ describe("StockNGNDEX", function () {
 
       await ngnStablecoin.connect(trader1).approve(await stockNGNDEX.getAddress(), ngnAmountIn);
 
-      await expect(stockNGNDEX.connect(trader1).swapNGNForStock(
-        await stockToken.getAddress(),
-        ngnAmountIn,
-        unrealisticMin,
-        deadline
-      )).to.be.revertedWithCustomError(stockNGNDEX, "SlippageExceeded");
+      await expect(
+        stockNGNDEX
+          .connect(trader1)
+          .swapNGNForStock(await stockToken.getAddress(), ngnAmountIn, unrealisticMin, deadline)
+      ).to.be.revertedWithCustomError(stockNGNDEX, "SlippageExceeded");
     });
 
     it("Should revert on expired deadline", async function () {
@@ -344,12 +351,11 @@ describe("StockNGNDEX", function () {
 
       await ngnStablecoin.connect(trader1).approve(await stockNGNDEX.getAddress(), ngnAmountIn);
 
-      await expect(stockNGNDEX.connect(trader1).swapNGNForStock(
-        await stockToken.getAddress(),
-        ngnAmountIn,
-        0,
-        expiredDeadline
-      )).to.be.revertedWithCustomError(stockNGNDEX, "DeadlineExceeded");
+      await expect(
+        stockNGNDEX
+          .connect(trader1)
+          .swapNGNForStock(await stockToken.getAddress(), ngnAmountIn, 0, expiredDeadline)
+      ).to.be.revertedWithCustomError(stockNGNDEX, "DeadlineExceeded");
     });
 
     it("Should enforce price impact limits", async function () {
@@ -360,12 +366,11 @@ describe("StockNGNDEX", function () {
       await ngnStablecoin.connect(admin).mint(trader1.address, largeAmount);
       await ngnStablecoin.connect(trader1).approve(await stockNGNDEX.getAddress(), largeAmount);
 
-      await expect(stockNGNDEX.connect(trader1).swapNGNForStock(
-        await stockToken.getAddress(),
-        largeAmount,
-        0,
-        deadline
-      )).to.be.revertedWithCustomError(stockNGNDEX, "ExcessivePriceImpact");
+      await expect(
+        stockNGNDEX
+          .connect(trader1)
+          .swapNGNForStock(await stockToken.getAddress(), largeAmount, 0, deadline)
+      ).to.be.revertedWithCustomError(stockNGNDEX, "ExcessivePriceImpact");
     });
   });
 
@@ -375,15 +380,16 @@ describe("StockNGNDEX", function () {
       const initialNGN = ethers.parseEther("100000");
       const initialStock = ethers.parseEther("2000");
 
-      await ngnStablecoin.connect(liquidityProvider).approve(await stockNGNDEX.getAddress(), initialNGN);
-      await stockToken.connect(liquidityProvider).approve(await stockNGNDEX.getAddress(), initialStock);
+      await ngnStablecoin
+        .connect(liquidityProvider)
+        .approve(await stockNGNDEX.getAddress(), initialNGN);
+      await stockToken
+        .connect(liquidityProvider)
+        .approve(await stockNGNDEX.getAddress(), initialStock);
 
-      await stockNGNDEX.connect(operator).createTradingPair(
-        await stockToken.getAddress(),
-        initialNGN,
-        initialStock,
-        30
-      );
+      await stockNGNDEX
+        .connect(operator)
+        .createTradingPair(await stockToken.getAddress(), initialNGN, initialStock, 30);
     });
 
     it("Should track price correctly", async function () {
@@ -393,27 +399,24 @@ describe("StockNGNDEX", function () {
       // Price should be approximately 50 NGN per stock token (100000/2000)
       const expectedPrice = ethers.parseEther("50");
       const tolerance = ethers.parseEther("1"); // 1 NGN tolerance
-      
+
       expect(currentPrice).to.be.closeTo(expectedPrice, tolerance);
     });
 
     it("Should update price after swaps", async function () {
       const priceBefore = await stockNGNDEX.getCurrentPrice(await stockToken.getAddress());
-      
+
       // Execute a swap
       const ngnAmountIn = ethers.parseEther("5000");
       const deadline = Math.floor(Date.now() / 1000) + 1800;
 
       await ngnStablecoin.connect(trader1).approve(await stockNGNDEX.getAddress(), ngnAmountIn);
-      await stockNGNDEX.connect(trader1).swapNGNForStock(
-        await stockToken.getAddress(),
-        ngnAmountIn,
-        0,
-        deadline
-      );
+      await stockNGNDEX
+        .connect(trader1)
+        .swapNGNForStock(await stockToken.getAddress(), ngnAmountIn, 0, deadline);
 
       const priceAfter = await stockNGNDEX.getCurrentPrice(await stockToken.getAddress());
-      
+
       // Price should increase after buying stock tokens with NGN
       expect(priceAfter).to.be.gt(priceBefore);
     });
@@ -425,12 +428,9 @@ describe("StockNGNDEX", function () {
         const deadline = Math.floor(Date.now() / 1000) + 1800;
 
         await ngnStablecoin.connect(trader1).approve(await stockNGNDEX.getAddress(), ngnAmountIn);
-        await stockNGNDEX.connect(trader1).swapNGNForStock(
-          await stockToken.getAddress(),
-          ngnAmountIn,
-          0,
-          deadline
-        );
+        await stockNGNDEX
+          .connect(trader1)
+          .swapNGNForStock(await stockToken.getAddress(), ngnAmountIn, 0, deadline);
       }
 
       const priceHistory = await stockNGNDEX.getPriceHistory(await stockToken.getAddress());
@@ -444,8 +444,12 @@ describe("StockNGNDEX", function () {
       const initialNGN = ethers.parseEther("100000");
       const initialStock = ethers.parseEther("2000");
 
-      await ngnStablecoin.connect(liquidityProvider).approve(await stockNGNDEX.getAddress(), initialNGN);
-      await stockToken.connect(liquidityProvider).approve(await stockNGNDEX.getAddress(), initialStock);
+      await ngnStablecoin
+        .connect(liquidityProvider)
+        .approve(await stockNGNDEX.getAddress(), initialNGN);
+      await stockToken
+        .connect(liquidityProvider)
+        .approve(await stockNGNDEX.getAddress(), initialStock);
 
       await stockNGNDEX.connect(operator).createTradingPair(
         await stockToken.getAddress(),
@@ -462,12 +466,9 @@ describe("StockNGNDEX", function () {
       const feesBefore = await stockNGNDEX.collectedFees(await stockToken.getAddress());
 
       await ngnStablecoin.connect(trader1).approve(await stockNGNDEX.getAddress(), ngnAmountIn);
-      await stockNGNDEX.connect(trader1).swapNGNForStock(
-        await stockToken.getAddress(),
-        ngnAmountIn,
-        0,
-        deadline
-      );
+      await stockNGNDEX
+        .connect(trader1)
+        .swapNGNForStock(await stockToken.getAddress(), ngnAmountIn, 0, deadline);
 
       const feesAfter = await stockNGNDEX.collectedFees(await stockToken.getAddress());
       expect(feesAfter).to.be.gt(feesBefore);
@@ -483,12 +484,9 @@ describe("StockNGNDEX", function () {
       const deadline = Math.floor(Date.now() / 1000) + 1800;
 
       await ngnStablecoin.connect(trader1).approve(await stockNGNDEX.getAddress(), ngnAmountIn);
-      await stockNGNDEX.connect(trader1).swapNGNForStock(
-        await stockToken.getAddress(),
-        ngnAmountIn,
-        0,
-        deadline
-      );
+      await stockNGNDEX
+        .connect(trader1)
+        .swapNGNForStock(await stockToken.getAddress(), ngnAmountIn, 0, deadline);
 
       const collectedFees = await stockNGNDEX.collectedFees(await stockToken.getAddress());
       const adminBalanceBefore = await ngnStablecoin.balanceOf(admin.address);
@@ -524,12 +522,16 @@ describe("StockNGNDEX", function () {
       expect(await stockNGNDEX.paused()).to.be.true;
 
       // Operations should be paused
-      await expect(stockNGNDEX.connect(operator).createTradingPair(
-        await stockToken.getAddress(),
-        ethers.parseEther("1000"),
-        ethers.parseEther("100"),
-        30
-      )).to.be.revertedWithCustomError(stockNGNDEX, "EnforcedPause");
+      await expect(
+        stockNGNDEX
+          .connect(operator)
+          .createTradingPair(
+            await stockToken.getAddress(),
+            ethers.parseEther("1000"),
+            ethers.parseEther("100"),
+            30
+          )
+      ).to.be.revertedWithCustomError(stockNGNDEX, "EnforcedPause");
 
       await stockNGNDEX.connect(admin).unpause();
       expect(await stockNGNDEX.paused()).to.be.false;
@@ -542,20 +544,21 @@ describe("StockNGNDEX", function () {
       const initialNGN = ethers.parseEther("100000");
       const initialStock = ethers.parseEther("2000");
 
-      await ngnStablecoin.connect(liquidityProvider).approve(await stockNGNDEX.getAddress(), initialNGN);
-      await stockToken.connect(liquidityProvider).approve(await stockNGNDEX.getAddress(), initialStock);
+      await ngnStablecoin
+        .connect(liquidityProvider)
+        .approve(await stockNGNDEX.getAddress(), initialNGN);
+      await stockToken
+        .connect(liquidityProvider)
+        .approve(await stockNGNDEX.getAddress(), initialStock);
 
-      await stockNGNDEX.connect(operator).createTradingPair(
-        await stockToken.getAddress(),
-        initialNGN,
-        initialStock,
-        30
-      );
+      await stockNGNDEX
+        .connect(operator)
+        .createTradingPair(await stockToken.getAddress(), initialNGN, initialStock, 30);
     });
 
     it("Should return accurate swap quotes", async function () {
       const ngnAmountIn = ethers.parseEther("1000");
-      
+
       const [stockAmountOut, fee, priceImpact] = await stockNGNDEX.getQuoteNGNToStock(
         await stockToken.getAddress(),
         ngnAmountIn
@@ -571,7 +574,7 @@ describe("StockNGNDEX", function () {
     });
 
     it("Should return DEX statistics", async function () {
-      const [totalPairs, totalVolumeNGN, feesCollected, totalLiquidity] = await stockNGNDEX.getDEXStats();
+      const [totalPairs, , , totalLiquidity] = await stockNGNDEX.getDEXStats();
 
       expect(totalPairs).to.equal(1);
       expect(totalLiquidity).to.be.gt(0);

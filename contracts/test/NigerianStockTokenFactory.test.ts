@@ -1,12 +1,11 @@
 import { expect } from "chai";
 import { ethers } from "hardhat";
 import { loadFixture } from "@nomicfoundation/hardhat-network-helpers";
-import { NigerianStockTokenFactory } from "../typechain-types";
 
 describe("NigerianStockTokenFactory", function () {
   async function deployFactoryFixture() {
     const [owner, admin, deployer, user1] = await ethers.getSigners();
-    
+
     const NigerianStockTokenFactory = await ethers.getContractFactory("NigerianStockTokenFactory");
     const factory = await NigerianStockTokenFactory.deploy(admin.address);
     await factory.waitForDeployment();
@@ -21,7 +20,7 @@ describe("NigerianStockTokenFactory", function () {
     totalShares: ethers.parseEther("17040000000"),
     marketCap: 7710000000000n,
     isActive: true,
-    lastUpdated: Math.floor(Date.now() / 1000)
+    lastUpdated: Math.floor(Date.now() / 1000),
   };
 
   describe("Deployment", function () {
@@ -33,8 +32,10 @@ describe("NigerianStockTokenFactory", function () {
     });
 
     it("Should revert if admin address is zero", async function () {
-      const NigerianStockTokenFactory = await ethers.getContractFactory("NigerianStockTokenFactory");
-      
+      const NigerianStockTokenFactory = await ethers.getContractFactory(
+        "NigerianStockTokenFactory"
+      );
+
       await expect(
         NigerianStockTokenFactory.deploy(ethers.ZeroAddress)
       ).to.be.revertedWithCustomError(NigerianStockTokenFactory, "ZeroAddress");
@@ -54,13 +55,15 @@ describe("NigerianStockTokenFactory", function () {
     it("Should deploy a stock token successfully", async function () {
       const { factory, admin } = await loadFixture(deployFactoryFixture);
 
-      const tx = await factory.connect(admin).deployStockToken(
-        "Dangote Cement Token",
-        "DANGCEM",
-        ethers.parseEther("1000000"),
-        sampleStockMetadata,
-        admin.address
-      );
+      const tx = await factory
+        .connect(admin)
+        .deployStockToken(
+          "Dangote Cement Token",
+          "DANGCEM",
+          ethers.parseEther("1000000"),
+          sampleStockMetadata,
+          admin.address
+        );
 
       await expect(tx)
         .to.emit(factory, "StockTokenDeployed")
@@ -82,23 +85,27 @@ describe("NigerianStockTokenFactory", function () {
       const { factory, admin } = await loadFixture(deployFactoryFixture);
 
       // Deploy first token
-      await factory.connect(admin).deployStockToken(
-        "Dangote Cement Token",
-        "DANGCEM",
-        ethers.parseEther("1000000"),
-        sampleStockMetadata,
-        admin.address
-      );
+      await factory
+        .connect(admin)
+        .deployStockToken(
+          "Dangote Cement Token",
+          "DANGCEM",
+          ethers.parseEther("1000000"),
+          sampleStockMetadata,
+          admin.address
+        );
 
       // Try to deploy duplicate
       await expect(
-        factory.connect(admin).deployStockToken(
-          "Dangote Cement Token 2",
-          "DANGCEM",
-          ethers.parseEther("2000000"),
-          sampleStockMetadata,
-          admin.address
-        )
+        factory
+          .connect(admin)
+          .deployStockToken(
+            "Dangote Cement Token 2",
+            "DANGCEM",
+            ethers.parseEther("2000000"),
+            sampleStockMetadata,
+            admin.address
+          )
       ).to.be.revertedWithCustomError(factory, "TokenAlreadyExists");
     });
 
@@ -106,26 +113,30 @@ describe("NigerianStockTokenFactory", function () {
       const { factory, user1 } = await loadFixture(deployFactoryFixture);
 
       await expect(
-        factory.connect(user1).deployStockToken(
-          "Dangote Cement Token",
-          "DANGCEM",
-          ethers.parseEther("1000000"),
-          sampleStockMetadata,
-          user1.address
-        )
+        factory
+          .connect(user1)
+          .deployStockToken(
+            "Dangote Cement Token",
+            "DANGCEM",
+            ethers.parseEther("1000000"),
+            sampleStockMetadata,
+            user1.address
+          )
       ).to.be.reverted;
     });
 
     it("Should update factory statistics after deployment", async function () {
       const { factory, admin } = await loadFixture(deployFactoryFixture);
 
-      await factory.connect(admin).deployStockToken(
-        "Dangote Cement Token",
-        "DANGCEM",
-        ethers.parseEther("1000000"),
-        sampleStockMetadata,
-        admin.address
-      );
+      await factory
+        .connect(admin)
+        .deployStockToken(
+          "Dangote Cement Token",
+          "DANGCEM",
+          ethers.parseEther("1000000"),
+          sampleStockMetadata,
+          admin.address
+        );
 
       const stats = await factory.getFactoryStats();
       expect(stats._totalDeployedTokens).to.equal(1);
@@ -144,7 +155,7 @@ describe("NigerianStockTokenFactory", function () {
           symbol: "DANGCEM",
           initialSupply: ethers.parseEther("1000000"),
           stockMetadata: sampleStockMetadata,
-          tokenAdmin: admin.address
+          tokenAdmin: admin.address,
         },
         {
           name: "MTN Nigeria Token",
@@ -154,17 +165,15 @@ describe("NigerianStockTokenFactory", function () {
             ...sampleStockMetadata,
             symbol: "MTNN",
             companyName: "MTN Nigeria Communications Plc",
-            sector: "Telecommunications"
+            sector: "Telecommunications",
           },
-          tokenAdmin: admin.address
-        }
+          tokenAdmin: admin.address,
+        },
       ];
 
       const tx = await factory.connect(admin).batchDeployStockTokens(tokenData);
 
-      await expect(tx)
-        .to.emit(factory, "BatchDeploymentCompleted")
-        .withArgs(2);
+      await expect(tx).to.emit(factory, "BatchDeploymentCompleted").withArgs(2);
 
       // Verify both tokens were deployed
       expect(await factory.getTokenAddress("DANGCEM")).to.not.equal(ethers.ZeroAddress);
@@ -177,9 +186,10 @@ describe("NigerianStockTokenFactory", function () {
     it("Should revert batch deployment with empty array", async function () {
       const { factory, admin } = await loadFixture(deployFactoryFixture);
 
-      await expect(
-        factory.connect(admin).batchDeployStockTokens([])
-      ).to.be.revertedWithCustomError(factory, "InvalidArrayLength");
+      await expect(factory.connect(admin).batchDeployStockTokens([])).to.be.revertedWithCustomError(
+        factory,
+        "InvalidArrayLength"
+      );
     });
   });
 
@@ -187,13 +197,15 @@ describe("NigerianStockTokenFactory", function () {
     it("Should return correct token information", async function () {
       const { factory, admin } = await loadFixture(deployFactoryFixture);
 
-      await factory.connect(admin).deployStockToken(
-        "Dangote Cement Token",
-        "DANGCEM",
-        ethers.parseEther("1000000"),
-        sampleStockMetadata,
-        admin.address
-      );
+      await factory
+        .connect(admin)
+        .deployStockToken(
+          "Dangote Cement Token",
+          "DANGCEM",
+          ethers.parseEther("1000000"),
+          sampleStockMetadata,
+          admin.address
+        );
 
       const tokenInfo = await factory.getTokenInfo("DANGCEM");
       expect(tokenInfo.symbol).to.equal(sampleStockMetadata.symbol);
@@ -205,22 +217,26 @@ describe("NigerianStockTokenFactory", function () {
       const { factory, admin } = await loadFixture(deployFactoryFixture);
 
       // Deploy two tokens
-      await factory.connect(admin).deployStockToken(
-        "Dangote Cement Token",
-        "DANGCEM",
-        ethers.parseEther("1000000"),
-        sampleStockMetadata,
-        admin.address
-      );
+      await factory
+        .connect(admin)
+        .deployStockToken(
+          "Dangote Cement Token",
+          "DANGCEM",
+          ethers.parseEther("1000000"),
+          sampleStockMetadata,
+          admin.address
+        );
 
       const mtnnMetadata = { ...sampleStockMetadata, symbol: "MTNN" };
-      await factory.connect(admin).deployStockToken(
-        "MTN Nigeria Token",
-        "MTNN",
-        ethers.parseEther("2000000"),
-        mtnnMetadata,
-        admin.address
-      );
+      await factory
+        .connect(admin)
+        .deployStockToken(
+          "MTN Nigeria Token",
+          "MTNN",
+          ethers.parseEther("2000000"),
+          mtnnMetadata,
+          admin.address
+        );
 
       const symbols = await factory.getAllDeployedSymbols();
       expect(symbols).to.have.lengthOf(2);
@@ -235,20 +251,22 @@ describe("NigerianStockTokenFactory", function () {
       const symbols = ["DANGCEM", "MTNN", "ZENITHBANK"];
       for (const symbol of symbols) {
         const metadata = { ...sampleStockMetadata, symbol };
-        await factory.connect(admin).deployStockToken(
-          `${symbol} Token`,
-          symbol,
-          ethers.parseEther("1000000"),
-          metadata,
-          admin.address
-        );
+        await factory
+          .connect(admin)
+          .deployStockToken(
+            `${symbol} Token`,
+            symbol,
+            ethers.parseEther("1000000"),
+            metadata,
+            admin.address
+          );
       }
 
       // Test pagination
       const [paginatedSymbols, addresses] = await factory.getDeployedTokensPaginated(0, 2);
       expect(paginatedSymbols).to.have.lengthOf(2);
       expect(addresses).to.have.lengthOf(2);
-      
+
       // Verify addresses are not zero
       for (const address of addresses) {
         expect(address).to.not.equal(ethers.ZeroAddress);
@@ -260,13 +278,15 @@ describe("NigerianStockTokenFactory", function () {
     it("Should allow admin to update token market cap", async function () {
       const { factory, admin } = await loadFixture(deployFactoryFixture);
 
-      await factory.connect(admin).deployStockToken(
-        "Dangote Cement Token",
-        "DANGCEM",
-        ethers.parseEther("1000000"),
-        sampleStockMetadata,
-        admin.address
-      );
+      await factory
+        .connect(admin)
+        .deployStockToken(
+          "Dangote Cement Token",
+          "DANGCEM",
+          ethers.parseEther("1000000"),
+          sampleStockMetadata,
+          admin.address
+        );
 
       // Get the token address and grant factory admin role on the token
       const tokenAddress = await factory.getTokenAddress("DANGCEM");
@@ -302,13 +322,15 @@ describe("NigerianStockTokenFactory", function () {
       await factory.connect(admin).pause();
 
       await expect(
-        factory.connect(admin).deployStockToken(
-          "Dangote Cement Token",
-          "DANGCEM",
-          ethers.parseEther("1000000"),
-          sampleStockMetadata,
-          admin.address
-        )
+        factory
+          .connect(admin)
+          .deployStockToken(
+            "Dangote Cement Token",
+            "DANGCEM",
+            ethers.parseEther("1000000"),
+            sampleStockMetadata,
+            admin.address
+          )
       ).to.be.reverted;
     });
   });
@@ -317,13 +339,15 @@ describe("NigerianStockTokenFactory", function () {
     it("Should allow admin to remove token from registry", async function () {
       const { factory, admin } = await loadFixture(deployFactoryFixture);
 
-      await factory.connect(admin).deployStockToken(
-        "Dangote Cement Token",
-        "DANGCEM",
-        ethers.parseEther("1000000"),
-        sampleStockMetadata,
-        admin.address
-      );
+      await factory
+        .connect(admin)
+        .deployStockToken(
+          "Dangote Cement Token",
+          "DANGCEM",
+          ethers.parseEther("1000000"),
+          sampleStockMetadata,
+          admin.address
+        );
 
       const tokenAddress = await factory.getTokenAddress("DANGCEM");
       expect(await factory.isValidToken(tokenAddress)).to.be.true;
@@ -331,10 +355,11 @@ describe("NigerianStockTokenFactory", function () {
       await factory.connect(admin).removeTokenFromRegistry("DANGCEM");
 
       expect(await factory.isValidToken(tokenAddress)).to.be.false;
-      
-      await expect(
-        factory.getTokenAddress("DANGCEM")
-      ).to.be.revertedWithCustomError(factory, "TokenNotFound");
+
+      await expect(factory.getTokenAddress("DANGCEM")).to.be.revertedWithCustomError(
+        factory,
+        "TokenNotFound"
+      );
     });
   });
 });

@@ -1,6 +1,12 @@
 import { expect } from "chai";
 import { ethers } from "hardhat";
-import { TradingPairManager, StockNGNDEX, NGNStablecoin, NigerianStockToken, NigerianStockTokenFactory } from "../typechain-types";
+import {
+  TradingPairManager,
+  StockNGNDEX,
+  NGNStablecoin,
+  NigerianStockToken,
+  NigerianStockTokenFactory,
+} from "../typechain-types";
 import { SignerWithAddress } from "@nomicfoundation/hardhat-ethers/signers";
 
 describe("TradingPairManager", function () {
@@ -78,13 +84,15 @@ describe("TradingPairManager", function () {
     await ngnStablecoin.waitForDeployment();
 
     // Deploy Stock Factory
-    const NigerianStockTokenFactoryFactory = await ethers.getContractFactory("NigerianStockTokenFactory");
+    const NigerianStockTokenFactoryFactory = await ethers.getContractFactory(
+      "NigerianStockTokenFactory"
+    );
     stockFactory = await NigerianStockTokenFactoryFactory.deploy(admin.address);
     await stockFactory.waitForDeployment();
 
     // Deploy Stock Tokens
     const NigerianStockTokenFactory = await ethers.getContractFactory("NigerianStockToken");
-    
+
     stockToken1 = await NigerianStockTokenFactory.deploy(
       "Dangote Cement Token",
       "DANGCEM",
@@ -125,28 +133,42 @@ describe("TradingPairManager", function () {
 
     // Grant roles
     await tradingPairManager.connect(admin).grantRole(OPERATOR_ROLE, operator.address);
-    await tradingPairManager.connect(admin).grantRole(LIQUIDITY_MANAGER_ROLE, liquidityManager.address);
+    await tradingPairManager
+      .connect(admin)
+      .grantRole(LIQUIDITY_MANAGER_ROLE, liquidityManager.address);
 
     // Grant necessary roles to manager in DEX
-    await stockNGNDEX.connect(admin).grantRole(
-      ethers.keccak256(ethers.toUtf8Bytes("OPERATOR_ROLE")),
-      await tradingPairManager.getAddress()
-    );
-    await stockNGNDEX.connect(admin).grantRole(
-      ethers.keccak256(ethers.toUtf8Bytes("LIQUIDITY_PROVIDER_ROLE")),
-      await tradingPairManager.getAddress()
-    );
+    await stockNGNDEX
+      .connect(admin)
+      .grantRole(
+        ethers.keccak256(ethers.toUtf8Bytes("OPERATOR_ROLE")),
+        await tradingPairManager.getAddress()
+      );
+    await stockNGNDEX
+      .connect(admin)
+      .grantRole(
+        ethers.keccak256(ethers.toUtf8Bytes("LIQUIDITY_PROVIDER_ROLE")),
+        await tradingPairManager.getAddress()
+      );
 
     // Authorize DEX and manager in NGN stablecoin
-    await ngnStablecoin.connect(admin).authorizeDEXContracts([
-      await stockNGNDEX.getAddress(),
-      await tradingPairManager.getAddress()
-    ], [true, true]);
+    await ngnStablecoin
+      .connect(admin)
+      .authorizeDEXContracts(
+        [await stockNGNDEX.getAddress(), await tradingPairManager.getAddress()],
+        [true, true]
+      );
 
     // Mint initial tokens
-    await ngnStablecoin.connect(admin).mint(await tradingPairManager.getAddress(), ethers.parseEther("1000000"));
-    await stockToken1.connect(admin).mint(await tradingPairManager.getAddress(), ethers.parseEther("10000"));
-    await stockToken2.connect(admin).mint(await tradingPairManager.getAddress(), ethers.parseEther("10000"));
+    await ngnStablecoin
+      .connect(admin)
+      .mint(await tradingPairManager.getAddress(), ethers.parseEther("1000000"));
+    await stockToken1
+      .connect(admin)
+      .mint(await tradingPairManager.getAddress(), ethers.parseEther("10000"));
+    await stockToken2
+      .connect(admin)
+      .mint(await tradingPairManager.getAddress(), ethers.parseEther("10000"));
   });
 
   describe("Deployment", function () {
@@ -164,7 +186,8 @@ describe("TradingPairManager", function () {
     it("Should grant admin roles correctly", async function () {
       expect(await tradingPairManager.hasRole(ADMIN_ROLE, admin.address)).to.be.true;
       expect(await tradingPairManager.hasRole(OPERATOR_ROLE, operator.address)).to.be.true;
-      expect(await tradingPairManager.hasRole(LIQUIDITY_MANAGER_ROLE, liquidityManager.address)).to.be.true;
+      expect(await tradingPairManager.hasRole(LIQUIDITY_MANAGER_ROLE, liquidityManager.address)).to
+        .be.true;
     });
 
     it("Should add current network configuration", async function () {
@@ -181,13 +204,18 @@ describe("TradingPairManager", function () {
       const feeRate = 30;
       const targetLiquidity = ethers.parseEther("100000");
 
-      await expect(tradingPairManager.connect(operator).createManagedPair(
-        await stockToken1.getAddress(),
-        initialNGN,
-        initialStock,
-        feeRate,
-        targetLiquidity
-      )).to.emit(tradingPairManager, "PairCreated")
+      await expect(
+        tradingPairManager
+          .connect(operator)
+          .createManagedPair(
+            await stockToken1.getAddress(),
+            initialNGN,
+            initialStock,
+            feeRate,
+            targetLiquidity
+          )
+      )
+        .to.emit(tradingPairManager, "PairCreated")
         .withArgs(await stockToken1.getAddress(), "DANGCEM", initialNGN, initialStock, feeRate);
 
       const managedPair = await tradingPairManager.getManagedPair(await stockToken1.getAddress());
@@ -206,22 +234,28 @@ describe("TradingPairManager", function () {
       const initialStock = ethers.parseEther("1000");
 
       // Create first pair
-      await tradingPairManager.connect(operator).createManagedPair(
-        await stockToken1.getAddress(),
-        initialNGN,
-        initialStock,
-        30,
-        ethers.parseEther("100000")
-      );
+      await tradingPairManager
+        .connect(operator)
+        .createManagedPair(
+          await stockToken1.getAddress(),
+          initialNGN,
+          initialStock,
+          30,
+          ethers.parseEther("100000")
+        );
 
       // Try to create duplicate
-      await expect(tradingPairManager.connect(operator).createManagedPair(
-        await stockToken1.getAddress(),
-        initialNGN,
-        initialStock,
-        30,
-        ethers.parseEther("100000")
-      )).to.be.revertedWithCustomError(tradingPairManager, "PairAlreadyExists");
+      await expect(
+        tradingPairManager
+          .connect(operator)
+          .createManagedPair(
+            await stockToken1.getAddress(),
+            initialNGN,
+            initialStock,
+            30,
+            ethers.parseEther("100000")
+          )
+      ).to.be.revertedWithCustomError(tradingPairManager, "PairAlreadyExists");
     });
 
     it("Should support batch pair creation", async function () {
@@ -231,13 +265,12 @@ describe("TradingPairManager", function () {
       const feeRates = [30, 30];
       const targetLiquidities = [ethers.parseEther("100000"), ethers.parseEther("80000")];
 
-      await expect(tradingPairManager.connect(operator).batchCreatePairs(
-        stockTokens,
-        ngnAmounts,
-        stockAmounts,
-        feeRates,
-        targetLiquidities
-      )).to.emit(tradingPairManager, "BatchOperationCompleted")
+      await expect(
+        tradingPairManager
+          .connect(operator)
+          .batchCreatePairs(stockTokens, ngnAmounts, stockAmounts, feeRates, targetLiquidities)
+      )
+        .to.emit(tradingPairManager, "BatchOperationCompleted")
         .withArgs("Batch pair creation", 2);
 
       // Check both pairs were created
@@ -256,13 +289,15 @@ describe("TradingPairManager", function () {
   describe("View Functions", function () {
     beforeEach(async function () {
       // Create multiple managed pairs
-      await tradingPairManager.connect(operator).batchCreatePairs(
-        [await stockToken1.getAddress(), await stockToken2.getAddress()],
-        [ethers.parseEther("50000"), ethers.parseEther("40000")],
-        [ethers.parseEther("1000"), ethers.parseEther("800")],
-        [30, 30],
-        [ethers.parseEther("100000"), ethers.parseEther("80000")]
-      );
+      await tradingPairManager
+        .connect(operator)
+        .batchCreatePairs(
+          [await stockToken1.getAddress(), await stockToken2.getAddress()],
+          [ethers.parseEther("50000"), ethers.parseEther("40000")],
+          [ethers.parseEther("1000"), ethers.parseEther("800")],
+          [30, 30],
+          [ethers.parseEther("100000"), ethers.parseEther("80000")]
+        );
     });
 
     it("Should return all managed tokens", async function () {
@@ -281,7 +316,8 @@ describe("TradingPairManager", function () {
     });
 
     it("Should return manager statistics", async function () {
-      const [totalPairs, totalLiquidity, totalVolume, activePairs] = await tradingPairManager.getManagerStats();
+      const [totalPairs, totalLiquidity, , activePairs] =
+        await tradingPairManager.getManagerStats();
 
       expect(totalPairs).to.equal(2);
       expect(activePairs).to.equal(2);
@@ -317,18 +353,23 @@ describe("TradingPairManager", function () {
 
   describe("Access Control", function () {
     it("Should not allow non-operator to create pairs", async function () {
-      await expect(tradingPairManager.connect(user1).createManagedPair(
-        await stockToken1.getAddress(),
-        ethers.parseEther("1000"),
-        ethers.parseEther("100"),
-        30,
-        ethers.parseEther("50000")
-      )).to.be.revertedWithCustomError(tradingPairManager, "AccessControlUnauthorizedAccount");
+      await expect(
+        tradingPairManager
+          .connect(user1)
+          .createManagedPair(
+            await stockToken1.getAddress(),
+            ethers.parseEther("1000"),
+            ethers.parseEther("100"),
+            30,
+            ethers.parseEther("50000")
+          )
+      ).to.be.revertedWithCustomError(tradingPairManager, "AccessControlUnauthorizedAccount");
     });
 
     it("Should not allow non-admin to update configuration", async function () {
-      await expect(tradingPairManager.connect(user1).updateConfig(managerConfig))
-        .to.be.revertedWithCustomError(tradingPairManager, "AccessControlUnauthorizedAccount");
+      await expect(
+        tradingPairManager.connect(user1).updateConfig(managerConfig)
+      ).to.be.revertedWithCustomError(tradingPairManager, "AccessControlUnauthorizedAccount");
     });
   });
 });

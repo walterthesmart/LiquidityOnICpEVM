@@ -4,13 +4,13 @@ import { resolve } from "path";
 
 /**
  * Multi-EVM Deployment Script for NGN Stablecoin + DEX System
- * 
+ *
  * This script deploys the complete tokenized asset trading system including:
  * - NGN Stablecoin contract
  * - StockNGNDEX contract
  * - TradingPairManager contract
  * - Integration with existing stock tokens
- * 
+ *
  * Supports deployment to:
  * - Bitfinity EVM Testnet (preferred)
  * - Ethereum Sepolia Testnet (where stocks are deployed)
@@ -170,7 +170,6 @@ async function main() {
   console.log("🚀 Starting NGN Stablecoin + DEX System Deployment...\n");
 
   // Get network information
-  const network = await ethers.provider.getNetwork();
   const networkName = process.env.HARDHAT_NETWORK || "hardhat";
   const config = NETWORK_CONFIGS[networkName];
 
@@ -184,7 +183,7 @@ async function main() {
   // Get deployer
   const [deployer] = await ethers.getSigners();
   console.log(`👤 Deployer: ${deployer.address}`);
-  
+
   const balance = await ethers.provider.getBalance(deployer.address);
   console.log(`💰 Balance: ${ethers.formatEther(balance)} ETH\n`);
 
@@ -208,22 +207,19 @@ async function main() {
     // 1. Deploy NGN Stablecoin
     console.log("📦 Deploying NGN Stablecoin...");
     const NGNStablecoin = await ethers.getContractFactory("NGNStablecoin");
-    
-    const ngnStablecoin = await NGNStablecoin.deploy(
-      deployer.address,
-      {
-        name: config.ngnConfig.name,
-        symbol: config.ngnConfig.symbol,
-        decimals: 18,
-        maxSupply: config.ngnConfig.maxSupply,
-        mintingCap: config.ngnConfig.mintingCap,
-        lastMintReset: 0,
-        currentDayMinted: 0,
-        mintingEnabled: config.ngnConfig.mintingEnabled,
-        burningEnabled: config.ngnConfig.burningEnabled,
-        transfersEnabled: config.ngnConfig.transfersEnabled,
-      }
-    );
+
+    const ngnStablecoin = await NGNStablecoin.deploy(deployer.address, {
+      name: config.ngnConfig.name,
+      symbol: config.ngnConfig.symbol,
+      decimals: 18,
+      maxSupply: config.ngnConfig.maxSupply,
+      mintingCap: config.ngnConfig.mintingCap,
+      lastMintReset: 0,
+      currentDayMinted: 0,
+      mintingEnabled: config.ngnConfig.mintingEnabled,
+      burningEnabled: config.ngnConfig.burningEnabled,
+      transfersEnabled: config.ngnConfig.transfersEnabled,
+    });
 
     await ngnStablecoin.waitForDeployment();
     const ngnAddress = await ngnStablecoin.getAddress();
@@ -240,18 +236,14 @@ async function main() {
     // 2. Deploy StockNGNDEX
     console.log("📦 Deploying StockNGNDEX...");
     const StockNGNDEX = await ethers.getContractFactory("StockNGNDEX");
-    
-    const stockNGNDEX = await StockNGNDEX.deploy(
-      ngnAddress,
-      deployer.address,
-      {
-        defaultFeeRate: config.dexConfig.defaultFeeRate,
-        maxPriceImpact: config.dexConfig.maxPriceImpact,
-        minLiquidity: config.dexConfig.minLiquidity,
-        swapDeadline: config.dexConfig.swapDeadline,
-        emergencyMode: config.dexConfig.emergencyMode,
-      }
-    );
+
+    const stockNGNDEX = await StockNGNDEX.deploy(ngnAddress, deployer.address, {
+      defaultFeeRate: config.dexConfig.defaultFeeRate,
+      maxPriceImpact: config.dexConfig.maxPriceImpact,
+      minLiquidity: config.dexConfig.minLiquidity,
+      swapDeadline: config.dexConfig.swapDeadline,
+      emergencyMode: config.dexConfig.emergencyMode,
+    });
 
     await stockNGNDEX.waitForDeployment();
     const dexAddress = await stockNGNDEX.getAddress();
@@ -276,7 +268,7 @@ async function main() {
 
     // 4. Deploy TradingPairManager (if stock factory exists)
     let stockFactoryAddress = "";
-    
+
     // Try to find existing stock factory
     if (config.stockTokens && config.stockTokens.length > 0) {
       // For Sepolia, use the known factory address
@@ -288,7 +280,7 @@ async function main() {
     if (stockFactoryAddress) {
       console.log("📦 Deploying TradingPairManager...");
       const TradingPairManager = await ethers.getContractFactory("TradingPairManager");
-      
+
       const tradingPairManager = await TradingPairManager.deploy(
         ngnAddress,
         dexAddress,
@@ -342,13 +334,13 @@ async function main() {
 
     const filename = `ngn-dex-system-${networkName}-${config.chainId}.json`;
     const filepath = resolve(deploymentsDir, filename);
-    
+
     writeFileSync(filepath, JSON.stringify(deploymentResult, null, 2));
     console.log(`✅ Deployment results saved to: ${filepath}\n`);
 
     // 7. Display summary
     console.log("🎉 Deployment Summary:");
-    console.log("=" .repeat(50));
+    console.log("=".repeat(50));
     console.log(`Network: ${config.network}`);
     console.log(`Chain ID: ${config.chainId}`);
     console.log(`Deployer: ${deployer.address}`);
@@ -365,7 +357,6 @@ async function main() {
     console.log("2. Add initial liquidity to trading pairs");
     console.log("3. Test swapping functionality");
     console.log("4. Update frontend configuration");
-
   } catch (error) {
     console.error("❌ Deployment failed:", error);
     throw error;
