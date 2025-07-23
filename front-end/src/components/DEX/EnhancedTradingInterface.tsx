@@ -46,6 +46,8 @@ import {
   Calculator
 } from "lucide-react";
 import { toast } from "sonner";
+import Image from "next/image";
+import { getStockInfoByAddresses, DEXStockInfo, formatStockDisplayName } from "@/utils/dex-stock-mapping";
 
 interface EnhancedTradingInterfaceProps {
   className?: string;
@@ -77,6 +79,12 @@ export default function EnhancedTradingInterface({
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
+  // Enhanced stock information state
+  const [enhancedStockInfo, setEnhancedStockInfo] = useState<DEXStockInfo[]>([]);
+  const [selectedStockInfo, setSelectedStockInfo] = useState<DEXStockInfo | null>(null);
+  const [stockInfoLoading, setStockInfoLoading] = useState(false);
+  const [stockInfoError, setStockInfoError] = useState<string | null>(null);
+
   const dexAddress = chainId ? getStockNGNDEXAddress(chainId) : "";
   const ngnAddress = chainId ? getNGNStablecoinAddress(chainId) : "";
 
@@ -90,6 +98,41 @@ export default function EnhancedTradingInterface({
       refetchInterval: 30000, // Refresh every 30 seconds
     },
   }) as { data: string[] | undefined; refetch: () => void };
+
+  // Process stock tokens to get enhanced information
+  React.useEffect(() => {
+    if (allStockTokens && chainId) {
+      setStockInfoLoading(true);
+      setStockInfoError(null);
+
+      try {
+        const enhancedInfo = getStockInfoByAddresses(allStockTokens, chainId);
+        setEnhancedStockInfo(enhancedInfo);
+
+        // Update selected stock info if we have a selected stock
+        if (selectedStock) {
+          const selectedInfo = enhancedInfo.find(info => info.contractAddress === selectedStock);
+          setSelectedStockInfo(selectedInfo || null);
+        }
+
+        // Show warning if no stock info was found
+        if (enhancedInfo.length === 0 && allStockTokens.length > 0) {
+          setStockInfoError("No stock information found for available tokens");
+        }
+      } catch (error) {
+        console.error("Error processing stock information:", error);
+        setStockInfoError("Failed to load stock information");
+      } finally {
+        setStockInfoLoading(false);
+      }
+    } else {
+      // Reset state when no tokens available
+      setEnhancedStockInfo([]);
+      setSelectedStockInfo(null);
+      setStockInfoError(null);
+      setStockInfoLoading(false);
+    }
+  }, [allStockTokens, chainId, selectedStock]);
 
   // Get stock info for selected stock (for future use)
   /*
@@ -140,6 +183,29 @@ export default function EnhancedTradingInterface({
     },
   });
 
+  // Get token allowances for approval checking
+  const { data: ngnAllowance, refetch: refetchNGNAllowance } = useReadContract({
+    address: ngnAddress as `0x${string}`,
+    abi: NGNStablecoinABI,
+    functionName: "allowance",
+    args: [address, dexAddress],
+    query: {
+      enabled: !!address && !!ngnAddress && !!dexAddress,
+      refetchInterval: 10000,
+    },
+  });
+
+  const { data: stockAllowance, refetch: refetchStockAllowance } = useReadContract({
+    address: selectedStock as `0x${string}`,
+    abi: NigerianStockTokenABI,
+    functionName: "allowance",
+    args: [address, dexAddress],
+    query: {
+      enabled: !!address && !!selectedStock && !!dexAddress,
+      refetchInterval: 10000,
+    },
+  });
+
   // Get swap quote for market orders
   const { data: swapQuote } = useReadContract({
     address: dexAddress as `0x${string}`,
@@ -155,9 +221,23 @@ export default function EnhancedTradingInterface({
   // Calculate expected output and price impact
   const expectedOutput = swapQuote ? formatEther(swapQuote[0]) : "0";
   const priceImpact = swapQuote ? Number(formatEther(swapQuote[2])) : 0;
-  const minAmountOut = swapQuote 
+  const minAmountOut = swapQuote
     ? (swapQuote[0] * BigInt(Math.floor((100 - slippageTolerance) * 100))) / 10000n
     : 0n;
+
+  // Check if approval is needed
+  const inputAmountBigInt = inputAmount ? parseEther(inputAmount) : 0n;
+  const needsApproval = React.useMemo(() => {
+    if (!inputAmount || !address) return false;
+
+    if (tradeDirection === "buy") {
+      // For buying (NGN to Stock), check NGN allowance
+      return !ngnAllowance || (ngnAllowance as bigint) < inputAmountBigInt;
+    } else {
+      // For selling (Stock to NGN), check stock allowance
+      return !stockAllowance || (stockAllowance as bigint) < inputAmountBigInt;
+    }
+  }, [tradeDirection, inputAmount, ngnAllowance, stockAllowance, inputAmountBigInt, address]);
 
   // Gas estimation
   const { data: gasEstimate } = useEstimateGas({
@@ -169,15 +249,163 @@ export default function EnhancedTradingInterface({
   });
 
   // Write contract hook
-  const { writeContract: writeContractFn } = useWriteContract();
+  const { writeContract: writeContractFn } = useWriteContract({
+    mutation: {
+      onSuccess: (data: string) => {
+        const shortHash = `${data.slice(0, 6)}...${data.slice(-4)}`;
+        setSuccess(`Transaction successful! Hash: ${shortHash}`);
+        toast.success(`Transaction submitted! Hash: ${shortHash}`);
+        // Refresh balances and allowances after successful transaction
+        refetchNGNBalance();
+        refetchStockBalance();
+        refetchNGNAllowance();
+        refetchStockAllowance();
+      },
+      onError: (error: Error) => {
+        const friendlyMessage = parseErrorMessage(error);
+        setError(`Transaction failed: ${friendlyMessage}`);
+        toast.error(`Transaction failed: ${friendlyMessage}`);
+      },
+    },
+  });
 
   // Calculate deadline timestamp
   const deadlineTimestamp = Math.floor(Date.now() / 1000) + (deadline * 60);
+
+  // Helper function to parse and format error messages
+  const parseErrorMessage = (error: Error): string => {
+    const message = error.message.toLowerCase();
+
+    if (message.includes("user rejected") || message.includes("user denied")) {
+      return "Transaction was cancelled by user";
+    }
+    if (message.includes("insufficient funds") || message.includes("insufficient balance")) {
+      return "Insufficient balance for this transaction";
+    }
+    if (message.includes("slippage") || message.includes("slippageexceeded")) {
+      return "Price moved too much (slippage exceeded). Try increasing slippage tolerance or reducing trade size";
+    }
+    if (message.includes("deadline") || message.includes("deadlineexceeded")) {
+      return "Transaction deadline exceeded. Try increasing the deadline or submitting faster";
+    }
+    if (message.includes("allowance") || message.includes("transfer amount exceeds allowance")) {
+      return "Insufficient token allowance. Please approve token spending first";
+    }
+    if (message.includes("paused") || message.includes("pausable")) {
+      return "Trading is currently paused. Please try again later";
+    }
+    if (message.includes("price impact") || message.includes("excessivepriceimpact")) {
+      return "Price impact too high. Try reducing trade size or check liquidity";
+    }
+    if (message.includes("trading pair not found") || message.includes("tradingpairnotfound")) {
+      return "Trading pair not available for this token";
+    }
+    if (message.includes("emergency mode") || message.includes("emergencymodeactive")) {
+      return "DEX is in emergency mode. Trading is temporarily disabled";
+    }
+    if (message.includes("nonce too low")) {
+      return "Transaction nonce error. Please try refreshing and submitting again";
+    }
+    if (message.includes("replacement transaction underpriced")) {
+      return "Transaction replacement failed. Please wait for the current transaction to complete";
+    }
+    if (message.includes("transaction dropped") || message.includes("transaction replaced")) {
+      return "Transaction was dropped or replaced. This usually happens when network is congested. Please try again";
+    }
+
+    // Return original message if no specific pattern matches
+    return error.message;
+  };
+
+  // Handle token approval
+  const handleApproval = useCallback(async () => {
+    if (!isConnected || !selectedStock || !inputAmount) {
+      toast.error("Please connect wallet and fill all required fields");
+      return;
+    }
+
+    // Check if user has sufficient balance
+    if (tradeDirection === "buy" && ngnBalance && inputAmountBigInt > (ngnBalance as bigint)) {
+      toast.error("Insufficient NGN balance for this transaction");
+      return;
+    }
+    if (tradeDirection === "sell" && stockBalance && inputAmountBigInt > (stockBalance as bigint)) {
+      toast.error(`Insufficient ${selectedStockInfo?.symbol || "stock"} balance for this transaction`);
+      return;
+    }
+
+    setError(null);
+    setSuccess(null);
+    setIsLoading(true);
+
+    try {
+      if (tradeDirection === "buy") {
+        // Approve NGN for DEX
+        writeContractFn({
+          address: ngnAddress as `0x${string}`,
+          abi: NGNStablecoinABI,
+          functionName: "approve",
+          args: [dexAddress as `0x${string}`, inputAmountBigInt],
+        });
+        toast.success("NGN approval submitted!");
+      } else {
+        // Approve stock token for DEX
+        writeContractFn({
+          address: selectedStock as `0x${string}`,
+          abi: NigerianStockTokenABI,
+          functionName: "approve",
+          args: [dexAddress as `0x${string}`, inputAmountBigInt],
+        });
+        toast.success("Stock token approval submitted!");
+      }
+    } catch (err: unknown) {
+      const error = err as Error;
+      const friendlyMessage = parseErrorMessage(error);
+      setError(`Approval failed: ${friendlyMessage}`);
+      toast.error(`Approval failed: ${friendlyMessage}`);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [
+    isConnected,
+    selectedStock,
+    inputAmount,
+    tradeDirection,
+    writeContractFn,
+    ngnAddress,
+    dexAddress,
+    inputAmountBigInt,
+    ngnBalance,
+    stockBalance,
+    selectedStockInfo?.symbol,
+  ]);
 
   // Handle trade execution
   const handleTrade = useCallback(async () => {
     if (!isConnected || !selectedStock || !inputAmount) {
       toast.error("Please connect wallet and fill all required fields");
+      return;
+    }
+
+    // Check if approval is needed first
+    if (needsApproval) {
+      toast.error("Please approve token spending first");
+      return;
+    }
+
+    // Check if user has sufficient balance
+    if (tradeDirection === "buy" && ngnBalance && inputAmountBigInt > (ngnBalance as bigint)) {
+      toast.error("Insufficient NGN balance for this transaction");
+      return;
+    }
+    if (tradeDirection === "sell" && stockBalance && inputAmountBigInt > (stockBalance as bigint)) {
+      toast.error(`Insufficient ${selectedStockInfo?.symbol || "stock"} balance for this transaction`);
+      return;
+    }
+
+    // Check if quote is available and reasonable
+    if (!swapQuote || swapQuote[0] === 0n) {
+      toast.error("Unable to get price quote. Please try again or check liquidity");
       return;
     }
 
@@ -194,12 +422,12 @@ export default function EnhancedTradingInterface({
           functionName: tradeDirection === "buy" ? "swapNGNForStock" : "swapStockForNGN",
           args: [
             selectedStock,
-            parseEther(inputAmount),
+            inputAmountBigInt,
             minAmountOut,
             deadlineTimestamp,
           ],
         });
-        
+
         toast.success("Market order submitted successfully!");
       } else {
         // For limit orders, we would need additional smart contract functionality
@@ -207,8 +435,9 @@ export default function EnhancedTradingInterface({
       }
     } catch (err: unknown) {
       const error = err as Error;
-      setError(`Trade failed: ${error.message}`);
-      toast.error(`Trade failed: ${error.message}`);
+      const friendlyMessage = parseErrorMessage(error);
+      setError(`Trade failed: ${friendlyMessage}`);
+      toast.error(`Trade failed: ${friendlyMessage}`);
     } finally {
       setIsLoading(false);
     }
@@ -216,12 +445,18 @@ export default function EnhancedTradingInterface({
     isConnected,
     selectedStock,
     inputAmount,
+    needsApproval,
     orderType,
     tradeDirection,
     writeContractFn,
     dexAddress,
+    inputAmountBigInt,
     minAmountOut,
     deadlineTimestamp,
+    ngnBalance,
+    stockBalance,
+    selectedStockInfo?.symbol,
+    swapQuote,
   ]);
 
   // Handle max button click
@@ -239,6 +474,8 @@ export default function EnhancedTradingInterface({
     refetchPrice();
     refetchNGNBalance();
     refetchStockBalance();
+    refetchNGNAllowance();
+    refetchStockAllowance();
     toast.success("Data refreshed");
   };
 
@@ -259,26 +496,120 @@ export default function EnhancedTradingInterface({
         {/* Stock Selection */}
         <div className="space-y-2">
           <Label htmlFor="stock-select">Select Stock Token</Label>
-          <Select value={selectedStock} onValueChange={setSelectedStock}>
+          <Select
+            value={selectedStock}
+            onValueChange={setSelectedStock}
+            disabled={stockInfoLoading || !!stockInfoError}
+          >
             <SelectTrigger>
-              <SelectValue placeholder="Choose a stock to trade" />
+              <SelectValue placeholder={
+                stockInfoLoading
+                  ? "Loading stocks..."
+                  : stockInfoError
+                    ? "Error loading stocks"
+                    : "Choose a stock to trade"
+              }>
+                {selectedStockInfo && !stockInfoLoading && (
+                  <div className="flex items-center gap-2">
+                    <div className="relative w-6 h-6 flex-shrink-0">
+                      <Image
+                        src={selectedStockInfo.logoPath}
+                        alt={selectedStockInfo.logoAlt}
+                        width={24}
+                        height={24}
+                        className="rounded-full object-cover"
+                        onError={(e) => {
+                          const target = e.target as HTMLImageElement;
+                          target.src = "/logo/png/logo-no-background.png";
+                        }}
+                      />
+                    </div>
+                    <span className="truncate">
+                      {formatStockDisplayName(selectedStockInfo)}
+                    </span>
+                  </div>
+                )}
+              </SelectValue>
             </SelectTrigger>
             <SelectContent>
-              {(allStockTokens as string[])?.map((token) => (
-                <SelectItem key={token} value={token}>
-                  {token.slice(0, 6)}...{token.slice(-4)}
-                </SelectItem>
-              ))}
+              {stockInfoLoading ? (
+                <div className="flex items-center justify-center p-4">
+                  <RefreshCw className="h-4 w-4 animate-spin mr-2" />
+                  <span className="text-sm text-muted-foreground">Loading stocks...</span>
+                </div>
+              ) : stockInfoError ? (
+                <div className="flex items-center justify-center p-4">
+                  <AlertTriangle className="h-4 w-4 mr-2 text-yellow-500" />
+                  <span className="text-sm text-muted-foreground">{stockInfoError}</span>
+                </div>
+              ) : enhancedStockInfo.length === 0 ? (
+                <div className="flex items-center justify-center p-4">
+                  <span className="text-sm text-muted-foreground">No stocks available</span>
+                </div>
+              ) : (
+                enhancedStockInfo.map((stockInfo) => (
+                  <SelectItem key={stockInfo.contractAddress} value={stockInfo.contractAddress}>
+                    <div className="flex items-center gap-3 w-full">
+                      <div className="relative w-6 h-6 flex-shrink-0">
+                        <Image
+                          src={stockInfo.logoPath}
+                          alt={stockInfo.logoAlt}
+                          width={24}
+                          height={24}
+                          className="rounded-full object-cover"
+                          onError={(e) => {
+                            const target = e.target as HTMLImageElement;
+                            target.src = "/logo/png/logo-no-background.png";
+                          }}
+                        />
+                      </div>
+                      <div className="flex flex-col min-w-0 flex-1">
+                        <span className="font-medium truncate">
+                          {stockInfo.companyName}
+                        </span>
+                        <span className="text-sm text-muted-foreground">
+                          {stockInfo.symbol} • {stockInfo.sector}
+                        </span>
+                      </div>
+                    </div>
+                  </SelectItem>
+                ))
+              )}
             </SelectContent>
           </Select>
+
+          {/* Error message display */}
+          {stockInfoError && (
+            <div className="flex items-center gap-2 p-2 bg-yellow-50 border border-yellow-200 rounded-md">
+              <AlertTriangle className="h-4 w-4 text-yellow-600" />
+              <span className="text-sm text-yellow-700">{stockInfoError}</span>
+            </div>
+          )}
         </div>
 
         {/* Current Price Display */}
-        {selectedStock && currentPrice ? (
+        {selectedStock && currentPrice && selectedStockInfo ? (
           <Card className="bg-gray-50">
             <CardContent className="pt-4">
               <div className="flex justify-between items-center">
-                <span className="text-sm text-gray-600">Current Price</span>
+                <div className="flex items-center gap-2">
+                  <div className="relative w-5 h-5 flex-shrink-0">
+                    <Image
+                      src={selectedStockInfo.logoPath}
+                      alt={selectedStockInfo.logoAlt}
+                      width={20}
+                      height={20}
+                      className="rounded-full object-cover"
+                      onError={(e) => {
+                        const target = e.target as HTMLImageElement;
+                        target.src = "/logo/png/logo-no-background.png";
+                      }}
+                    />
+                  </div>
+                  <span className="text-sm text-gray-600">
+                    {selectedStockInfo.symbol} Price
+                  </span>
+                </div>
                 <div className="flex items-center">
                   <span className="font-medium">₦{currentPrice ? Number(formatEther(currentPrice as bigint)).toFixed(4) : "0.0000"}</span>
                   <TrendingUp className="h-4 w-4 ml-1 text-green-500" />
@@ -475,25 +806,103 @@ export default function EnhancedTradingInterface({
           </Card>
         )}
 
-        {/* Trade Button */}
-        <Button
-          onClick={handleTrade}
-          disabled={!isConnected || !selectedStock || !inputAmount || isLoading}
-          className="w-full h-12 text-lg font-semibold"
-          size="lg"
-        >
-          {isLoading ? (
-            <>
-              <RefreshCw className="h-5 w-5 mr-2 animate-spin" />
-              Processing...
-            </>
-          ) : (
-            <>
-              <Zap className="h-5 w-5 mr-2" />
-              {tradeDirection === "buy" ? "Buy" : "Sell"} {orderType === "market" ? "Market" : "Limit"}
-            </>
-          )}
-        </Button>
+        {/* Approval Status and Trade Buttons */}
+        {isConnected && selectedStock && inputAmount && (
+          <div className="space-y-3">
+            {/* Approval Status Display */}
+            {needsApproval && (
+              <Card className="border-blue-200 bg-blue-50">
+                <CardContent className="pt-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center">
+                      <AlertTriangle className="h-5 w-5 text-blue-600 mr-2" />
+                      <span className="text-blue-800">
+                        Approval needed for {tradeDirection === "buy" ? "NGN" : selectedStockInfo?.symbol || "stock"} tokens
+                      </span>
+                    </div>
+                    <Badge variant="outline" className="text-blue-600 border-blue-300">
+                      Step 1 of 2
+                    </Badge>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Approval Button */}
+            {needsApproval ? (
+              <Button
+                onClick={handleApproval}
+                disabled={isLoading}
+                className="w-full h-12 text-lg font-semibold bg-blue-600 hover:bg-blue-700"
+                size="lg"
+              >
+                {isLoading ? (
+                  <>
+                    <RefreshCw className="h-5 w-5 mr-2 animate-spin" />
+                    Approving...
+                  </>
+                ) : (
+                  <>
+                    <CheckCircle className="h-5 w-5 mr-2" />
+                    Approve {tradeDirection === "buy" ? "NGN" : selectedStockInfo?.symbol || "Stock"} Spending
+                  </>
+                )}
+              </Button>
+            ) : (
+              /* Trade Button */
+              <Button
+                onClick={handleTrade}
+                disabled={isLoading}
+                className="w-full h-12 text-lg font-semibold"
+                size="lg"
+              >
+                {isLoading ? (
+                  <>
+                    <RefreshCw className="h-5 w-5 mr-2 animate-spin" />
+                    Processing...
+                  </>
+                ) : (
+                  <>
+                    <Zap className="h-5 w-5 mr-2" />
+                    {tradeDirection === "buy" ? "Buy" : "Sell"} {orderType === "market" ? "Market" : "Limit"}
+                  </>
+                )}
+              </Button>
+            )}
+
+            {/* Step indicator when approval is not needed */}
+            {!needsApproval && (
+              <div className="flex items-center justify-center">
+                <Badge variant="outline" className="text-green-600 border-green-300">
+                  <CheckCircle className="h-3 w-3 mr-1" />
+                  Ready to trade
+                </Badge>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Fallback Trade Button for when no approval check is possible */}
+        {(!isConnected || !selectedStock || !inputAmount) && (
+          <Button
+            onClick={handleTrade}
+            disabled={!isConnected || !selectedStock || !inputAmount || isLoading}
+            className="w-full h-12 text-lg font-semibold"
+            size="lg"
+          >
+            {isLoading ? (
+              <>
+                <RefreshCw className="h-5 w-5 mr-2 animate-spin" />
+                Processing...
+              </>
+            ) : (
+              <>
+                <Zap className="h-5 w-5 mr-2" />
+                {tradeDirection === "buy" ? "Buy" : "Sell"} {orderType === "market" ? "Market" : "Limit"}
+              </>
+            )}
+          </Button>
+        )}
 
         {/* Connection Warning */}
         {!isConnected && (
