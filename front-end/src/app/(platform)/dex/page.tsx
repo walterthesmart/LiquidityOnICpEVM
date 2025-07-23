@@ -14,16 +14,14 @@ import React, { useState, Suspense } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+
 import { Separator } from "@/components/ui/separator";
 import {
   TrendingUp,
-  TrendingDown,
   Activity,
   BarChart3,
   Wallet,
   RefreshCw,
-  Settings,
   Info
 } from "lucide-react";
 import { useAccount, useChainId } from "wagmi";

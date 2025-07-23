@@ -1,6 +1,5 @@
 import { NetworkDebugChecker } from "@/components/debug-network-checker";
 import { WalletStatus } from "@/components/WalletStatus";
-import { ErrorMonitor } from "@/components/error-monitor";
 
 export default function DebugNetworkPage() {
   return (

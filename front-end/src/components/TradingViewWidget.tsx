@@ -296,6 +296,7 @@ const TradingViewWidget: React.FC<TradingViewWidgetProps> = memo(
               url: script.src,
               symbol: tradingViewSymbol,
               error: error,
+              errorMessage: errorMessage,
               isOnline: navigator.onLine,
             });
 
