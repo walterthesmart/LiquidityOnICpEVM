@@ -16,11 +16,14 @@
         "seed:turso": "ts-node --project scripts/tsconfig.json scripts/seed-turso.ts",
         "migrate:turso": "ts-node --project scripts/tsconfig.json scripts/run-turso-migration.ts",
         "migrate:deployed-stocks-turso": "ts-node --project scripts/tsconfig.json scripts/migrate-deployed-stocks-turso.ts",
+        "migrate:sepolia-stocks": "ts-node --project scripts/tsconfig.json scripts/migrate-sepolia-stocks-turso.ts",
         "verify:turso": "ts-node --project scripts/tsconfig.json scripts/verify-turso-migration.ts",
         "test:price-chart": "ts-node --project scripts/tsconfig.json scripts/test-price-chart-data.ts",
         "test": "jest",
         "test:watch": "jest --watch",
-        "test:coverage": "jest --coverage"
+        "test:coverage": "jest --coverage",
+        "check:env": "node scripts/check-env.js",
+        "debug:network": "echo 'Visit http://localhost:3000/debug-network to test network connectivity'"
     },
     "dependencies": {
         "@clerk/nextjs": "^6.18.5",

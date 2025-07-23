@@ -1,10 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
-  // Skip problematic routes during build
-  experimental: {
-    missingSuspenseWithCSRBailout: false,
-  },
   // Skip auth routes during static export
   ...(process.env.NODE_ENV === 'production' && {
     trailingSlash: true,

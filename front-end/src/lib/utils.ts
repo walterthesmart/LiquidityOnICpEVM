@@ -40,6 +40,17 @@ export function logError(
   return errorInfo;
 }
 
+// Enhanced network diagnostics
+export function getNetworkDiagnostics() {
+  return {
+    isOnline: typeof navigator !== 'undefined' ? navigator.onLine : true,
+    userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : 'unknown',
+    timestamp: new Date().toISOString(),
+    url: typeof window !== 'undefined' ? window.location.href : 'unknown',
+    referrer: typeof document !== 'undefined' ? document.referrer : 'unknown',
+  };
+}
+
 // Network request wrapper with enhanced error handling
 export async function fetchWithRetry(
   url: string,
@@ -48,6 +59,7 @@ export async function fetchWithRetry(
   delay = 1000,
 ): Promise<Response> {
   let lastError: Error;
+  const diagnostics = getNetworkDiagnostics();
 
   for (let i = 0; i <= retries; i++) {
     try {
@@ -65,24 +77,37 @@ export async function fetchWithRetry(
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
 
+      // Log successful requests for debugging
+      console.log(`✅ Fetch success: ${url} (attempt ${i + 1})`);
       return response;
     } catch (error) {
       lastError = error instanceof Error ? error : new Error(String(error));
 
+      // Enhanced error logging with network diagnostics
       logError("fetchWithRetry", lastError, {
         url,
         attempt: i + 1,
         maxRetries: retries,
         options: { ...options, signal: undefined }, // Don't log the signal
+        diagnostics,
+        errorType: lastError.name,
+        errorMessage: lastError.message,
       });
 
       if (i < retries) {
+        console.log(`🔄 Retrying fetch: ${url} (attempt ${i + 2}/${retries + 1}) in ${delay * Math.pow(2, i)}ms`);
         await new Promise((resolve) =>
           setTimeout(resolve, delay * Math.pow(2, i)),
         );
       }
     }
   }
+
+  // Final error with comprehensive diagnostics
+  console.error(`❌ Fetch failed after ${retries + 1} attempts: ${url}`, {
+    error: lastError,
+    diagnostics,
+  });
 
   throw lastError!;
 }
