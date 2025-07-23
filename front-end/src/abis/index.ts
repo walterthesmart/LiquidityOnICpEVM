@@ -106,7 +106,7 @@ export function getFactoryAddress(chainId: number): string {
  */
 export function getTokenAddress(chainId: number, symbol: string): string {
   const addresses = getContractAddresses(chainId);
-  return addresses?.tokens?.[symbol] || "";
+  return (addresses?.tokens as Record<string, string>)?.[symbol] || "";
 }
 
 /**

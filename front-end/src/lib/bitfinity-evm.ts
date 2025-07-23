@@ -12,7 +12,6 @@ import {
 } from "viem";
 import {
   SUPPORTED_NETWORKS,
-  CONTRACT_ADDRESSES,
   DEFAULT_NETWORK,
   getNetworkByChainId,
   getContractAddresses,
@@ -21,132 +20,12 @@ import {
   NigerianStockTokenFactoryABI,
   NigerianStockTokenABI,
   getFactoryAddress,
-  getTokenAddress,
+  getTokenAddress as getTokenAddressFromABI,
   getAvailableTokens,
 } from "../abis";
 
-// Contract ABIs (simplified for key functions)
-export const NIGERIAN_STOCK_TOKEN_ABI = [
-  {
-    inputs: [{ name: "account", type: "address" }],
-    name: "balanceOf",
-    outputs: [{ name: "", type: "uint256" }],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [],
-    name: "totalSupply",
-    outputs: [{ name: "", type: "uint256" }],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [],
-    name: "name",
-    outputs: [{ name: "", type: "string" }],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [],
-    name: "symbol",
-    outputs: [{ name: "", type: "string" }],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [],
-    name: "decimals",
-    outputs: [{ name: "", type: "uint8" }],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [
-      { name: "to", type: "address" },
-      { name: "amount", type: "uint256" },
-    ],
-    name: "transfer",
-    outputs: [{ name: "", type: "bool" }],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
-    inputs: [
-      { name: "spender", type: "address" },
-      { name: "amount", type: "uint256" },
-    ],
-    name: "approve",
-    outputs: [{ name: "", type: "bool" }],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
-    inputs: [
-      { name: "owner", type: "address" },
-      { name: "spender", type: "address" },
-    ],
-    name: "allowance",
-    outputs: [{ name: "", type: "uint256" }],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [],
-    name: "getTokenInfo",
-    outputs: [
-      { name: "_name", type: "string" },
-      { name: "_symbol", type: "string" },
-      { name: "_stockSymbol", type: "string" },
-      { name: "_companyName", type: "string" },
-      { name: "_totalSupply", type: "uint256" },
-      { name: "_maxSupply", type: "uint256" },
-      { name: "_decimals", type: "uint8" },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-] as const;
-
-export const NIGERIAN_STOCK_FACTORY_ABI = [
-  {
-    inputs: [{ name: "_stockSymbol", type: "string" }],
-    name: "getTokenAddress",
-    outputs: [{ name: "", type: "address" }],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [],
-    name: "getAllTokens",
-    outputs: [{ name: "", type: "address[]" }],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [{ name: "_tokenAddress", type: "address" }],
-    name: "isRegisteredStockToken",
-    outputs: [{ name: "", type: "bool" }],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [{ name: "_stockSymbol", type: "string" }],
-    name: "getTokenInfo",
-    outputs: [
-      { name: "tokenAddress", type: "address" },
-      { name: "name", type: "string" },
-      { name: "symbol", type: "string" },
-      { name: "companyName", type: "string" },
-      { name: "totalSupply", type: "uint256" },
-      { name: "maxSupply", type: "uint256" },
-      { name: "decimals", type: "uint8" },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-] as const;
+// Note: Contract ABIs are now imported from ../abis/index.ts
+// This provides better type safety and keeps ABIs in sync with deployed contracts
 
 /**
  * Multi-Network EVM Service Class
@@ -210,11 +89,11 @@ export class MultiNetworkEVMService {
   }
 
   /**
-   * Get token address by symbol
+   * Get token address by symbol from factory contract
    */
-  async getTokenAddress(symbol: string): Promise<Address | null> {
+  async getTokenAddressFromContract(symbol: string): Promise<Address | null> {
     try {
-      const factoryAddress = CONTRACT_ADDRESSES[this.network]?.factoryAddress;
+      const factoryAddress = getFactoryAddress(this.getChainId());
       if (!factoryAddress) {
         throw new Error(
           `Factory address not configured for network: ${this.network}`,
@@ -230,7 +109,7 @@ export class MultiNetworkEVMService {
 
       return address === "0x0000000000000000000000000000000000000000"
         ? null
-        : address;
+        : (address as Address);
     } catch (error) {
       console.error("Error getting token address:", error);
       return null;
@@ -252,7 +131,7 @@ export class MultiNetworkEVMService {
         args: [userAddress],
       });
 
-      return formatEther(balance);
+      return formatEther(balance as bigint);
     } catch (error) {
       console.error("Error getting token balance:", error);
       return "0";
@@ -278,7 +157,7 @@ export class MultiNetworkEVMService {
         abi: NigerianStockTokenFactoryABI,
         functionName: "getTokenInfo",
         args: [symbol],
-      });
+      }) as readonly [Address, string, string, string, bigint, bigint, number];
 
       return {
         tokenAddress: tokenInfo[0],
@@ -314,7 +193,7 @@ export class MultiNetworkEVMService {
         address: factoryAddress as Address,
         abi: NigerianStockTokenFactoryABI,
         functionName: "getAllTokens",
-      });
+      }) as readonly Address[];
 
       return [...tokens];
     } catch (error) {
@@ -343,40 +222,34 @@ export class MultiNetworkEVMService {
    */
   getTokenAddress(symbol: string): string {
     const chainId = this.getChainId();
-    return getTokenAddress(chainId, symbol);
+    return getTokenAddressFromABI(chainId, symbol);
   }
 
   /**
    * Get block explorer URL for a transaction
    */
   getTransactionUrl(txHash: string): string {
-    const networkConfig = BITFINITY_NETWORKS[this.network];
-    return `${networkConfig.blockExplorer}/tx/${txHash}`;
+    const networkConfig = getNetworkByChainId(this.getChainId());
+    return `${networkConfig?.blockExplorer || ''}/tx/${txHash}`;
   }
 
   /**
    * Get block explorer URL for a token
    */
   getTokenUrl(tokenAddress: string): string {
-    const networkConfig = BITFINITY_NETWORKS[this.network];
-    return `${networkConfig.blockExplorer}/token/${tokenAddress}`;
+    const networkConfig = getNetworkByChainId(this.getChainId());
+    return `${networkConfig?.blockExplorer || ''}/token/${tokenAddress}`;
   }
 
   /**
    * Get block explorer URL for an address
    */
   getAddressUrl(address: string): string {
-    const networkConfig = BITFINITY_NETWORKS[this.network];
-    return `${networkConfig.blockExplorer}/address/${address}`;
+    const networkConfig = getNetworkByChainId(this.getChainId());
+    return `${networkConfig?.blockExplorer || ''}/address/${address}`;
   }
 
-  /**
-   * Switch network
-   */
-  switchNetwork(network: string) {
-    this.network = network;
-    this.initializeClients();
-  }
+
 }
 
 // Export singleton instance (backward compatibility)

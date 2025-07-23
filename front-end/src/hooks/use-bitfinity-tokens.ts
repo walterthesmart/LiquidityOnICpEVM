@@ -199,10 +199,10 @@ export function useTokenBalances(symbols: string[]) {
 
       const balancePromises = symbols.map(async (symbol) => {
         try {
-          const tokenAddress = await bitfinityEVM.getTokenAddress(symbol);
+          const tokenAddress = bitfinityEVM.getTokenAddress(symbol);
           if (tokenAddress) {
             const balance = await bitfinityEVM.getTokenBalance(
-              tokenAddress,
+              tokenAddress as `0x${string}`,
               userAddress,
             );
             return { symbol, balance };

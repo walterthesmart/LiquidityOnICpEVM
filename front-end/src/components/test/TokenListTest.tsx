@@ -1,14 +1,16 @@
 /**
  * Token List Test Component
- * 
+ *
  * This component demonstrates and tests the expanded Nigerian Stock Exchange
  * token integration with all 39 deployed tokens on Sepolia testnet.
  */
 
+"use client";
+
 import React, { useState, useEffect } from 'react';
 import { useAccount, useChainId } from 'wagmi';
 import { useNetworkSwitcher, useNetworkAwareTokens, useNetworkFaucets } from '@/hooks/use-network-switcher';
-import { getFactoryAddress, getAvailableTokens } from '@/abis';
+import { getFactoryAddress } from '@/abis';
 import { formatNetworkName } from '@/lib/bitfinity-config';
 
 interface TokenInfo {
@@ -20,21 +22,27 @@ interface TokenInfo {
 }
 
 export function TokenListTest() {
+  const [mounted, setMounted] = useState(false);
   const { address, isConnected } = useAccount();
   const chainId = useChainId();
-  const { 
-    currentNetwork, 
-    switchToSepolia, 
+  const {
+    currentNetwork,
+    switchToSepolia,
     switchToBitfinityTestnet,
     isCurrentNetworkSupported,
-    hasDeployedContracts 
+    hasDeployedContracts
   } = useNetworkSwitcher();
-  
+
   const { availableTokens, hasContracts } = useNetworkAwareTokens();
   const { faucets, isTestnet, nativeCurrency } = useNetworkFaucets();
-  
+
   const [tokenDetails, setTokenDetails] = useState<TokenInfo[]>([]);
   const [loading, setLoading] = useState(false);
+
+  // Ensure component is mounted on client side
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Load token details when network or tokens change
   useEffect(() => {
@@ -118,10 +126,36 @@ export function TokenListTest() {
     return acc;
   }, {} as Record<string, TokenInfo[]>);
 
+  // Show loading state until component is mounted
+  if (!mounted) {
+    return (
+      <div className="p-6 max-w-6xl mx-auto">
+        <h1 className="text-3xl font-bold mb-6">Nigerian Stock Exchange Token Integration Test</h1>
+        <div className="bg-gray-100 p-4 rounded-lg animate-pulse">
+          <div className="h-6 bg-gray-300 rounded mb-3 w-48"></div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <div className="h-4 bg-gray-300 rounded w-32"></div>
+              <div className="h-4 bg-gray-300 rounded w-48"></div>
+              <div className="h-4 bg-gray-300 rounded w-24"></div>
+              <div className="h-4 bg-gray-300 rounded w-36"></div>
+            </div>
+            <div className="space-y-2">
+              <div className="h-4 bg-gray-300 rounded w-28"></div>
+              <div className="h-4 bg-gray-300 rounded w-32"></div>
+              <div className="h-4 bg-gray-300 rounded w-24"></div>
+              <div className="h-4 bg-gray-300 rounded w-40"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="p-6 max-w-6xl mx-auto">
       <h1 className="text-3xl font-bold mb-6">Nigerian Stock Exchange Token Integration Test</h1>
-      
+
       {/* Network Status */}
       <div className="bg-gray-100 p-4 rounded-lg mb-6">
         <h2 className="text-xl font-semibold mb-3">Network Status</h2>
