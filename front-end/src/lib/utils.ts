@@ -13,6 +13,18 @@ export function logError(
 ) {
   const timestamp = new Date().toISOString();
 
+  // Skip logging completely empty errors to reduce noise
+  if (
+    !error ||
+    (typeof error === "object" && Object.keys(error).length === 0)
+  ) {
+    console.debug(`[${context}] Skipping empty error at ${timestamp}:`, {
+      error,
+      additionalData,
+    });
+    return null;
+  }
+
   // Safely handle different types of error objects
   let processedError: {
     name: string;
@@ -35,6 +47,24 @@ export function logError(
   } else if (error && typeof error === "object") {
     // Handle empty objects, event objects, or other object types
     const errorObj = error as Record<string, unknown>;
+
+    // Check if this is a meaningful error object
+    const hasUsefulInfo =
+      errorObj.message ||
+      errorObj.reason ||
+      errorObj.name ||
+      errorObj.stack ||
+      errorObj.filename ||
+      (errorObj.target && typeof errorObj.target === "object");
+
+    if (!hasUsefulInfo) {
+      console.debug(`[${context}] Skipping error object with no useful info at ${timestamp}:`, {
+        error: errorObj,
+        additionalData,
+      });
+      return null;
+    }
+
     processedError = {
       name: (errorObj.name as string) || "UnknownError",
       message:

@@ -7,7 +7,7 @@ import { Footer } from "./_components/footer";
 import { TechnologyShowcaseSection } from "./_components/technology-showcase-section";
 import { TrustSection } from "./_components/trust-section";
 import { FeaturesSection } from "./_components/features";
-import TradingViewTickerWidget from "@/components/TradingViewTickerWidget";
+
 export default function LandingPage() {
   const words = [
     {
@@ -109,8 +109,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* TradingView Ticker Tape Widget */}
-      <TradingViewTickerWidget />
+
 
       {/* Features Section */}
       <FeaturesSection />

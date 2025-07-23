@@ -287,16 +287,23 @@ const TradingViewWidget: React.FC<TradingViewWidgetProps> = memo(
 
           // Enhanced error handling
           script.onerror = (error) => {
-            logError("TradingViewWidget", error, {
+            // Only log meaningful errors to reduce noise
+            const errorMessage = error instanceof Error
+              ? error.message
+              : `Failed to load TradingView script from ${script.src}`;
+
+            console.warn("TradingView script failed to load:", {
+              url: script.src,
               symbol: tradingViewSymbol,
-              originalSymbol: symbol,
-              containerId: containerId,
-              config: widgetConfig,
+              error: error,
               isOnline: navigator.onLine,
             });
+
+            // Don't use logError for TradingView script failures as they're often due to
+            // ad blockers or network restrictions and create noise
             setHasError(true);
             setErrorMessage(
-              "Failed to load TradingView widget script. Please check your internet connection.",
+              "TradingView chart unavailable. This may be due to ad blockers or network restrictions.",
             );
             setIsLoading(false);
           };

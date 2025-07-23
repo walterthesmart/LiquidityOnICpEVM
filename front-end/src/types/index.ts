@@ -6,4 +6,13 @@ export interface StockData {
   tokenID: string;
   change: number;
   chain: string;
+  // Additional properties for enhanced stock information
+  sector?: string;
+  marketCap?: number;
+  volume?: number;
+  lastUpdated?: string;
+  description?: string;
+  industry?: string;
+  listingDate?: string;
+  isin?: string;
 }

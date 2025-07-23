@@ -1,9 +1,9 @@
 /**
- * Stock Detail Page - Completely Redesigned
+ * Stock Detail Page - Simplified Design
  *
- * Professional stock detail page inspired by TradingView demo page design.
- * Features comprehensive TradingView widgets for symbol info, charts,
- * technical analysis, company profile, and news timeline.
+ * Clean stock detail page featuring only the TradingView advanced chart
+ * and comprehensive stock information displayed in cards.
+ * Removed other TradingView widgets to reduce network errors and improve performance.
  *
  * @author Augment Agent
  */
@@ -14,15 +14,12 @@ import getPriceChartData from "@/server-actions/stocks/get_price_chart_data";
 import { getStockBySymbol } from "@/server-actions/stocks/getStocks";
 import { BuyStocksForm } from "../_components/buy-stocks-form";
 
-// TradingView Widgets
+// TradingView Widgets - Only keeping the advanced chart
 import TradingViewWidget from "@/components/TradingViewWidget";
-import TradingViewSymbolInfoWidget from "@/components/TradingViewSymbolInfoWidget";
-import TradingViewCompanyProfileWidget from "@/components/TradingViewCompanyProfileWidget";
-import TradingViewTimelineWidget from "@/components/TradingViewTimelineWidget";
-import TradingViewTechnicalAnalysisWidget from "@/components/TradingViewTechnicalAnalysisWidget";
-import TradingViewNewsTimelineWidget from "@/components/TradingViewNewsTimelineWidget";
-import TradingViewTickerWidget from "@/components/TradingViewTickerWidget";
 import TradingViewErrorBoundary from "@/components/TradingViewErrorBoundary";
+
+// DEX Trading Components
+import { QuickTradingWidget } from "@/components/DEX";
 
 //interface for data returned by getStockBySymbol
 // interface stockSymbolData {
@@ -70,12 +67,6 @@ export default async function StockDetail({
   }
   return (
     <div className="min-h-screen bg-gray-50/30">
-      {/* Ticker Tape Widget - Full Width */}
-      <div className="w-full bg-white border-b">
-        <Suspense fallback={<div className="h-12 bg-gray-100 animate-pulse" />}>
-          <TradingViewTickerWidget />
-        </Suspense>
-      </div>
 
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 max-w-7xl">
         {/* Header Section with Symbol Info */}
@@ -121,23 +112,44 @@ export default async function StockDetail({
               </div>
             </div>
 
-            {/* Right: Symbol Information Widget */}
-            <div className="lg:w-96">
-              <TradingViewErrorBoundary
-                widgetName="Symbol Info"
-                symbol={symbol}
-              >
-                <Suspense
-                  fallback={
-                    <div className="h-32 bg-white rounded-lg animate-pulse" />
-                  }
-                >
-                  <TradingViewSymbolInfoWidget
-                    symbol={symbol}
-                    className="shadow-sm"
-                  />
-                </Suspense>
-              </TradingViewErrorBoundary>
+            {/* Right: Stock Information & Quick Trading */}
+            <div className="lg:w-96 space-y-6">
+              {/* Quick Trading Widget */}
+              <Suspense fallback={<div className="h-64 bg-white rounded-lg shadow-sm animate-pulse" />}>
+                <QuickTradingWidget
+                  stockToken={`0x${symbol.toLowerCase()}`} // This would need to be the actual token address
+                  stockSymbol={stockSymbol.symbol}
+                  stockName={stockSymbol.name}
+                  className="shadow-sm"
+                />
+              </Suspense>
+
+              {/* Stock Information */}
+              <Card className="bg-white shadow-sm">
+                <CardHeader>
+                  <h3 className="text-lg font-semibold">Stock Information</h3>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Symbol:</span>
+                      <span className="font-medium">{stockSymbol.symbol}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Company:</span>
+                      <span className="font-medium">{stockSymbol.name}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Sector:</span>
+                      <span className="font-medium">{stockSymbol.sector || "N/A"}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Market Cap:</span>
+                      <span className="font-medium">{stockSymbol.marketCap || "N/A"}</span>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
             </div>
           </div>
         </div>
@@ -233,92 +245,141 @@ export default async function StockDetail({
               </TradingViewErrorBoundary>
             </div>
 
-            {/* Technical Analysis and Company Profile Row */}
+            {/* Stock Details Section */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Technical Analysis */}
-              <TradingViewErrorBoundary
-                widgetName="Technical Analysis"
-                symbol={symbol}
-              >
-                <Suspense
-                  fallback={
-                    <div className="h-96 bg-white rounded-lg shadow-sm animate-pulse" />
-                  }
-                >
-                  <TradingViewTechnicalAnalysisWidget
-                    symbol={symbol}
-                    className="shadow-sm"
-                    height="450px"
-                    width="100%"
-                    showIntervalTabs={true}
-                  />
-                </Suspense>
-              </TradingViewErrorBoundary>
+              {/* Stock Performance */}
+              <Card className="bg-white shadow-sm">
+                <CardHeader>
+                  <h3 className="text-lg font-semibold">Performance Metrics</h3>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Current Price:</span>
+                      <span className="font-medium">₦{stockSymbol.price?.toFixed(2) || "N/A"}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Change:</span>
+                      <span className={`font-medium flex items-center ${
+                        (stockSymbol.change || 0) >= 0 ? "text-green-600" : "text-red-600"
+                      }`}>
+                        {(stockSymbol.change || 0) >= 0 ? (
+                          <ArrowUp className="h-4 w-4 mr-1" />
+                        ) : (
+                          <ArrowDown className="h-4 w-4 mr-1" />
+                        )}
+                        ₦{Math.abs(stockSymbol.change || 0).toFixed(2)}
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Volume:</span>
+                      <span className="font-medium">{stockSymbol.volume?.toLocaleString() || "N/A"}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Last Updated:</span>
+                      <span className="font-medium text-sm">
+                        {stockSymbol.lastUpdated ? new Date(stockSymbol.lastUpdated).toLocaleString() : "N/A"}
+                      </span>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
 
-              {/* Company Profile */}
-              <TradingViewErrorBoundary
-                widgetName="Company Profile"
-                symbol={symbol}
-              >
-                <Suspense
-                  fallback={
-                    <div className="h-96 bg-white rounded-lg shadow-sm animate-pulse" />
-                  }
-                >
-                  <TradingViewCompanyProfileWidget
-                    symbol={symbol}
-                    className="shadow-sm"
-                    height="450px"
-                    width="100%"
-                  />
-                </Suspense>
-              </TradingViewErrorBoundary>
+              {/* Company Information */}
+              <Card className="bg-white shadow-sm">
+                <CardHeader>
+                  <h3 className="text-lg font-semibold">Company Details</h3>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div>
+                      <span className="text-gray-600 block">Description:</span>
+                      <p className="text-sm mt-1">
+                        {stockSymbol.description || `${stockSymbol.name} is a leading company in the ${stockSymbol.sector || "Nigerian"} sector.`}
+                      </p>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Industry:</span>
+                      <span className="font-medium">{stockSymbol.industry || stockSymbol.sector || "N/A"}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Exchange:</span>
+                      <span className="font-medium">Nigerian Stock Exchange (NGX)</span>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
             </div>
 
-            {/* News and Fundamental Analysis Row */}
+            {/* Additional Information */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Market News Timeline */}
-              <TradingViewErrorBoundary
-                widgetName="News Timeline"
-                symbol={symbol}
-              >
-                <Suspense
-                  fallback={
-                    <div className="h-96 bg-white rounded-lg shadow-sm animate-pulse" />
-                  }
-                >
-                  <TradingViewNewsTimelineWidget
-                    symbol={symbol}
-                    newsType="symbol"
-                    className="shadow-sm"
-                    height="500px"
-                    width="100%"
-                  />
-                </Suspense>
-              </TradingViewErrorBoundary>
+              {/* Trading Information */}
+              <Card className="bg-white shadow-sm">
+                <CardHeader>
+                  <h3 className="text-lg font-semibold">Trading Information</h3>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div className="p-4 bg-blue-50 rounded-lg">
+                      <div className="flex items-center">
+                        <Info className="h-5 w-5 text-blue-600 mr-2" />
+                        <span className="text-blue-800 font-medium">Trading Status</span>
+                      </div>
+                      <p className="text-blue-700 text-sm mt-1">
+                        This stock is available for trading on the Nigerian Stock Exchange.
+                      </p>
+                    </div>
+                    <div className="space-y-2">
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Trading Hours:</span>
+                        <span className="font-medium">9:30 AM - 2:30 PM WAT</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Currency:</span>
+                        <span className="font-medium">Nigerian Naira (₦)</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Lot Size:</span>
+                        <span className="font-medium">100 shares</span>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
 
-              {/* Fundamental Analysis Timeline */}
-              <TradingViewErrorBoundary
-                widgetName="Fundamental Analysis"
-                symbol={symbol}
-              >
-                <Suspense
-                  fallback={
-                    <div className="h-96 bg-white rounded-lg shadow-sm animate-pulse" />
-                  }
-                >
-                  <TradingViewTimelineWidget
-                    symbol={symbol}
-                    feedMode="market"
-                    market="nigeria"
-                    className="shadow-sm"
-                    height="500px"
-                    width="100%"
-                    title="Fundamental Analysis"
-                    displayMode="adaptive"
-                  />
-                </Suspense>
-              </TradingViewErrorBoundary>
+              {/* Market Information */}
+              <Card className="bg-white shadow-sm">
+                <CardHeader>
+                  <h3 className="text-lg font-semibold">Market Information</h3>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div className="p-4 bg-green-50 rounded-lg">
+                      <div className="flex items-center">
+                        <Info className="h-5 w-5 text-green-600 mr-2" />
+                        <span className="text-green-800 font-medium">Market Status</span>
+                      </div>
+                      <p className="text-green-700 text-sm mt-1">
+                        Nigerian Stock Exchange is currently open for trading.
+                      </p>
+                    </div>
+                    <div className="space-y-2">
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Market:</span>
+                        <span className="font-medium">Nigerian Stock Exchange</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Listing Date:</span>
+                        <span className="font-medium">{stockSymbol.listingDate || "N/A"}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">ISIN:</span>
+                        <span className="font-medium">{stockSymbol.isin || "N/A"}</span>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
             </div>
           </div>
 

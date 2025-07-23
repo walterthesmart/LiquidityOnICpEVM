@@ -76,7 +76,7 @@ export const bitfinityMainnet = {
 // Legacy RainbowKit configuration - now replaced by the main configuration in rainbowkit.tsx
 // This config is kept for reference but the active configuration includes Bitfinity EVM networks
 
-export const config = getDefaultConfig({
+export const config: ReturnType<typeof getDefaultConfig> = getDefaultConfig({
   appName: "Liquidity Nigerian Stock Trading",
   projectId,
   chains: [

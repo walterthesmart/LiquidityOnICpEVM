@@ -7,6 +7,7 @@ import {
   // IconSettings,
   IconSocial,
   IconUserExclamation,
+  IconChartCandle,
 } from "@tabler/icons-react";
 import Link from "next/link";
 import { motion } from "motion/react";
@@ -25,6 +26,11 @@ export function PlatformSidebar() {
       label: "Marketplace",
       href: "/marketplace",
       icon: <IconSocial className="h-5 w-5 shrink-0" />,
+    },
+    {
+      label: "DEX Trading",
+      href: "/dex",
+      icon: <IconChartCandle className="h-5 w-5 shrink-0" />,
     },
     {
       label: "Dashboard",

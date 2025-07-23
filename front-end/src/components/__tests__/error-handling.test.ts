@@ -23,25 +23,25 @@ describe("Error Handling", () => {
       const error = new Error("Test error");
       const result = logError("TestContext", error);
 
-      expect(result.error.name).toBe("Error");
-      expect(result.error.message).toBe("Test error");
-      expect(result.context).toBe("TestContext");
+      expect(result?.error.name).toBe("Error");
+      expect(result?.error.message).toBe("Test error");
+      expect(result?.context).toBe("TestContext");
     });
 
     it("should handle empty objects", () => {
       const error = {};
       const result = logError("TestContext", error);
 
-      expect(result.error.name).toBe("UnknownError");
-      expect(result.error.message).toBe("Unknown error occurred");
+      expect(result?.error.name).toBe("UnknownError");
+      expect(result?.error.message).toBe("Unknown error occurred");
     });
 
     it("should handle null/undefined errors", () => {
       const result1 = logError("TestContext", null);
       const result2 = logError("TestContext", undefined);
 
-      expect(result1.error.name).toBe("UnknownError");
-      expect(result2.error.name).toBe("UnknownError");
+      expect(result1?.error.name).toBe("UnknownError");
+      expect(result2?.error.name).toBe("UnknownError");
     });
 
     it("should handle script error events", () => {
@@ -53,8 +53,8 @@ describe("Error Handling", () => {
 
       const result = logError("TestContext", scriptError);
 
-      expect(result.error.target).toBe("SCRIPT");
-      expect(result.error.type).toBe("error");
+      expect(result?.error.target).toBe("SCRIPT");
+      expect(result?.error.type).toBe("error");
     });
 
     it("should handle TradingView-specific errors", () => {
@@ -69,8 +69,8 @@ describe("Error Handling", () => {
 
       const result = logError("TradingViewWidget", tradingViewError);
 
-      expect(result.context).toBe("TradingViewWidget");
-      expect(result.error.target).toBe("SCRIPT");
+      expect(result?.context).toBe("TradingViewWidget");
+      expect(result?.error.target).toBe("SCRIPT");
     });
   });
 });
