@@ -5,24 +5,52 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-// Enhanced error logging utility
+// Enhanced error logging utility with better error object handling
 export function logError(
   context: string,
   error: unknown,
   additionalData?: Record<string, unknown>,
 ) {
   const timestamp = new Date().toISOString();
+
+  // Safely handle different types of error objects
+  let processedError: any;
+
+  if (error instanceof Error) {
+    processedError = {
+      name: error.name,
+      message: error.message,
+      stack: error.stack,
+    };
+  } else if (error && typeof error === "object") {
+    // Handle empty objects, event objects, or other object types
+    const errorObj = error as any;
+    processedError = {
+      name: errorObj.name || "UnknownError",
+      message: errorObj.message || errorObj.reason || "Unknown error occurred",
+      type: errorObj.type || "unknown",
+      target: errorObj.target?.tagName || errorObj.target?.src || "unknown",
+      // Include any other relevant properties
+      ...Object.keys(errorObj).reduce((acc, key) => {
+        if (typeof errorObj[key] !== "function" && key !== "target") {
+          acc[key] = errorObj[key];
+        }
+        return acc;
+      }, {} as Record<string, any>),
+    };
+  } else {
+    // Handle primitive values or null/undefined
+    processedError = {
+      name: "UnknownError",
+      message: String(error) || "Unknown error occurred",
+      originalValue: error,
+    };
+  }
+
   const errorInfo = {
     timestamp,
     context,
-    error:
-      error instanceof Error
-        ? {
-            name: error.name,
-            message: error.message,
-            stack: error.stack,
-          }
-        : error,
+    error: processedError,
     additionalData,
     userAgent:
       typeof window !== "undefined" ? window.navigator.userAgent : "server",

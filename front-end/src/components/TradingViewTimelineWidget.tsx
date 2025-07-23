@@ -4,6 +4,7 @@ import React, { useEffect, useRef, useState, memo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { AlertTriangle, TrendingUp, Calendar } from "lucide-react";
+import { logError } from "@/lib/utils";
 
 /**
  * TradingView Timeline Widget Configuration Interface
@@ -163,7 +164,16 @@ const TradingViewTimelineWidget: React.FC<TradingViewTimelineWidgetProps> = memo
 
           // Error handling
           script.onerror = (error) => {
-            console.error("TradingView Timeline Widget failed to load:", error);
+            const errorObj = error || new Error("TradingView Timeline Widget script failed to load");
+            logError("TradingViewTimelineWidget", errorObj, {
+              symbol: tradingViewSymbol,
+              originalSymbol: symbol,
+              market: market,
+              feedMode: feedMode,
+              containerId: containerId,
+              isOnline: navigator.onLine,
+              widgetType: "timeline",
+            });
             setHasError(true);
             setErrorMessage(
               "Failed to load timeline. Please check your internet connection."
@@ -190,7 +200,17 @@ const TradingViewTimelineWidget: React.FC<TradingViewTimelineWidgetProps> = memo
           }, 4000);
 
         } catch (error) {
-          console.error("Failed to initialize TradingView Timeline Widget:", error);
+          const errorObj = error instanceof Error ? error : new Error(String(error) || "Unknown error");
+          logError("TradingViewTimelineWidget", errorObj, {
+            symbol: tradingViewSymbol,
+            originalSymbol: symbol,
+            market: market,
+            feedMode: feedMode,
+            containerId: containerId,
+            isOnline: navigator.onLine,
+            widgetType: "timeline",
+            phase: "initialization",
+          });
           setHasError(true);
           setErrorMessage(
             `Failed to initialize timeline widget.`

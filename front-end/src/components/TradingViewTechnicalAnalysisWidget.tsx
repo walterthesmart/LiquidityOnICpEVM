@@ -4,6 +4,7 @@ import React, { useEffect, useRef, useState, memo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { AlertTriangle, BarChart3 } from "lucide-react";
+import { logError } from "@/lib/utils";
 
 /**
  * TradingView Technical Analysis Widget Configuration Interface
@@ -125,7 +126,16 @@ const TradingViewTechnicalAnalysisWidget: React.FC<TradingViewTechnicalAnalysisW
 
           // Error handling
           script.onerror = (error) => {
-            console.error("TradingView Technical Analysis Widget failed to load:", error);
+            const errorObj = error || new Error("TradingView Technical Analysis Widget script failed to load");
+            logError("TradingViewTechnicalAnalysisWidget", errorObj, {
+              symbol: tradingViewSymbol,
+              originalSymbol: symbol,
+              containerId: containerId,
+              interval: interval,
+              displayMode: displayMode,
+              isOnline: navigator.onLine,
+              widgetType: "technical-analysis",
+            });
             setHasError(true);
             setErrorMessage(
               "Failed to load technical analysis. Please check your internet connection."
@@ -152,7 +162,17 @@ const TradingViewTechnicalAnalysisWidget: React.FC<TradingViewTechnicalAnalysisW
           }, 4000);
 
         } catch (error) {
-          console.error("Failed to initialize TradingView Technical Analysis Widget:", error);
+          const errorObj = error instanceof Error ? error : new Error(String(error) || "Unknown error");
+          logError("TradingViewTechnicalAnalysisWidget", errorObj, {
+            symbol: tradingViewSymbol,
+            originalSymbol: symbol,
+            containerId: containerId,
+            interval: interval,
+            displayMode: displayMode,
+            isOnline: navigator.onLine,
+            widgetType: "technical-analysis",
+            phase: "initialization",
+          });
           setHasError(true);
           setErrorMessage(
             `Failed to initialize technical analysis widget for ${symbol}.`

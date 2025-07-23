@@ -4,6 +4,7 @@ import React, { useEffect, useRef, useState, memo } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { AlertTriangle } from "lucide-react";
+import { logError } from "@/lib/utils";
 
 /**
  * TradingView Symbol Info Widget Configuration Interface
@@ -102,7 +103,14 @@ const TradingViewSymbolInfoWidget: React.FC<TradingViewSymbolInfoWidgetProps> = 
 
           // Error handling
           script.onerror = (error) => {
-            console.error("TradingView Symbol Info Widget failed to load:", error);
+            const errorObj = error || new Error("TradingView Symbol Info Widget script failed to load");
+            logError("TradingViewSymbolInfoWidget", errorObj, {
+              symbol: tradingViewSymbol,
+              originalSymbol: symbol,
+              containerId: containerId,
+              isOnline: navigator.onLine,
+              widgetType: "symbol-info",
+            });
             setHasError(true);
             setErrorMessage(
               "Failed to load symbol information. Please check your internet connection."
@@ -129,7 +137,15 @@ const TradingViewSymbolInfoWidget: React.FC<TradingViewSymbolInfoWidgetProps> = 
           }, 3000);
 
         } catch (error) {
-          console.error("Failed to initialize TradingView Symbol Info Widget:", error);
+          const errorObj = error instanceof Error ? error : new Error(String(error) || "Unknown error");
+          logError("TradingViewSymbolInfoWidget", errorObj, {
+            symbol: tradingViewSymbol,
+            originalSymbol: symbol,
+            containerId: containerId,
+            isOnline: navigator.onLine,
+            widgetType: "symbol-info",
+            phase: "initialization",
+          });
           setHasError(true);
           setErrorMessage(
             `Failed to initialize symbol information widget for ${symbol}.`

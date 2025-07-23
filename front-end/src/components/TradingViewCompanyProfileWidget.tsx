@@ -4,6 +4,7 @@ import React, { useEffect, useRef, useState, memo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { AlertTriangle, Building2 } from "lucide-react";
+import { logError } from "@/lib/utils";
 
 /**
  * TradingView Company Profile Widget Configuration Interface
@@ -110,7 +111,14 @@ const TradingViewCompanyProfileWidget: React.FC<TradingViewCompanyProfileWidgetP
 
           // Error handling
           script.onerror = (error) => {
-            console.error("TradingView Company Profile Widget failed to load:", error);
+            const errorObj = error || new Error("TradingView Company Profile Widget script failed to load");
+            logError("TradingViewCompanyProfileWidget", errorObj, {
+              symbol: tradingViewSymbol,
+              originalSymbol: symbol,
+              containerId: containerId,
+              isOnline: navigator.onLine,
+              widgetType: "company-profile",
+            });
             setHasError(true);
             setErrorMessage(
               "Failed to load company profile. Please check your internet connection."
@@ -137,7 +145,15 @@ const TradingViewCompanyProfileWidget: React.FC<TradingViewCompanyProfileWidgetP
           }, 4000);
 
         } catch (error) {
-          console.error("Failed to initialize TradingView Company Profile Widget:", error);
+          const errorObj = error instanceof Error ? error : new Error(String(error) || "Unknown error");
+          logError("TradingViewCompanyProfileWidget", errorObj, {
+            symbol: tradingViewSymbol,
+            originalSymbol: symbol,
+            containerId: containerId,
+            isOnline: navigator.onLine,
+            widgetType: "company-profile",
+            phase: "initialization",
+          });
           setHasError(true);
           setErrorMessage(
             `Failed to initialize company profile widget for ${symbol}.`

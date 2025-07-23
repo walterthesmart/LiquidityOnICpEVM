@@ -35,7 +35,10 @@ export function GlobalErrorHandler() {
 
     // Handle global JavaScript errors
     const handleError = (event: ErrorEvent) => {
-      logError("GlobalError", event.error || new Error(event.message), {
+      // Create a proper error object if one doesn't exist
+      const error = event.error || new Error(event.message || "Unknown error");
+
+      logError("GlobalError", error, {
         type: "global_error",
         filename: event.filename,
         lineno: event.lineno,
@@ -43,7 +46,7 @@ export function GlobalErrorHandler() {
         timestamp: new Date().toISOString(),
       });
 
-      // Show user-friendly error message
+      // Show user-friendly error message based on error type
       if (
         event.message.includes("fetch") ||
         event.message.includes("Failed to fetch")
@@ -51,6 +54,13 @@ export function GlobalErrorHandler() {
         toast.error(
           "Network error occurred. Please refresh the page and try again.",
         );
+      } else if (
+        event.message.includes("TradingView") ||
+        event.filename?.includes("tradingview") ||
+        event.filename?.includes("s3.tradingview.com")
+      ) {
+        // Handle TradingView-specific errors more gracefully
+        console.warn("TradingView widget error detected, but not showing toast to avoid spam");
       }
     };
 
@@ -74,9 +84,16 @@ export function GlobalErrorHandler() {
 
         // Handle specific resource types
         if (target.tagName === "SCRIPT") {
-          toast.error(
-            "Failed to load external script. Some features may not work properly.",
-          );
+          const scriptSrc = (target as HTMLScriptElement).src || "";
+
+          // Don't show toast for TradingView script errors to avoid spam
+          if (scriptSrc.includes("tradingview.com")) {
+            console.warn("TradingView script failed to load:", scriptSrc);
+          } else {
+            toast.error(
+              "Failed to load external script. Some features may not work properly.",
+            );
+          }
         } else if (target.tagName === "IMG") {
           // Don't show toast for image errors as they're usually not critical
           console.warn(

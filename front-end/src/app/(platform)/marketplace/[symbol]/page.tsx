@@ -22,6 +22,7 @@ import TradingViewTimelineWidget from "@/components/TradingViewTimelineWidget";
 import TradingViewTechnicalAnalysisWidget from "@/components/TradingViewTechnicalAnalysisWidget";
 import TradingViewNewsTimelineWidget from "@/components/TradingViewNewsTimelineWidget";
 import TradingViewTickerWidget from "@/components/TradingViewTickerWidget";
+import TradingViewErrorBoundary from "@/components/TradingViewErrorBoundary";
 
 //interface for data returned by getStockBySymbol
 // interface stockSymbolData {
@@ -119,12 +120,14 @@ export default async function StockDetail({
 
             {/* Right: Symbol Information Widget */}
             <div className="lg:w-96">
-              <Suspense fallback={<div className="h-32 bg-white rounded-lg animate-pulse" />}>
-                <TradingViewSymbolInfoWidget
-                  symbol={symbol}
-                  className="shadow-sm"
-                />
-              </Suspense>
+              <TradingViewErrorBoundary widgetName="Symbol Info" symbol={symbol}>
+                <Suspense fallback={<div className="h-32 bg-white rounded-lg animate-pulse" />}>
+                  <TradingViewSymbolInfoWidget
+                    symbol={symbol}
+                    className="shadow-sm"
+                  />
+                </Suspense>
+              </TradingViewErrorBoundary>
             </div>
           </div>
         </div>
@@ -200,71 +203,81 @@ export default async function StockDetail({
           <div className="xl:col-span-3 space-y-6">
             {/* Advanced Chart Widget */}
             <div className="bg-white rounded-lg shadow-sm">
-              <Suspense fallback={<div className="h-96 bg-gray-100 rounded-lg animate-pulse" />}>
-                <TradingViewWidget
-                  symbol={symbol}
-                  height="500px"
-                  width="100%"
-                  title={`${stockSymbol.name} (${stockSymbol.symbol})`}
-                  className="rounded-lg"
-                  interval="D"
-                  allowSymbolChange={true}
-                  hideToolbar={false}
-                  studies={[]}
-                />
-              </Suspense>
+              <TradingViewErrorBoundary widgetName="Advanced Chart" symbol={symbol}>
+                <Suspense fallback={<div className="h-96 bg-gray-100 rounded-lg animate-pulse" />}>
+                  <TradingViewWidget
+                    symbol={symbol}
+                    height="500px"
+                    width="100%"
+                    title={`${stockSymbol.name} (${stockSymbol.symbol})`}
+                    className="rounded-lg"
+                    interval="D"
+                    allowSymbolChange={true}
+                    hideToolbar={false}
+                    studies={[]}
+                  />
+                </Suspense>
+              </TradingViewErrorBoundary>
             </div>
 
             {/* Technical Analysis and Company Profile Row */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {/* Technical Analysis */}
-              <Suspense fallback={<div className="h-96 bg-white rounded-lg shadow-sm animate-pulse" />}>
-                <TradingViewTechnicalAnalysisWidget
-                  symbol={symbol}
-                  className="shadow-sm"
-                  height="450px"
-                  width="100%"
-                  showIntervalTabs={true}
-                />
-              </Suspense>
+              <TradingViewErrorBoundary widgetName="Technical Analysis" symbol={symbol}>
+                <Suspense fallback={<div className="h-96 bg-white rounded-lg shadow-sm animate-pulse" />}>
+                  <TradingViewTechnicalAnalysisWidget
+                    symbol={symbol}
+                    className="shadow-sm"
+                    height="450px"
+                    width="100%"
+                    showIntervalTabs={true}
+                  />
+                </Suspense>
+              </TradingViewErrorBoundary>
 
               {/* Company Profile */}
-              <Suspense fallback={<div className="h-96 bg-white rounded-lg shadow-sm animate-pulse" />}>
-                <TradingViewCompanyProfileWidget
-                  symbol={symbol}
-                  className="shadow-sm"
-                  height="450px"
-                  width="100%"
-                />
-              </Suspense>
+              <TradingViewErrorBoundary widgetName="Company Profile" symbol={symbol}>
+                <Suspense fallback={<div className="h-96 bg-white rounded-lg shadow-sm animate-pulse" />}>
+                  <TradingViewCompanyProfileWidget
+                    symbol={symbol}
+                    className="shadow-sm"
+                    height="450px"
+                    width="100%"
+                  />
+                </Suspense>
+              </TradingViewErrorBoundary>
             </div>
 
             {/* News and Fundamental Analysis Row */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {/* Market News Timeline */}
-              <Suspense fallback={<div className="h-96 bg-white rounded-lg shadow-sm animate-pulse" />}>
-                <TradingViewNewsTimelineWidget
-                  symbol={symbol}
-                  newsType="symbol"
-                  className="shadow-sm"
-                  height="500px"
-                  width="100%"
-                />
-              </Suspense>
+              <TradingViewErrorBoundary widgetName="News Timeline" symbol={symbol}>
+                <Suspense fallback={<div className="h-96 bg-white rounded-lg shadow-sm animate-pulse" />}>
+                  <TradingViewNewsTimelineWidget
+                    symbol={symbol}
+                    newsType="symbol"
+                    className="shadow-sm"
+                    height="500px"
+                    width="100%"
+                  />
+                </Suspense>
+              </TradingViewErrorBoundary>
 
               {/* Fundamental Analysis Timeline */}
-              <Suspense fallback={<div className="h-96 bg-white rounded-lg shadow-sm animate-pulse" />}>
-                <TradingViewTimelineWidget
-                  symbol={symbol}
-                  feedMode="market"
-                  market="nigeria"
-                  className="shadow-sm"
-                  height="500px"
-                  width="100%"
-                  title="Fundamental Analysis"
-                  displayMode="adaptive"
-                />
-              </Suspense>
+              <TradingViewErrorBoundary widgetName="Fundamental Analysis" symbol={symbol}>
+                <Suspense fallback={<div className="h-96 bg-white rounded-lg shadow-sm animate-pulse" />}>
+                  <TradingViewTimelineWidget
+                    symbol={symbol}
+                    feedMode="market"
+                    market="nigeria"
+                    className="shadow-sm"
+                    height="500px"
+                    width="100%"
+                    title="Fundamental Analysis"
+                    displayMode="adaptive"
+                  />
+                </Suspense>
+              </TradingViewErrorBoundary>
             </div>
           </div>
 
