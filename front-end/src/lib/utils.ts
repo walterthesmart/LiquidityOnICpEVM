@@ -23,6 +23,7 @@ export function logError(
     filename?: string;
     lineno?: number;
     colno?: number;
+    originalValue?: unknown;
   };
 
   if (error instanceof Error) {

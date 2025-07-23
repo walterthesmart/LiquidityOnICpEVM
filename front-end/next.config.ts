@@ -6,6 +6,11 @@ const nextConfig = {
     trailingSlash: true,
     skipTrailingSlashRedirect: true,
   }),
+  // Handle CommonJS modules that need to be transpiled
+  transpilePackages: ['@vanilla-extract/sprinkles'],
+  experimental: {
+    esmExternals: 'loose',
+  },
   webpack: (config: {
     experiments: {
       asyncWebAssembly: boolean;

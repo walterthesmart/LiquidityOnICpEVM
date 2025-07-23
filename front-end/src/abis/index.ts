@@ -9,6 +9,7 @@ import NigerianStockTokenFactoryArtifact from "./NigerianStockTokenFactory.json"
 import NigerianStockTokenArtifact from "./NigerianStockToken.json";
 import NGNStablecoinArtifact from "./NGNStablecoin.json";
 import StockNGNDEXArtifact from "./StockNGNDEX.json";
+import TradingPairManagerArtifact from "./TradingPairManager.json";
 
 // Export the ABI arrays for use with ethers.js and wagmi
 export const NigerianStockTokenFactoryABI =
@@ -16,6 +17,7 @@ export const NigerianStockTokenFactoryABI =
 export const NigerianStockTokenABI = NigerianStockTokenArtifact.abi;
 export const NGNStablecoinABI = NGNStablecoinArtifact;
 export const StockNGNDEXABI = StockNGNDEXArtifact;
+export const TradingPairManagerABI = TradingPairManagerArtifact;
 
 // Export contract artifacts for advanced usage
 export {
@@ -23,6 +25,7 @@ export {
   NigerianStockTokenArtifact,
   NGNStablecoinArtifact,
   StockNGNDEXArtifact,
+  TradingPairManagerArtifact,
 };
 
 // Type definitions for the ABIs (for TypeScript support)
@@ -30,6 +33,7 @@ export type NigerianStockTokenFactoryABI = typeof NigerianStockTokenFactoryABI;
 export type NigerianStockTokenABI = typeof NigerianStockTokenABI;
 export type NGNStablecoinABI = typeof NGNStablecoinABI;
 export type StockNGNDEXABI = typeof StockNGNDEXABI;
+export type TradingPairManagerABI = typeof TradingPairManagerABI;
 
 /**
  * Contract addresses by network
@@ -39,9 +43,9 @@ export const CONTRACT_ADDRESSES = {
   // Ethereum Sepolia Testnet
   11155111: {
     factoryAddress: "0xF1098eDaaB7a7D7b3bD42e7DeD9554781dfA625A",
-    ngnStablecoin: "", // To be updated after deployment
-    stockNGNDEX: "", // To be updated after deployment
-    tradingPairManager: "", // To be updated after deployment
+    ngnStablecoin: "0xc6FDE8a6D23B2A0e7f39F90bc5B7c062159e9A36",
+    stockNGNDEX: "0x1fb6d61A02eF94564e90e14BeACbba17A0C9482a",
+    tradingPairManager: "0x5b23a4caCE30BFDa4326d784e82A24bA5D8f56b9",
     tokens: {
       DANGCEM: "0x2EC5d749D0DF8Aa8b1Af4128d0b0Cb76417A8DeE",
       MTNN: "0xa19FB869e72ecC01797BcF57B690Ecee3101888A",

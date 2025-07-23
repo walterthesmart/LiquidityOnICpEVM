@@ -3,42 +3,44 @@
     "target": "es2022",
     "module": "commonjs",
     "lib": ["es2022"],
-    "outDir": "./dist",
-    "rootDir": "./",
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
-    "declaration": true,
-    "declarationMap": true,
-    "sourceMap": true,
     "moduleResolution": "node",
     "allowSyntheticDefaultImports": true,
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
-    "composite": true,
     "baseUrl": "./",
     "paths": {
-      "@/*": ["*"],
-      "@/contracts/*": ["contracts/*"],
-      "@/scripts/*": ["scripts/*"],
-      "@/test/*": ["test/*"],
-      "@/types/*": ["typechain-types/*"]
+      "@contracts/*": ["contracts/*"],
+      "@backend/*": ["backend/*"],
+      "@frontend/*": ["front-end/*"],
+      "@scripts/*": ["scripts/*"]
     }
   },
-  "include": [
-    "./contracts/**/*",
-    "./scripts/**/*",
-    "./test/**/*",
-    "./typechain-types/**/*",
-    "hardhat.config.ts",
-    ".eslintrc.js"
+  "references": [
+    {
+      "path": "./contracts"
+    },
+    {
+      "path": "./backend"
+    },
+    {
+      "path": "./front-end"
+    }
   ],
+  "files": [],
+  "include": [],
   "exclude": [
     "node_modules",
     "dist",
     "artifacts",
-    "cache"
+    "cache",
+    "**/node_modules",
+    "**/dist",
+    "**/artifacts",
+    "**/cache"
   ]
 }
