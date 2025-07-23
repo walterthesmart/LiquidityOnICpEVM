@@ -154,7 +154,7 @@ const DashBoardPage = () => {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] p-4">
         <div className="bg-red-50 p-4 rounded-lg max-w-md text-center">
-          g<h2 className="text-red-600 font-bold mb-2">Error Loading Data</h2>
+          <h2 className="text-red-600 font-bold mb-2">Error Loading Data</h2>
           <p className="text-red-500 mb-4">{error}</p>
           <Button variant="outline" onClick={() => window.location.reload()}>
             Try Again

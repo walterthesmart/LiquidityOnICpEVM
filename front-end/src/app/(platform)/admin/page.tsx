@@ -1,7 +1,11 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useAccount } from "wagmi";
+import React from "react";
+// Temporarily disabled due to vanilla-extract build issue with RainbowKit
+// import { useState, useEffect } from "react";
+// import { useAccount } from "wagmi";
+// Temporarily disabled due to vanilla-extract build issue with RainbowKit
+/*
 import {
   Card,
   CardContent,
@@ -24,7 +28,9 @@ import {
 import { bitfinityService } from "@/lib/bitfinity-contract-service";
 
 import { TokenizeStockForm } from "./_components/tokenize-stock-form";
+*/
 
+/*
 interface AdminStats {
   totalTokens: number;
   totalMarketCap: string;
@@ -33,8 +39,24 @@ interface AdminStats {
   totalVolume: string;
   totalTransactions: number;
 }
+*/
 
 export default function AdminDashboard() {
+  // Temporarily disabled due to vanilla-extract build issue with RainbowKit
+  return (
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="text-center">
+        <h1 className="text-2xl font-bold text-gray-900 mb-4">Admin Dashboard Temporarily Unavailable</h1>
+        <p className="text-gray-600">This page is temporarily disabled due to a build configuration issue with @vanilla-extract/sprinkles.</p>
+        <p className="text-gray-600 mt-2">We are working to resolve this issue.</p>
+      </div>
+    </div>
+  );
+}
+
+/*
+// Original implementation commented out due to vanilla-extract build issue
+function AdminDashboardOriginal() {
   const { address, isConnected } = useAccount();
   const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -233,3 +255,4 @@ export default function AdminDashboard() {
     </div>
   );
 }
+*/
