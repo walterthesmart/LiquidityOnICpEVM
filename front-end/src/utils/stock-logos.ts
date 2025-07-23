@@ -6,10 +6,10 @@
  */
 
 // Stock symbol to logo file mapping
-// Based on available files in public/logo/png/ and deployed stocks
-// Updated to include all available stock logos
+// Based on available files in public/logo/png/ and all 38 deployed stocks on Sepolia
+// Updated to match exactly the deployed tokens from sepolia-contracts.json
 const STOCK_LOGO_MAP: Record<string, string> = {
-  // Stocks with specific logos available (verified from public/logo/png/)
+  // All 38 deployed Nigerian stock tokens with their logo mappings
   ACCESS: "ACCESS.png",
   AIRTELAFRI: "AIRTEL.png",
   BUACEMENT: "BUACEMENT.png",
@@ -18,7 +18,7 @@ const STOCK_LOGO_MAP: Record<string, string> = {
   CHAMPION: "CHAMPION.png",
   CONOIL: "CONOIL.png",
   CWG: "CWG.png",
-  DANGCEM: "DANGCEM.png", // Updated from .jpeg to .png
+  DANGCEM: "DANGCEM.png",
   DANGSUGAR: "DANGSUGAR.png",
   ETERNA: "ETERNA.png",
   FBNH: "FBNH.png",
@@ -27,9 +27,10 @@ const STOCK_LOGO_MAP: Record<string, string> = {
   GEREGU: "GEREGU.png",
   GTCO: "GTCO.png",
   GUINNESS: "GUINESS.png", // Note: file is named GUINESS.png (missing 'N')
+  INTBREW: "logo-no-background.png", // No specific logo found, using fallback
   LIVESTOCK: "LIVESTOCK.png",
   MAYBAKER: "MAYBAKER.png",
-  MTNN: "MTNN.png", // Updated from .jpg to .png
+  MTNN: "MTNN.png",
   NB: "NB.png",
   NESTLE: "NESTLE.png",
   OANDO: "OANDO.png",
@@ -40,16 +41,13 @@ const STOCK_LOGO_MAP: Record<string, string> = {
   STANBIC: "STANBIC.png",
   TOTAL: "TOTAL.png",
   TRANSCOHOT: "TRANSCORP.png", // Note: file is named TRANSCORP.png
+  TRANSCORP: "TRANSCORP.png",
+  TRANSPOWER: "logo-no-background.png", // No specific logo found, using fallback
   UACN: "UACN.png",
   UBA: "UBA.png",
   UNILEVER: "UNILEVER.png",
   WAPCO: "WAPCO.jpg", // This one is actually .jpg
   ZENITHBANK: "ZENITH.png",
-
-  // Stocks without specific logos (will use fallback)
-  INTBREW: "logo-no-background.png", // No specific logo found
-  LAFARGE: "logo-no-background.png", // No specific logo found
-  TRANSPOWER: "logo-no-background.png", // No specific logo found
 };
 
 // Fallback logo for stocks without specific logos

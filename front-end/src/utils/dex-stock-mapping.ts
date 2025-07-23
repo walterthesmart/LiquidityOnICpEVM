@@ -30,7 +30,7 @@ export interface DEXStockInfo {
 function createAddressToSymbolMap(chainId: number): Record<string, string> {
   const contractAddresses = getContractAddresses(chainId);
   const addressToSymbolMap: Record<string, string> = {};
-  
+
   if (contractAddresses?.tokens) {
     // Create reverse mapping: address -> symbol
     Object.entries(contractAddresses.tokens).forEach(([symbol, address]) => {
@@ -39,7 +39,7 @@ function createAddressToSymbolMap(chainId: number): Record<string, string> {
       }
     });
   }
-  
+
   return addressToSymbolMap;
 }
 
@@ -56,25 +56,25 @@ export function getStockInfoByAddress(
   try {
     // Create address to symbol mapping for current chain
     const addressToSymbolMap = createAddressToSymbolMap(chainId);
-    
+
     // Get symbol from contract address
     const symbol = addressToSymbolMap[contractAddress.toLowerCase()];
     if (!symbol) {
       console.warn(`No symbol found for contract address: ${contractAddress}`);
       return null;
     }
-    
+
     // Get stock data from bitfinity config
     const stockData = getStockBySymbol(symbol);
     if (!stockData) {
       console.warn(`No stock data found for symbol: ${symbol}`);
       return null;
     }
-    
+
     // Get logo information
     const logoPath = getStockLogoPath(symbol);
     const logoAlt = getStockLogoAlt(symbol, stockData.companyName);
-    
+
     return {
       contractAddress,
       symbol: stockData.symbol,
