@@ -213,15 +213,22 @@ describe("NGNStablecoin", function () {
     });
 
     it("Should enforce daily transfer limit", async function () {
-      const dailyLimit = await ngnStablecoin.dailyTransferLimit();
-      const exceedAmount = dailyLimit + ethers.parseEther("1");
+      // First, let's set a lower daily transfer limit to make testing easier
+      const newDailyLimit = ethers.parseEther("5000000"); // 5M NGN
+      const newMaxTransfer = ethers.parseEther("6000000"); // 6M NGN max per transaction
 
-      // First mint enough tokens in multiple transactions to avoid minting cap
-      const mintAmount1 = ethers.parseEther("5000000");
-      const mintAmount2 = ethers.parseEther("5000001"); // Total exceeds daily limit
+      await ngnStablecoin.connect(admin).setTransferLimits(
+        ethers.parseEther("1"), // min
+        newMaxTransfer, // max (higher than daily limit)
+        newDailyLimit // daily limit
+      );
 
-      await ngnStablecoin.connect(minter).mint(user1.address, mintAmount1);
-      await ngnStablecoin.connect(minter).mint(user1.address, mintAmount2);
+      // Mint enough tokens for the test
+      const mintAmount = ethers.parseEther("6000000"); // 6M NGN
+      await ngnStablecoin.connect(minter).mint(user1.address, mintAmount);
+
+      // Try to transfer more than daily limit but less than max transfer
+      const exceedAmount = newDailyLimit + ethers.parseEther("1");
 
       await expect(ngnStablecoin.connect(user1).transfer(user2.address, exceedAmount))
         .to.be.revertedWithCustomError(ngnStablecoin, "DailyLimitExceeded");
@@ -245,16 +252,19 @@ describe("NGNStablecoin", function () {
       const normalMaxAmount = await ngnStablecoin.maxTransferAmount();
       const transferAmount = normalMaxAmount + ethers.parseEther("1000000"); // Above normal max
 
-      // First mint enough tokens to DEX contract (since DEX contracts can transfer more)
+      // Authorize DEX contract first
+      await ngnStablecoin.connect(admin).authorizeDEXContracts([dexContract.address], [true]);
+
+      // Mint tokens to DEX contract (since DEX contracts can transfer more)
       await ngnStablecoin.connect(minter).mint(dexContract.address, transferAmount);
 
-      // Authorize DEX contract
-      await ngnStablecoin.connect(admin).authorizeDEXContracts([dexContract.address], [true]);
+      // Get initial balance of user1
+      const initialBalance = await ngnStablecoin.balanceOf(user1.address);
 
       // Transfer from DEX to user1 should work even above normal limits
       await ngnStablecoin.connect(dexContract).transfer(user1.address, transferAmount);
 
-      expect(await ngnStablecoin.balanceOf(user1.address)).to.equal(transferAmount);
+      expect(await ngnStablecoin.balanceOf(user1.address)).to.equal(initialBalance + transferAmount);
     });
   });
 

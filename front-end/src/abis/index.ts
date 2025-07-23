@@ -7,17 +7,23 @@
 
 import NigerianStockTokenFactoryArtifact from './NigerianStockTokenFactory.json';
 import NigerianStockTokenArtifact from './NigerianStockToken.json';
+import NGNStablecoinArtifact from './NGNStablecoin.json';
+import StockNGNDEXArtifact from './StockNGNDEX.json';
 
 // Export the ABI arrays for use with ethers.js and wagmi
 export const NigerianStockTokenFactoryABI = NigerianStockTokenFactoryArtifact.abi;
 export const NigerianStockTokenABI = NigerianStockTokenArtifact.abi;
+export const NGNStablecoinABI = NGNStablecoinArtifact;
+export const StockNGNDEXABI = StockNGNDEXArtifact;
 
 // Export contract artifacts for advanced usage
-export { NigerianStockTokenFactoryArtifact, NigerianStockTokenArtifact };
+export { NigerianStockTokenFactoryArtifact, NigerianStockTokenArtifact, NGNStablecoinArtifact, StockNGNDEXArtifact };
 
 // Type definitions for the ABIs (for TypeScript support)
 export type NigerianStockTokenFactoryABI = typeof NigerianStockTokenFactoryABI;
 export type NigerianStockTokenABI = typeof NigerianStockTokenABI;
+export type NGNStablecoinABI = typeof NGNStablecoinABI;
+export type StockNGNDEXABI = typeof StockNGNDEXABI;
 
 /**
  * Contract addresses by network
@@ -27,6 +33,9 @@ export const CONTRACT_ADDRESSES = {
   // Ethereum Sepolia Testnet
   11155111: {
     factoryAddress: "0xF1098eDaaB7a7D7b3bD42e7DeD9554781dfA625A",
+    ngnStablecoin: "", // To be updated after deployment
+    stockNGNDEX: "", // To be updated after deployment
+    tradingPairManager: "", // To be updated after deployment
     tokens: {
       "DANGCEM": "0x2EC5d749D0DF8Aa8b1Af4128d0b0Cb76417A8DeE",
       "MTNN": "0xa19FB869e72ecC01797BcF57B690Ecee3101888A",
@@ -72,16 +81,25 @@ export const CONTRACT_ADDRESSES = {
   // Bitfinity Testnet (to be updated)
   355113: {
     factoryAddress: "",
+    ngnStablecoin: "",
+    stockNGNDEX: "",
+    tradingPairManager: "",
     tokens: {}
   },
   // Bitfinity Mainnet (to be updated)
   355110: {
     factoryAddress: "",
+    ngnStablecoin: "",
+    stockNGNDEX: "",
+    tradingPairManager: "",
     tokens: {}
   },
   // Local development
   31337: {
     factoryAddress: "",
+    ngnStablecoin: "",
+    stockNGNDEX: "",
+    tradingPairManager: "",
     tokens: {}
   }
 };
@@ -115,4 +133,28 @@ export function getTokenAddress(chainId: number, symbol: string): string {
 export function getAvailableTokens(chainId: number): string[] {
   const addresses = getContractAddresses(chainId);
   return Object.keys(addresses?.tokens || {});
+}
+
+/**
+ * Helper function to get NGN Stablecoin address for a specific chain
+ */
+export function getNGNStablecoinAddress(chainId: number): string {
+  const addresses = getContractAddresses(chainId);
+  return (addresses as any)?.ngnStablecoin || "";
+}
+
+/**
+ * Helper function to get StockNGNDEX address for a specific chain
+ */
+export function getStockNGNDEXAddress(chainId: number): string {
+  const addresses = getContractAddresses(chainId);
+  return (addresses as any)?.stockNGNDEX || "";
+}
+
+/**
+ * Helper function to get TradingPairManager address for a specific chain
+ */
+export function getTradingPairManagerAddress(chainId: number): string {
+  const addresses = getContractAddresses(chainId);
+  return (addresses as any)?.tradingPairManager || "";
 }
