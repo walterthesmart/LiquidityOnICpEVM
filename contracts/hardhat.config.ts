@@ -44,6 +44,14 @@ const config: HardhatUserConfig = {
       gasPrice: "auto",
       gas: "auto",
     },
+    // Hedera Testnet
+    hedera: {
+      url: process.env.HEDERA_RPC_URL || "https://testnet.hashio.io/api",
+      chainId: 296,
+      accounts: process.env.HEDERA_PRIVATE_KEY ? [process.env.HEDERA_PRIVATE_KEY] : [],
+      gasPrice: "auto",
+      gas: "auto",
+    },
     // Local development
     hardhat: {
       chainId: 31337,
@@ -63,6 +71,7 @@ const config: HardhatUserConfig = {
       bitfinity_testnet: "no-api-key-needed",
       bitfinity_mainnet: "no-api-key-needed",
       sepolia: process.env.ETHERSCAN_API_KEY || "dummy",
+      hedera: "no-api-key-needed",
     },
     customChains: [
       {
@@ -87,6 +96,14 @@ const config: HardhatUserConfig = {
         urls: {
           apiURL: "https://api-sepolia.etherscan.io/api",
           browserURL: "https://sepolia.etherscan.io",
+        },
+      },
+      {
+        network: "hedera",
+        chainId: 296,
+        urls: {
+          apiURL: "https://hashscan.io/testnet/api",
+          browserURL: "https://hashscan.io/testnet",
         },
       },
     ],

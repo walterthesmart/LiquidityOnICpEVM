@@ -60,8 +60,7 @@ export function NetworkDebugChecker() {
     try {
       // For script URLs, test if they can be loaded
       if (test.url.endsWith(".js")) {
-        const _response = await fetch(test.url, {
-          // eslint-disable-line @typescript-eslint/no-unused-vars
+        await fetch(test.url, {
           method: "HEAD",
           mode: "no-cors", // Avoid CORS issues for script testing
         });

@@ -18,16 +18,17 @@ interface StockNGNTraderProps {
   className?: string;
 }
 
-interface TradingPair {
-  stockToken: string;
-  ngnReserve: bigint;
-  stockReserve: bigint;
-  totalLiquidity: bigint;
-  feeRate: number;
-  isActive: boolean;
-  lastUpdateTime: bigint;
-  priceImpactLimit: number;
-}
+// Interface for trading pair data (currently unused but may be needed for future features)
+// interface TradingPair {
+//   stockToken: string;
+//   ngnReserve: bigint;
+//   stockReserve: bigint;
+//   totalLiquidity: bigint;
+//   feeRate: number;
+//   isActive: boolean;
+//   lastUpdateTime: bigint;
+//   priceImpactLimit: number;
+// }
 
 interface StockInfo {
   symbol: string;
@@ -65,17 +66,16 @@ const StockNGNTrader: React.FC<StockNGNTraderProps> = ({ className = "" }) => {
     },
   }) as { data: string[] | undefined };
 
-  // Get trading pair info for selected stock
-  const { data: _tradingPair } = useReadContract({
-    // eslint-disable-line @typescript-eslint/no-unused-vars
-    address: dexAddress as `0x${string}`,
-    abi: StockNGNDEXABI,
-    functionName: "getTradingPair",
-    args: [selectedStock],
-    query: {
-      enabled: !!selectedStock && !!dexAddress,
-    },
-  }) as { data: TradingPair | undefined };
+  // Get trading pair info for selected stock (currently unused but may be needed for future features)
+  // const { data: tradingPair } = useReadContract({
+  //   address: dexAddress as `0x${string}`,
+  //   abi: StockNGNDEXABI,
+  //   functionName: "getTradingPair",
+  //   args: [selectedStock],
+  //   query: {
+  //     enabled: !!selectedStock && !!dexAddress,
+  //   },
+  // }) as { data: TradingPair | undefined };
 
   // Get stock token info
   const { data: stockInfo } = useReadContract({
