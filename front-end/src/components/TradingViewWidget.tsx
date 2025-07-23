@@ -135,17 +135,17 @@ function getTradingViewSymbol(symbol: string): string {
   // Map Nigerian stocks to similar US stocks for demo purposes
   // This ensures widgets actually load with real data
   const workingSymbolMap: Record<string, string> = {
-    'DANGCEM': 'NYSE:CX',     // Cemex (cement company)
-    'GTCO': 'NYSE:JPM',       // JPMorgan Chase (bank)
-    'MTNN': 'NASDAQ:VZ',      // Verizon (telecom)
-    'BUACEMENT': 'NYSE:CX',   // Cemex (cement)
-    'ZENITHBANK': 'NYSE:JPM', // JPMorgan Chase (bank)
-    'ACCESS': 'NYSE:JPM',     // JPMorgan Chase (bank)
-    'UBA': 'NYSE:JPM',        // JPMorgan Chase (bank)
-    'FBNH': 'NYSE:JPM',       // JPMorgan Chase (bank)
+    DANGCEM: "NYSE:CX", // Cemex (cement company)
+    GTCO: "NYSE:JPM", // JPMorgan Chase (bank)
+    MTNN: "NASDAQ:VZ", // Verizon (telecom)
+    BUACEMENT: "NYSE:CX", // Cemex (cement)
+    ZENITHBANK: "NYSE:JPM", // JPMorgan Chase (bank)
+    ACCESS: "NYSE:JPM", // JPMorgan Chase (bank)
+    UBA: "NYSE:JPM", // JPMorgan Chase (bank)
+    FBNH: "NYSE:JPM", // JPMorgan Chase (bank)
   };
 
-  const tradingViewSymbol = workingSymbolMap[upperSymbol] || 'NYSE:JPM'; // Default to JPM
+  const tradingViewSymbol = workingSymbolMap[upperSymbol] || "NYSE:JPM"; // Default to JPM
 
   console.log(
     `TradingView Symbol Mapping: ${symbol} -> ${tradingViewSymbol} (Using working US equivalent for demo)`,

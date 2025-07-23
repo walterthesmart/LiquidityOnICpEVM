@@ -1,6 +1,6 @@
 /**
  * Network Switcher Hook
- * 
+ *
  * Provides utilities for detecting current network, switching between networks,
  * and managing network-specific configurations for the liquidity project.
  * Supports Bitfinity EVM and Ethereum Sepolia networks.
@@ -13,13 +13,9 @@ import {
   getContractAddresses,
   isTestnet,
   formatNetworkName,
-  getSupportedChainIds
+  getSupportedChainIds,
 } from "@/lib/bitfinity-config";
-import {
-  getFactoryAddress,
-  getTokenAddress,
-  getAvailableTokens,
-} from "@/abis";
+import { getFactoryAddress, getTokenAddress, getAvailableTokens } from "@/abis";
 import { toast } from "@/hooks/use-toast";
 
 export interface NetworkInfo {
@@ -52,7 +48,7 @@ export function useNetworkSwitcher() {
   const { isConnected } = useAccount();
   const chainId = useChainId();
   const { switchChain, isPending: isSwitchPending } = useSwitchChain();
-  
+
   const [state, setState] = useState<NetworkSwitcherState>({
     currentNetwork: null,
     supportedNetworks: [],
@@ -66,7 +62,7 @@ export function useNetworkSwitcher() {
     const networkConfig = getNetworkByChainId(chainId);
     const contractAddresses = getContractAddresses(chainId);
     const supportedChainIds = getSupportedChainIds();
-    
+
     return {
       chainId,
       name: formatNetworkName(chainId),
@@ -85,55 +81,59 @@ export function useNetworkSwitcher() {
 
   // Get all supported networks
   const getSupportedNetworksInfo = useCallback((): NetworkInfo[] => {
-    return getSupportedChainIds().map(chainId => getNetworkInfo(chainId));
+    return getSupportedChainIds().map((chainId) => getNetworkInfo(chainId));
   }, [getNetworkInfo]);
 
   // Switch to a specific network
-  const switchToNetwork = useCallback(async (targetChainId: number) => {
-    if (!isConnected) {
-      toast({
-        title: "Wallet Not Connected",
-        description: "Please connect your wallet first.",
-        variant: "destructive",
-      });
-      return false;
-    }
+  const switchToNetwork = useCallback(
+    async (targetChainId: number) => {
+      if (!isConnected) {
+        toast({
+          title: "Wallet Not Connected",
+          description: "Please connect your wallet first.",
+          variant: "destructive",
+        });
+        return false;
+      }
 
-    if (chainId === targetChainId) {
-      toast({
-        title: "Already Connected",
-        description: `You're already connected to ${formatNetworkName(targetChainId)}.`,
-      });
-      return true;
-    }
+      if (chainId === targetChainId) {
+        toast({
+          title: "Already Connected",
+          description: `You're already connected to ${formatNetworkName(targetChainId)}.`,
+        });
+        return true;
+      }
 
-    setState(prev => ({ ...prev, isSwitching: true, error: null }));
+      setState((prev) => ({ ...prev, isSwitching: true, error: null }));
 
-    try {
-      await switchChain({ chainId: targetChainId });
-      
-      toast({
-        title: "Network Switched",
-        description: `Successfully switched to ${formatNetworkName(targetChainId)}.`,
-      });
-      
-      return true;
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : "Failed to switch network";
-      
-      setState(prev => ({ ...prev, error: errorMessage }));
-      
-      toast({
-        title: "Network Switch Failed",
-        description: errorMessage,
-        variant: "destructive",
-      });
-      
-      return false;
-    } finally {
-      setState(prev => ({ ...prev, isSwitching: false }));
-    }
-  }, [isConnected, chainId, switchChain]);
+      try {
+        await switchChain({ chainId: targetChainId });
+
+        toast({
+          title: "Network Switched",
+          description: `Successfully switched to ${formatNetworkName(targetChainId)}.`,
+        });
+
+        return true;
+      } catch (error) {
+        const errorMessage =
+          error instanceof Error ? error.message : "Failed to switch network";
+
+        setState((prev) => ({ ...prev, error: errorMessage }));
+
+        toast({
+          title: "Network Switch Failed",
+          description: errorMessage,
+          variant: "destructive",
+        });
+
+        return false;
+      } finally {
+        setState((prev) => ({ ...prev, isSwitching: false }));
+      }
+    },
+    [isConnected, chainId, switchChain],
+  );
 
   // Switch to Bitfinity Testnet
   const switchToBitfinityTestnet = useCallback(() => {
@@ -171,38 +171,44 @@ export function useNetworkSwitcher() {
   useEffect(() => {
     const currentNetwork = chainId ? getNetworkInfo(chainId) : null;
     const supportedNetworks = getSupportedNetworksInfo();
-    
-    setState(prev => ({
+
+    setState((prev) => ({
       ...prev,
       currentNetwork,
       supportedNetworks,
       isConnected,
       isSwitching: isSwitchPending,
     }));
-  }, [chainId, isConnected, isSwitchPending, getNetworkInfo, getSupportedNetworksInfo]);
+  }, [
+    chainId,
+    isConnected,
+    isSwitchPending,
+    getNetworkInfo,
+    getSupportedNetworksInfo,
+  ]);
 
   // Clear error when network changes successfully
   useEffect(() => {
     if (chainId && state.error) {
-      setState(prev => ({ ...prev, error: null }));
+      setState((prev) => ({ ...prev, error: null }));
     }
   }, [chainId, state.error]);
 
   return {
     // State
     ...state,
-    
+
     // Network info
     currentChainId: chainId,
     isCurrentNetworkSupported: isCurrentNetworkSupported(),
     hasDeployedContracts: hasDeployedContracts(),
-    
+
     // Actions
     switchToNetwork,
     switchToBitfinityTestnet,
     switchToSepolia,
     switchToLocalhost,
-    
+
     // Utilities
     getNetworkInfo,
     getRecommendedNetwork,
@@ -215,7 +221,7 @@ export function useNetworkSwitcher() {
  */
 export function useNetworkContracts() {
   const chainId = useChainId();
-  
+
   const contractAddresses = getContractAddresses(chainId);
   const factoryAddress = getFactoryAddress(chainId);
   const hasContracts = !!factoryAddress;
@@ -235,7 +241,7 @@ export function useNetworkContracts() {
 export function useNetworkAwareTokens() {
   const { hasContracts, chainId } = useNetworkContracts();
   const { currentNetwork } = useNetworkSwitcher();
-  
+
   // Get available tokens for current network
   const getNetworkAvailableTokens = useCallback(() => {
     if (!hasContracts) {
@@ -243,24 +249,30 @@ export function useNetworkAwareTokens() {
     }
 
     const availableTokenSymbols = getAvailableTokens(chainId);
-    return availableTokenSymbols.map(symbol => ({
+    return availableTokenSymbols.map((symbol) => ({
       symbol,
       address: getTokenAddress(chainId, symbol),
       chainId,
       networkName: currentNetwork?.name || "Unknown",
     }));
   }, [hasContracts, chainId, currentNetwork]);
-  
+
   // Check if a specific token is available on current network
-  const isTokenAvailable = useCallback((symbol: string) => {
-    return getAvailableTokens(chainId).includes(symbol);
-  }, [chainId]);
+  const isTokenAvailable = useCallback(
+    (symbol: string) => {
+      return getAvailableTokens(chainId).includes(symbol);
+    },
+    [chainId],
+  );
 
   // Get token address by symbol
-  const getNetworkTokenAddress = useCallback((symbol: string) => {
-    return getTokenAddress(chainId, symbol);
-  }, [chainId]);
-  
+  const getNetworkTokenAddress = useCallback(
+    (symbol: string) => {
+      return getTokenAddress(chainId, symbol);
+    },
+    [chainId],
+  );
+
   return {
     availableTokens: getNetworkAvailableTokens(),
     isTokenAvailable,
@@ -276,12 +288,12 @@ export function useNetworkAwareTokens() {
 export function useNetworkFaucets() {
   const chainId = useChainId();
   const { currentNetwork } = useNetworkSwitcher();
-  
+
   const getFaucetInfo = useCallback(() => {
     if (!currentNetwork?.isTestnet) {
       return [];
     }
-    
+
     switch (chainId) {
       case 11155111: // Sepolia
         return [
@@ -291,17 +303,17 @@ export function useNetworkFaucets() {
             description: "Official Sepolia faucet - requires Alchemy account",
           },
           {
-            name: "Infura Sepolia Faucet", 
+            name: "Infura Sepolia Faucet",
             url: "https://www.infura.io/faucet/sepolia",
             description: "Infura Sepolia faucet - requires Infura account",
           },
           {
             name: "QuickNode Sepolia Faucet",
-            url: "https://faucet.quicknode.com/ethereum/sepolia", 
+            url: "https://faucet.quicknode.com/ethereum/sepolia",
             description: "QuickNode Sepolia faucet - no account required",
           },
         ];
-      
+
       case 355113: // Bitfinity Testnet
         return [
           {
@@ -310,12 +322,12 @@ export function useNetworkFaucets() {
             description: "Official Bitfinity testnet faucet",
           },
         ];
-      
+
       default:
         return [];
     }
   }, [chainId, currentNetwork]);
-  
+
   return {
     faucets: getFaucetInfo(),
     isTestnet: currentNetwork?.isTestnet || false,

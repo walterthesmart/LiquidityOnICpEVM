@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
-import { useAccount, useChainId, useReadContract } from 'wagmi';
-import { StockNGNDEXABI, NigerianStockTokenABI, getStockNGNDEXAddress } from '../../abis';
-import { formatEther } from 'ethers';
+import React, { useState, useEffect } from "react";
+import { useAccount, useChainId, useReadContract } from "wagmi";
+import { StockNGNDEXABI, getStockNGNDEXAddress } from "../../abis";
+import { formatEther } from "ethers";
 
 interface DEXDashboardProps {
   className?: string;
@@ -34,20 +34,22 @@ interface PairWithInfo extends TradingPair {
   priceHistory?: bigint[];
 }
 
-const DEXDashboard: React.FC<DEXDashboardProps> = ({ className = '' }) => {
+const DEXDashboard: React.FC<DEXDashboardProps> = ({ className = "" }) => {
   const { isConnected } = useAccount();
   const chainId = useChainId();
   const [pairs, setPairs] = useState<PairWithInfo[]>([]);
   const [loading, setLoading] = useState(true);
-  const [sortBy, setSortBy] = useState<'volume' | 'liquidity' | 'price'>('liquidity');
+  const [sortBy, setSortBy] = useState<"volume" | "liquidity" | "price">(
+    "liquidity",
+  );
 
-  const dexAddress = chainId ? getStockNGNDEXAddress(chainId) : '';
+  const dexAddress = chainId ? getStockNGNDEXAddress(chainId) : "";
 
   // Get all stock tokens
   const { data: allStockTokens } = useReadContract({
     address: dexAddress as `0x${string}`,
     abi: StockNGNDEXABI,
-    functionName: 'getAllStockTokens',
+    functionName: "getAllStockTokens",
     query: {
       enabled: !!dexAddress,
     },
@@ -57,7 +59,7 @@ const DEXDashboard: React.FC<DEXDashboardProps> = ({ className = '' }) => {
   const { data: dexStats } = useReadContract({
     address: dexAddress as `0x${string}`,
     abi: StockNGNDEXABI,
-    functionName: 'getDEXStats',
+    functionName: "getDEXStats",
     query: {
       enabled: !!dexAddress,
       refetchInterval: 5000, // Replaces watch: true
@@ -100,16 +102,21 @@ const DEXDashboard: React.FC<DEXDashboardProps> = ({ className = '' }) => {
     loadPairsData();
   }, [allStockTokens, dexAddress]);
 
-  const formatNumber = (value: bigint | number, decimals: number = 2): string => {
-    const num = typeof value === 'bigint' ? parseFloat(formatEther(value)) : value;
-    return num.toLocaleString('en-US', {
+  const formatNumber = (
+    value: bigint | number,
+    decimals: number = 2,
+  ): string => {
+    const num =
+      typeof value === "bigint" ? parseFloat(formatEther(value)) : value;
+    return num.toLocaleString("en-US", {
       minimumFractionDigits: decimals,
       maximumFractionDigits: decimals,
     });
   };
 
   const formatCompactNumber = (value: bigint | number): string => {
-    const num = typeof value === 'bigint' ? parseFloat(formatEther(value)) : value;
+    const num =
+      typeof value === "bigint" ? parseFloat(formatEther(value)) : value;
     if (num >= 1e9) return `${(num / 1e9).toFixed(1)}B`;
     if (num >= 1e6) return `${(num / 1e6).toFixed(1)}M`;
     if (num >= 1e3) return `${(num / 1e3).toFixed(1)}K`;
@@ -120,8 +127,12 @@ const DEXDashboard: React.FC<DEXDashboardProps> = ({ className = '' }) => {
     return (
       <div className={`bg-white rounded-lg shadow-md p-6 ${className}`}>
         <div className="text-center">
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">DEX Dashboard</h3>
-          <p className="text-gray-600">Please connect your wallet to view DEX data</p>
+          <h3 className="text-lg font-semibold text-gray-900 mb-2">
+            DEX Dashboard
+          </h3>
+          <p className="text-gray-600">
+            Please connect your wallet to view DEX data
+          </p>
         </div>
       </div>
     );
@@ -131,7 +142,9 @@ const DEXDashboard: React.FC<DEXDashboardProps> = ({ className = '' }) => {
     return (
       <div className={`bg-white rounded-lg shadow-md p-6 ${className}`}>
         <div className="text-center">
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">DEX Dashboard</h3>
+          <h3 className="text-lg font-semibold text-gray-900 mb-2">
+            DEX Dashboard
+          </h3>
           <p className="text-yellow-600">DEX not deployed on this network</p>
         </div>
       </div>
@@ -157,19 +170,27 @@ const DEXDashboard: React.FC<DEXDashboardProps> = ({ className = '' }) => {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div className="bg-blue-50 rounded-lg p-4">
               <p className="text-sm text-gray-600">Total Pairs</p>
-              <p className="text-2xl font-bold text-blue-700">{dexStats[0].toString()}</p>
+              <p className="text-2xl font-bold text-blue-700">
+                {dexStats[0].toString()}
+              </p>
             </div>
             <div className="bg-green-50 rounded-lg p-4">
               <p className="text-sm text-gray-600">Total Liquidity</p>
-              <p className="text-2xl font-bold text-green-700">₦{formatCompactNumber(dexStats[3])}</p>
+              <p className="text-2xl font-bold text-green-700">
+                ₦{formatCompactNumber(dexStats[3])}
+              </p>
             </div>
             <div className="bg-purple-50 rounded-lg p-4">
               <p className="text-sm text-gray-600">24h Volume</p>
-              <p className="text-2xl font-bold text-purple-700">₦{formatCompactNumber(dexStats[1])}</p>
+              <p className="text-2xl font-bold text-purple-700">
+                ₦{formatCompactNumber(dexStats[1])}
+              </p>
             </div>
             <div className="bg-yellow-50 rounded-lg p-4">
               <p className="text-sm text-gray-600">Fees Collected</p>
-              <p className="text-2xl font-bold text-yellow-700">₦{formatCompactNumber(dexStats[2])}</p>
+              <p className="text-2xl font-bold text-yellow-700">
+                ₦{formatCompactNumber(dexStats[2])}
+              </p>
             </div>
           </div>
         </div>
@@ -183,7 +204,9 @@ const DEXDashboard: React.FC<DEXDashboardProps> = ({ className = '' }) => {
             <span className="text-sm text-gray-600">Sort by:</span>
             <select
               value={sortBy}
-              onChange={(e) => setSortBy(e.target.value as 'volume' | 'liquidity' | 'price')}
+              onChange={(e) =>
+                setSortBy(e.target.value as "volume" | "liquidity" | "price")
+              }
               className="text-sm border border-gray-300 rounded-md px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <option value="liquidity">Liquidity</option>
@@ -238,7 +261,8 @@ const DEXDashboard: React.FC<DEXDashboardProps> = ({ className = '' }) => {
                         <div className="flex-shrink-0 h-8 w-8">
                           <div className="h-8 w-8 rounded-full bg-gradient-to-r from-blue-400 to-blue-600 flex items-center justify-center">
                             <span className="text-white text-xs font-bold">
-                              {pair.stockInfo?.symbol?.slice(0, 2) || `S${index + 1}`}
+                              {pair.stockInfo?.symbol?.slice(0, 2) ||
+                                `S${index + 1}`}
                             </span>
                           </div>
                         </div>
@@ -247,7 +271,7 @@ const DEXDashboard: React.FC<DEXDashboardProps> = ({ className = '' }) => {
                             {pair.stockInfo?.symbol || `Stock ${index + 1}`}/NGN
                           </div>
                           <div className="text-sm text-gray-500">
-                            {pair.stockInfo?.companyName || 'Unknown Company'}
+                            {pair.stockInfo?.companyName || "Unknown Company"}
                           </div>
                         </div>
                       </div>
@@ -266,7 +290,8 @@ const DEXDashboard: React.FC<DEXDashboardProps> = ({ className = '' }) => {
                       ₦{formatCompactNumber(pair.ngnReserve)}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      ₦{formatCompactNumber(0)} {/* Would need to track volume */}
+                      ₦{formatCompactNumber(0)}{" "}
+                      {/* Would need to track volume */}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                       {(pair.feeRate / 100).toFixed(1)}%

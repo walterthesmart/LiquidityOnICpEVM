@@ -19,7 +19,9 @@ export async function createStockOnHedera(args: CreateStockTokenArgs) {
     //TODO: Migrate to Bitfinity EVM contract deployment
     // This function needs to be updated to use the new Bitfinity contract service
     console.log("Legacy Hedera function called:", args);
-    throw new MyError("Stock creation has been migrated to Bitfinity EVM. Please use the admin panel.");
+    throw new MyError(
+      "Stock creation has been migrated to Bitfinity EVM. Please use the admin panel.",
+    );
 
     const tokenId = "MIGRATED_TO_BITFINITY";
 

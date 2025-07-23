@@ -7,7 +7,7 @@
  *
  * @author Augment Agent
  */
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { ArrowUp, ArrowDown, Info } from "lucide-react";
 import { Suspense } from "react";
 import getPriceChartData from "@/server-actions/stocks/get_price_chart_data";
@@ -49,7 +49,7 @@ export default async function StockDetail({
     );
   } // In a real app, you would fetch this based on symbol
 
-  const data = await getPriceChartData(symbol); //Fetching the price chart data
+  const _data = await getPriceChartData(symbol); // eslint-disable-line @typescript-eslint/no-unused-vars
 
   const stockSymbol = await getStockBySymbol(symbol);
   const stock = {
@@ -88,7 +88,9 @@ export default async function StockDetail({
                   <h1 className="text-3xl lg:text-4xl font-bold text-gray-900">
                     {stockSymbol.name}
                   </h1>
-                  <span className="text-lg text-gray-600">({stockSymbol.symbol})</span>
+                  <span className="text-lg text-gray-600">
+                    ({stockSymbol.symbol})
+                  </span>
                   <span className="text-sm text-gray-400 bg-gray-100 px-2 py-1 rounded">
                     {stock.exchange}
                   </span>
@@ -111,7 +113,8 @@ export default async function StockDetail({
                     )}
                     <span>
                       {stockSymbol.change >= 0 ? "+" : ""}
-                      {stockSymbol.change.toFixed(2)} ({stockSymbol.change.toFixed(2)}%)
+                      {stockSymbol.change.toFixed(2)} (
+                      {stockSymbol.change.toFixed(2)}%)
                     </span>
                   </div>
                 </div>
@@ -120,8 +123,15 @@ export default async function StockDetail({
 
             {/* Right: Symbol Information Widget */}
             <div className="lg:w-96">
-              <TradingViewErrorBoundary widgetName="Symbol Info" symbol={symbol}>
-                <Suspense fallback={<div className="h-32 bg-white rounded-lg animate-pulse" />}>
+              <TradingViewErrorBoundary
+                widgetName="Symbol Info"
+                symbol={symbol}
+              >
+                <Suspense
+                  fallback={
+                    <div className="h-32 bg-white rounded-lg animate-pulse" />
+                  }
+                >
                   <TradingViewSymbolInfoWidget
                     symbol={symbol}
                     className="shadow-sm"
@@ -145,9 +155,7 @@ export default async function StockDetail({
               <div className="text-2xl font-bold text-gray-900">
                 {stock.supply.toLocaleString()}
               </div>
-              <div className="text-xs text-gray-500 mt-1">
-                {stock.exchange}
-              </div>
+              <div className="text-xs text-gray-500 mt-1">{stock.exchange}</div>
             </CardContent>
           </Card>
 
@@ -162,9 +170,7 @@ export default async function StockDetail({
               <div className="text-2xl font-bold text-gray-900">
                 {stock.borrow.toLocaleString()}
               </div>
-              <div className="text-xs text-gray-500 mt-1">
-                {stock.exchange}
-              </div>
+              <div className="text-xs text-gray-500 mt-1">{stock.exchange}</div>
             </CardContent>
           </Card>
 
@@ -203,8 +209,15 @@ export default async function StockDetail({
           <div className="xl:col-span-3 space-y-6">
             {/* Advanced Chart Widget */}
             <div className="bg-white rounded-lg shadow-sm">
-              <TradingViewErrorBoundary widgetName="Advanced Chart" symbol={symbol}>
-                <Suspense fallback={<div className="h-96 bg-gray-100 rounded-lg animate-pulse" />}>
+              <TradingViewErrorBoundary
+                widgetName="Advanced Chart"
+                symbol={symbol}
+              >
+                <Suspense
+                  fallback={
+                    <div className="h-96 bg-gray-100 rounded-lg animate-pulse" />
+                  }
+                >
                   <TradingViewWidget
                     symbol={symbol}
                     height="500px"
@@ -223,8 +236,15 @@ export default async function StockDetail({
             {/* Technical Analysis and Company Profile Row */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {/* Technical Analysis */}
-              <TradingViewErrorBoundary widgetName="Technical Analysis" symbol={symbol}>
-                <Suspense fallback={<div className="h-96 bg-white rounded-lg shadow-sm animate-pulse" />}>
+              <TradingViewErrorBoundary
+                widgetName="Technical Analysis"
+                symbol={symbol}
+              >
+                <Suspense
+                  fallback={
+                    <div className="h-96 bg-white rounded-lg shadow-sm animate-pulse" />
+                  }
+                >
                   <TradingViewTechnicalAnalysisWidget
                     symbol={symbol}
                     className="shadow-sm"
@@ -236,8 +256,15 @@ export default async function StockDetail({
               </TradingViewErrorBoundary>
 
               {/* Company Profile */}
-              <TradingViewErrorBoundary widgetName="Company Profile" symbol={symbol}>
-                <Suspense fallback={<div className="h-96 bg-white rounded-lg shadow-sm animate-pulse" />}>
+              <TradingViewErrorBoundary
+                widgetName="Company Profile"
+                symbol={symbol}
+              >
+                <Suspense
+                  fallback={
+                    <div className="h-96 bg-white rounded-lg shadow-sm animate-pulse" />
+                  }
+                >
                   <TradingViewCompanyProfileWidget
                     symbol={symbol}
                     className="shadow-sm"
@@ -251,8 +278,15 @@ export default async function StockDetail({
             {/* News and Fundamental Analysis Row */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {/* Market News Timeline */}
-              <TradingViewErrorBoundary widgetName="News Timeline" symbol={symbol}>
-                <Suspense fallback={<div className="h-96 bg-white rounded-lg shadow-sm animate-pulse" />}>
+              <TradingViewErrorBoundary
+                widgetName="News Timeline"
+                symbol={symbol}
+              >
+                <Suspense
+                  fallback={
+                    <div className="h-96 bg-white rounded-lg shadow-sm animate-pulse" />
+                  }
+                >
                   <TradingViewNewsTimelineWidget
                     symbol={symbol}
                     newsType="symbol"
@@ -264,8 +298,15 @@ export default async function StockDetail({
               </TradingViewErrorBoundary>
 
               {/* Fundamental Analysis Timeline */}
-              <TradingViewErrorBoundary widgetName="Fundamental Analysis" symbol={symbol}>
-                <Suspense fallback={<div className="h-96 bg-white rounded-lg shadow-sm animate-pulse" />}>
+              <TradingViewErrorBoundary
+                widgetName="Fundamental Analysis"
+                symbol={symbol}
+              >
+                <Suspense
+                  fallback={
+                    <div className="h-96 bg-white rounded-lg shadow-sm animate-pulse" />
+                  }
+                >
                   <TradingViewTimelineWidget
                     symbol={symbol}
                     feedMode="market"

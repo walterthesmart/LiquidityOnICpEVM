@@ -14,7 +14,16 @@ export function logError(
   const timestamp = new Date().toISOString();
 
   // Safely handle different types of error objects
-  let processedError: any;
+  let processedError: {
+    name: string;
+    message: string;
+    stack?: string;
+    target?: string;
+    type?: string;
+    filename?: string;
+    lineno?: number;
+    colno?: number;
+  };
 
   if (error instanceof Error) {
     processedError = {
@@ -24,19 +33,28 @@ export function logError(
     };
   } else if (error && typeof error === "object") {
     // Handle empty objects, event objects, or other object types
-    const errorObj = error as any;
+    const errorObj = error as Record<string, unknown>;
     processedError = {
-      name: errorObj.name || "UnknownError",
-      message: errorObj.message || errorObj.reason || "Unknown error occurred",
-      type: errorObj.type || "unknown",
-      target: errorObj.target?.tagName || errorObj.target?.src || "unknown",
+      name: (errorObj.name as string) || "UnknownError",
+      message:
+        (errorObj.message as string) ||
+        (errorObj.reason as string) ||
+        "Unknown error occurred",
+      type: (errorObj.type as string) || "unknown",
+      target:
+        (errorObj.target as { tagName?: string; src?: string })?.tagName ||
+        (errorObj.target as { tagName?: string; src?: string })?.src ||
+        "unknown",
       // Include any other relevant properties
-      ...Object.keys(errorObj).reduce((acc, key) => {
-        if (typeof errorObj[key] !== "function" && key !== "target") {
-          acc[key] = errorObj[key];
-        }
-        return acc;
-      }, {} as Record<string, any>),
+      ...Object.keys(errorObj).reduce(
+        (acc, key) => {
+          if (typeof errorObj[key] !== "function" && key !== "target") {
+            acc[key] = errorObj[key];
+          }
+          return acc;
+        },
+        {} as Record<string, unknown>,
+      ),
     };
   } else {
     // Handle primitive values or null/undefined
@@ -71,11 +89,12 @@ export function logError(
 // Enhanced network diagnostics
 export function getNetworkDiagnostics() {
   return {
-    isOnline: typeof navigator !== 'undefined' ? navigator.onLine : true,
-    userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : 'unknown',
+    isOnline: typeof navigator !== "undefined" ? navigator.onLine : true,
+    userAgent:
+      typeof navigator !== "undefined" ? navigator.userAgent : "unknown",
     timestamp: new Date().toISOString(),
-    url: typeof window !== 'undefined' ? window.location.href : 'unknown',
-    referrer: typeof document !== 'undefined' ? document.referrer : 'unknown',
+    url: typeof window !== "undefined" ? window.location.href : "unknown",
+    referrer: typeof document !== "undefined" ? document.referrer : "unknown",
   };
 }
 
@@ -86,7 +105,7 @@ export async function fetchWithRetry(
   retries = 3,
   delay = 1000,
 ): Promise<Response> {
-  let lastError: Error = new Error('Unknown error');
+  let lastError: Error = new Error("Unknown error");
   const diagnostics = getNetworkDiagnostics();
 
   for (let i = 0; i <= retries; i++) {
@@ -123,7 +142,9 @@ export async function fetchWithRetry(
       });
 
       if (i < retries) {
-        console.log(`🔄 Retrying fetch: ${url} (attempt ${i + 2}/${retries + 1}) in ${delay * Math.pow(2, i)}ms`);
+        console.log(
+          `🔄 Retrying fetch: ${url} (attempt ${i + 2}/${retries + 1}) in ${delay * Math.pow(2, i)}ms`,
+        );
         await new Promise((resolve) =>
           setTimeout(resolve, delay * Math.pow(2, i)),
         );

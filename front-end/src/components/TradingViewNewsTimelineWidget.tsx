@@ -41,7 +41,9 @@ interface TradingViewNewsTimelineWidgetProps {
  * @param props - Component props
  * @returns JSX.Element - The news timeline widget container
  */
-const TradingViewNewsTimelineWidget: React.FC<TradingViewNewsTimelineWidgetProps> = ({
+const TradingViewNewsTimelineWidget: React.FC<
+  TradingViewNewsTimelineWidgetProps
+> = ({
   symbol,
   market = "nigeria",
   width = "100%",

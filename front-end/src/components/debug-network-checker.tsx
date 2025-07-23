@@ -37,13 +37,16 @@ export function NetworkDebugChecker() {
     },
   ]);
 
-  const [envVars, setEnvVars] = useState<Record<string, string | undefined>>({});
+  const [envVars, setEnvVars] = useState<Record<string, string | undefined>>(
+    {},
+  );
   const [isRunning, setIsRunning] = useState(false);
 
   useEffect(() => {
     // Check environment variables
     setEnvVars({
-      PAYSTACK_URL: process.env.NEXT_PUBLIC_PAYSTACK_URL || process.env.PAYSTACK_URL,
+      PAYSTACK_URL:
+        process.env.NEXT_PUBLIC_PAYSTACK_URL || process.env.PAYSTACK_URL,
       TURSO_DATABASE_URL: process.env.TURSO_DATABASE_URL,
       TURSO_AUTH_TOKEN: process.env.TURSO_AUTH_TOKEN ? "***SET***" : undefined,
       PROJECT_ID: process.env.NEXT_PUBLIC_PROJECT_ID,
@@ -53,27 +56,28 @@ export function NetworkDebugChecker() {
 
   const testUrl = async (test: NetworkTest): Promise<NetworkTest> => {
     const startTime = Date.now();
-    
+
     try {
       // For script URLs, test if they can be loaded
-      if (test.url.endsWith('.js')) {
-        const response = await fetch(test.url, { 
-          method: 'HEAD',
-          mode: 'no-cors' // Avoid CORS issues for script testing
+      if (test.url.endsWith(".js")) {
+        const _response = await fetch(test.url, {
+          // eslint-disable-line @typescript-eslint/no-unused-vars
+          method: "HEAD",
+          mode: "no-cors", // Avoid CORS issues for script testing
         });
-        
+
         return {
           ...test,
           status: "success",
           responseTime: Date.now() - startTime,
         };
       }
-      
+
       // For API URLs, test with a simple GET request
       const response = await fetch(test.url, {
-        method: 'GET',
+        method: "GET",
         headers: {
-          'Accept': 'application/json',
+          Accept: "application/json",
         },
         // Add timeout
         signal: AbortSignal.timeout(10000),
@@ -82,7 +86,9 @@ export function NetworkDebugChecker() {
       return {
         ...test,
         status: response.ok ? "success" : "error",
-        error: response.ok ? undefined : `HTTP ${response.status}: ${response.statusText}`,
+        error: response.ok
+          ? undefined
+          : `HTTP ${response.status}: ${response.statusText}`,
         responseTime: Date.now() - startTime,
       };
     } catch (error) {
@@ -97,23 +103,23 @@ export function NetworkDebugChecker() {
 
   const runTests = async () => {
     setIsRunning(true);
-    
+
     // Reset all tests to pending
-    setTests(prev => prev.map(test => ({ ...test, status: "pending" as const })));
+    setTests((prev) =>
+      prev.map((test) => ({ ...test, status: "pending" as const })),
+    );
 
     // Run tests sequentially to avoid overwhelming the browser
     for (let i = 0; i < tests.length; i++) {
       const test = tests[i];
       const result = await testUrl(test);
-      
-      setTests(prev => prev.map((t, index) => 
-        index === i ? result : t
-      ));
-      
+
+      setTests((prev) => prev.map((t, index) => (index === i ? result : t)));
+
       // Small delay between tests
-      await new Promise(resolve => setTimeout(resolve, 500));
+      await new Promise((resolve) => setTimeout(resolve, 500));
     }
-    
+
     setIsRunning(false);
   };
 
@@ -139,11 +145,7 @@ export function NetworkDebugChecker() {
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            <Button 
-              onClick={runTests} 
-              disabled={isRunning}
-              className="w-full"
-            >
+            <Button onClick={runTests} disabled={isRunning} className="w-full">
               {isRunning ? (
                 <>
                   <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
@@ -172,7 +174,10 @@ export function NetworkDebugChecker() {
                       <div className="text-gray-500">{test.responseTime}ms</div>
                     )}
                     {test.error && (
-                      <div className="text-red-500 max-w-xs truncate" title={test.error}>
+                      <div
+                        className="text-red-500 max-w-xs truncate"
+                        title={test.error}
+                      >
                         {test.error}
                       </div>
                     )}
@@ -191,9 +196,14 @@ export function NetworkDebugChecker() {
         <CardContent>
           <div className="space-y-2">
             {Object.entries(envVars).map(([key, value]) => (
-              <div key={key} className="flex items-center justify-between p-2 border rounded">
+              <div
+                key={key}
+                className="flex items-center justify-between p-2 border rounded"
+              >
                 <span className="font-mono text-sm">{key}</span>
-                <span className={`text-sm ${value ? 'text-green-600' : 'text-red-600'}`}>
+                <span
+                  className={`text-sm ${value ? "text-green-600" : "text-red-600"}`}
+                >
                   {value || "NOT SET"}
                 </span>
               </div>

@@ -7,18 +7,22 @@
 
 "use client";
 
-import React, { useState, useEffect } from 'react';
-import { useAccount, useChainId } from 'wagmi';
-import { useNetworkSwitcher, useNetworkAwareTokens, useNetworkFaucets } from '@/hooks/use-network-switcher';
-import { getFactoryAddress } from '@/abis';
-import { formatNetworkName } from '@/lib/bitfinity-config';
+import React, { useState, useEffect } from "react";
+import { useAccount, useChainId } from "wagmi";
+import {
+  useNetworkSwitcher,
+  useNetworkAwareTokens,
+  useNetworkFaucets,
+} from "@/hooks/use-network-switcher";
+import { getFactoryAddress } from "@/abis";
+import { formatNetworkName } from "@/lib/bitfinity-config";
 
 interface TokenInfo {
   symbol: string;
   address: string;
   name?: string;
   sector?: string;
-  status: 'loading' | 'success' | 'error';
+  status: "loading" | "success" | "error";
 }
 
 export function TokenListTest() {
@@ -30,7 +34,7 @@ export function TokenListTest() {
     switchToSepolia,
     switchToBitfinityTestnet,
     isCurrentNetworkSupported,
-    hasDeployedContracts
+    hasDeployedContracts,
   } = useNetworkSwitcher();
 
   const { availableTokens, hasContracts } = useNetworkAwareTokens();
@@ -52,22 +56,24 @@ export function TokenListTest() {
     }
 
     setLoading(true);
-    const details: TokenInfo[] = availableTokens.map(token => ({
+    const details: TokenInfo[] = availableTokens.map((token) => ({
       symbol: token.symbol,
       address: token.address,
-      status: 'loading' as const,
+      status: "loading" as const,
     }));
-    
+
     setTokenDetails(details);
-    
+
     // Simulate loading token details (in real app, this would fetch from contracts)
     setTimeout(() => {
-      setTokenDetails(prev => prev.map(token => ({
-        ...token,
-        status: 'success' as const,
-        name: `${token.symbol} Token`,
-        sector: getSectorForToken(token.symbol),
-      })));
+      setTokenDetails((prev) =>
+        prev.map((token) => ({
+          ...token,
+          status: "success" as const,
+          name: `${token.symbol} Token`,
+          sector: getSectorForToken(token.symbol),
+        })),
+      );
       setLoading(false);
     }, 1000);
   }, [hasContracts, availableTokens]);
@@ -75,62 +81,67 @@ export function TokenListTest() {
   // Helper function to get sector for demo purposes
   const getSectorForToken = (symbol: string): string => {
     const sectorMap: Record<string, string> = {
-      'DANGCEM': 'Industrial Goods',
-      'MTNN': 'Telecommunications',
-      'ZENITHBANK': 'Banking',
-      'GTCO': 'Banking',
-      'NB': 'Consumer Goods',
-      'ACCESS': 'Banking',
-      'BUACEMENT': 'Industrial Goods',
-      'AIRTELAFRI': 'Telecommunications',
-      'FBNH': 'Banking',
-      'UBA': 'Banking',
-      'NESTLE': 'Consumer Goods',
-      'SEPLAT': 'Oil & Gas',
-      'STANBIC': 'Banking',
-      'OANDO': 'Oil & Gas',
-      'LAFARGE': 'Industrial Goods',
-      'CONOIL': 'Oil & Gas',
-      'WAPCO': 'Industrial Goods',
-      'FLOURMILL': 'Consumer Goods',
-      'PRESCO': 'Agriculture',
-      'CADBURY': 'Consumer Goods',
-      'GUINNESS': 'Consumer Goods',
-      'INTBREW': 'Consumer Goods',
-      'CHAMPION': 'Consumer Goods',
-      'UNILEVER': 'Consumer Goods',
-      'TRANSCORP': 'Conglomerates',
-      'BUAFOODS': 'Consumer Goods',
-      'DANGSUGAR': 'Consumer Goods',
-      'UACN': 'Conglomerates',
-      'PZ': 'Consumer Goods',
-      'TOTAL': 'Oil & Gas',
-      'ETERNA': 'Oil & Gas',
-      'GEREGU': 'Utilities',
-      'TRANSPOWER': 'Utilities',
-      'FIDSON': 'Healthcare',
-      'MAYBAKER': 'Healthcare',
-      'OKOMUOIL': 'Agriculture',
-      'LIVESTOCK': 'Agriculture',
-      'CWG': 'ICT',
-      'TRANSCOHOT': 'Services',
+      DANGCEM: "Industrial Goods",
+      MTNN: "Telecommunications",
+      ZENITHBANK: "Banking",
+      GTCO: "Banking",
+      NB: "Consumer Goods",
+      ACCESS: "Banking",
+      BUACEMENT: "Industrial Goods",
+      AIRTELAFRI: "Telecommunications",
+      FBNH: "Banking",
+      UBA: "Banking",
+      NESTLE: "Consumer Goods",
+      SEPLAT: "Oil & Gas",
+      STANBIC: "Banking",
+      OANDO: "Oil & Gas",
+      LAFARGE: "Industrial Goods",
+      CONOIL: "Oil & Gas",
+      WAPCO: "Industrial Goods",
+      FLOURMILL: "Consumer Goods",
+      PRESCO: "Agriculture",
+      CADBURY: "Consumer Goods",
+      GUINNESS: "Consumer Goods",
+      INTBREW: "Consumer Goods",
+      CHAMPION: "Consumer Goods",
+      UNILEVER: "Consumer Goods",
+      TRANSCORP: "Conglomerates",
+      BUAFOODS: "Consumer Goods",
+      DANGSUGAR: "Consumer Goods",
+      UACN: "Conglomerates",
+      PZ: "Consumer Goods",
+      TOTAL: "Oil & Gas",
+      ETERNA: "Oil & Gas",
+      GEREGU: "Utilities",
+      TRANSPOWER: "Utilities",
+      FIDSON: "Healthcare",
+      MAYBAKER: "Healthcare",
+      OKOMUOIL: "Agriculture",
+      LIVESTOCK: "Agriculture",
+      CWG: "ICT",
+      TRANSCOHOT: "Services",
     };
-    return sectorMap[symbol] || 'Unknown';
+    return sectorMap[symbol] || "Unknown";
   };
 
   // Group tokens by sector
-  const tokensBySector = tokenDetails.reduce((acc, token) => {
-    const sector = token.sector || 'Unknown';
-    if (!acc[sector]) acc[sector] = [];
-    acc[sector].push(token);
-    return acc;
-  }, {} as Record<string, TokenInfo[]>);
+  const tokensBySector = tokenDetails.reduce(
+    (acc, token) => {
+      const sector = token.sector || "Unknown";
+      if (!acc[sector]) acc[sector] = [];
+      acc[sector].push(token);
+      return acc;
+    },
+    {} as Record<string, TokenInfo[]>,
+  );
 
   // Show loading state until component is mounted
   if (!mounted) {
     return (
       <div className="p-6 max-w-6xl mx-auto">
-        <h1 className="text-3xl font-bold mb-6">Nigerian Stock Exchange Token Integration Test</h1>
+        <h1 className="text-3xl font-bold mb-6">
+          Nigerian Stock Exchange Token Integration Test
+        </h1>
         <div className="bg-gray-100 p-4 rounded-lg animate-pulse">
           <div className="h-6 bg-gray-300 rounded mb-3 w-48"></div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -154,23 +165,43 @@ export function TokenListTest() {
 
   return (
     <div className="p-6 max-w-6xl mx-auto">
-      <h1 className="text-3xl font-bold mb-6">Nigerian Stock Exchange Token Integration Test</h1>
+      <h1 className="text-3xl font-bold mb-6">
+        Nigerian Stock Exchange Token Integration Test
+      </h1>
 
       {/* Network Status */}
       <div className="bg-gray-100 p-4 rounded-lg mb-6">
         <h2 className="text-xl font-semibold mb-3">Network Status</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <p><strong>Connected:</strong> {isConnected ? 'Yes' : 'No'}</p>
-            <p><strong>Address:</strong> {address || 'Not connected'}</p>
-            <p><strong>Chain ID:</strong> {chainId}</p>
-            <p><strong>Network:</strong> {formatNetworkName(chainId || 0)}</p>
+            <p>
+              <strong>Connected:</strong> {isConnected ? "Yes" : "No"}
+            </p>
+            <p>
+              <strong>Address:</strong> {address || "Not connected"}
+            </p>
+            <p>
+              <strong>Chain ID:</strong> {chainId}
+            </p>
+            <p>
+              <strong>Network:</strong> {formatNetworkName(chainId || 0)}
+            </p>
           </div>
           <div>
-            <p><strong>Supported:</strong> {isCurrentNetworkSupported ? 'Yes' : 'No'}</p>
-            <p><strong>Has Contracts:</strong> {hasDeployedContracts ? 'Yes' : 'No'}</p>
-            <p><strong>Is Testnet:</strong> {isTestnet ? 'Yes' : 'No'}</p>
-            <p><strong>Native Currency:</strong> {nativeCurrency}</p>
+            <p>
+              <strong>Supported:</strong>{" "}
+              {isCurrentNetworkSupported ? "Yes" : "No"}
+            </p>
+            <p>
+              <strong>Has Contracts:</strong>{" "}
+              {hasDeployedContracts ? "Yes" : "No"}
+            </p>
+            <p>
+              <strong>Is Testnet:</strong> {isTestnet ? "Yes" : "No"}
+            </p>
+            <p>
+              <strong>Native Currency:</strong> {nativeCurrency}
+            </p>
           </div>
         </div>
       </div>
@@ -184,14 +215,14 @@ export function TokenListTest() {
             className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
             disabled={chainId === 11155111}
           >
-            Switch to Sepolia {chainId === 11155111 && '(Current)'}
+            Switch to Sepolia {chainId === 11155111 && "(Current)"}
           </button>
           <button
             onClick={switchToBitfinityTestnet}
             className="px-4 py-2 bg-purple-500 text-white rounded hover:bg-purple-600"
             disabled={chainId === 355113}
           >
-            Switch to Bitfinity {chainId === 355113 && '(Current)'}
+            Switch to Bitfinity {chainId === 355113 && "(Current)"}
           </button>
         </div>
       </div>
@@ -204,7 +235,9 @@ export function TokenListTest() {
             {faucets.map((faucet, index) => (
               <div key={index} className="border p-3 rounded">
                 <h3 className="font-semibold">{faucet.name}</h3>
-                <p className="text-sm text-gray-600 mb-2">{faucet.description}</p>
+                <p className="text-sm text-gray-600 mb-2">
+                  {faucet.description}
+                </p>
                 <a
                   href={faucet.url}
                   target="_blank"
@@ -223,10 +256,15 @@ export function TokenListTest() {
       {hasContracts && (
         <div className="bg-yellow-50 p-4 rounded-lg mb-6">
           <h2 className="text-xl font-semibold mb-3">Contract Information</h2>
-          <p><strong>Factory Address:</strong> {getFactoryAddress(chainId || 0)}</p>
-          <p><strong>Available Tokens:</strong> {availableTokens.length}</p>
-          <p><strong>Block Explorer:</strong> 
-            <a 
+          <p>
+            <strong>Factory Address:</strong> {getFactoryAddress(chainId || 0)}
+          </p>
+          <p>
+            <strong>Available Tokens:</strong> {availableTokens.length}
+          </p>
+          <p>
+            <strong>Block Explorer:</strong>
+            <a
               href={`${currentNetwork?.blockExplorer}/address/${getFactoryAddress(chainId || 0)}`}
               target="_blank"
               rel="noopener noreferrer"
@@ -244,7 +282,7 @@ export function TokenListTest() {
           <h2 className="text-2xl font-semibold mb-4">
             Deployed Tokens ({tokenDetails.length})
           </h2>
-          
+
           {loading ? (
             <div className="text-center py-8">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
@@ -259,19 +297,32 @@ export function TokenListTest() {
                   </h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {tokens.map((token) => (
-                      <div key={token.symbol} className="border p-4 rounded-lg hover:shadow-md transition-shadow">
+                      <div
+                        key={token.symbol}
+                        className="border p-4 rounded-lg hover:shadow-md transition-shadow"
+                      >
                         <div className="flex justify-between items-start mb-2">
-                          <h4 className="font-semibold text-lg">{token.symbol}</h4>
-                          <span className={`px-2 py-1 rounded text-xs ${
-                            token.status === 'success' ? 'bg-green-100 text-green-800' :
-                            token.status === 'error' ? 'bg-red-100 text-red-800' :
-                            'bg-gray-100 text-gray-800'
-                          }`}>
+                          <h4 className="font-semibold text-lg">
+                            {token.symbol}
+                          </h4>
+                          <span
+                            className={`px-2 py-1 rounded text-xs ${
+                              token.status === "success"
+                                ? "bg-green-100 text-green-800"
+                                : token.status === "error"
+                                  ? "bg-red-100 text-red-800"
+                                  : "bg-gray-100 text-gray-800"
+                            }`}
+                          >
                             {token.status}
                           </span>
                         </div>
-                        <p className="text-sm text-gray-600 mb-2">{token.name}</p>
-                        <p className="text-xs text-gray-500 mb-2">Sector: {token.sector}</p>
+                        <p className="text-sm text-gray-600 mb-2">
+                          {token.name}
+                        </p>
+                        <p className="text-xs text-gray-500 mb-2">
+                          Sector: {token.sector}
+                        </p>
                         <p className="text-xs font-mono text-gray-400 break-all">
                           {token.address}
                         </p>
@@ -295,10 +346,9 @@ export function TokenListTest() {
         <div className="bg-gray-50 p-8 rounded-lg text-center">
           <h2 className="text-xl font-semibold mb-2">No Contracts Available</h2>
           <p className="text-gray-600 mb-4">
-            {!isCurrentNetworkSupported 
-              ? 'Please switch to a supported network to view deployed tokens.'
-              : 'No contracts have been deployed on this network yet.'
-            }
+            {!isCurrentNetworkSupported
+              ? "Please switch to a supported network to view deployed tokens."
+              : "No contracts have been deployed on this network yet."}
           </p>
           {!isCurrentNetworkSupported && (
             <button

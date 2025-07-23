@@ -533,8 +533,12 @@ export function getAllSectors(): string[] {
 /**
  * Get network configuration by chain ID
  */
-export function getNetworkByChainId(chainId: number): NetworkConfig | undefined {
-  return Object.values(SUPPORTED_NETWORKS).find(network => network.chainId === chainId);
+export function getNetworkByChainId(
+  chainId: number,
+): NetworkConfig | undefined {
+  return Object.values(SUPPORTED_NETWORKS).find(
+    (network) => network.chainId === chainId,
+  );
 }
 
 /**
@@ -555,7 +559,9 @@ export function isTestnet(chainId: number): boolean {
 /**
  * Get contract addresses for a specific chain ID
  */
-export function getContractAddresses(chainId: number): ContractAddresses | undefined {
+export function getContractAddresses(
+  chainId: number,
+): ContractAddresses | undefined {
   return CONTRACT_ADDRESSES[chainId.toString()];
 }
 
@@ -563,7 +569,7 @@ export function getContractAddresses(chainId: number): ContractAddresses | undef
  * Get all supported chain IDs
  */
 export function getSupportedChainIds(): number[] {
-  return Object.values(SUPPORTED_NETWORKS).map(network => network.chainId);
+  return Object.values(SUPPORTED_NETWORKS).map((network) => network.chainId);
 }
 
 /**
@@ -571,7 +577,7 @@ export function getSupportedChainIds(): number[] {
  */
 export function getTestnetNetworks(): Record<string, NetworkConfig> {
   return Object.fromEntries(
-    Object.entries(SUPPORTED_NETWORKS).filter(([, network]) => network.testnet)
+    Object.entries(SUPPORTED_NETWORKS).filter(([, network]) => network.testnet),
   );
 }
 
@@ -580,7 +586,9 @@ export function getTestnetNetworks(): Record<string, NetworkConfig> {
  */
 export function getMainnetNetworks(): Record<string, NetworkConfig> {
   return Object.fromEntries(
-    Object.entries(SUPPORTED_NETWORKS).filter(([, network]) => !network.testnet)
+    Object.entries(SUPPORTED_NETWORKS).filter(
+      ([, network]) => !network.testnet,
+    ),
   );
 }
 

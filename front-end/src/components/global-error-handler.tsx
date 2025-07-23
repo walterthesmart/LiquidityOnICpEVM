@@ -60,7 +60,9 @@ export function GlobalErrorHandler() {
         event.filename?.includes("s3.tradingview.com")
       ) {
         // Handle TradingView-specific errors more gracefully
-        console.warn("TradingView widget error detected, but not showing toast to avoid spam");
+        console.warn(
+          "TradingView widget error detected, but not showing toast to avoid spam",
+        );
       }
     };
 

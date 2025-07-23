@@ -1,1 +1,1 @@
-export { default as NGNWallet } from './NGNWallet';
+export { default as NGNWallet } from "./NGNWallet";

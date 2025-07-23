@@ -1,6 +1,6 @@
 /**
  * Test file for error handling improvements
- * 
+ *
  * This file contains tests to verify that the error handling
  * improvements work correctly for TradingView widgets.
  */
@@ -13,7 +13,7 @@ describe("Error Handling", () => {
   beforeEach(() => {
     console.error = jest.fn();
   });
-  
+
   afterEach(() => {
     console.error = originalConsoleError;
   });
@@ -22,7 +22,7 @@ describe("Error Handling", () => {
     it("should handle Error objects correctly", () => {
       const error = new Error("Test error");
       const result = logError("TestContext", error);
-      
+
       expect(result.error.name).toBe("Error");
       expect(result.error.message).toBe("Test error");
       expect(result.context).toBe("TestContext");
@@ -31,7 +31,7 @@ describe("Error Handling", () => {
     it("should handle empty objects", () => {
       const error = {};
       const result = logError("TestContext", error);
-      
+
       expect(result.error.name).toBe("UnknownError");
       expect(result.error.message).toBe("Unknown error occurred");
     });
@@ -39,7 +39,7 @@ describe("Error Handling", () => {
     it("should handle null/undefined errors", () => {
       const result1 = logError("TestContext", null);
       const result2 = logError("TestContext", undefined);
-      
+
       expect(result1.error.name).toBe("UnknownError");
       expect(result2.error.name).toBe("UnknownError");
     });
@@ -48,11 +48,11 @@ describe("Error Handling", () => {
       const scriptError = {
         type: "error",
         target: { tagName: "SCRIPT", src: "https://example.com/script.js" },
-        message: "Script error"
+        message: "Script error",
       };
-      
+
       const result = logError("TestContext", scriptError);
-      
+
       expect(result.error.target).toBe("SCRIPT");
       expect(result.error.type).toBe("error");
     });
@@ -60,12 +60,15 @@ describe("Error Handling", () => {
     it("should handle TradingView-specific errors", () => {
       const tradingViewError = {
         type: "error",
-        target: { tagName: "SCRIPT", src: "https://s3.tradingview.com/widget.js" },
-        message: "TradingView widget failed"
+        target: {
+          tagName: "SCRIPT",
+          src: "https://s3.tradingview.com/widget.js",
+        },
+        message: "TradingView widget failed",
       };
-      
+
       const result = logError("TradingViewWidget", tradingViewError);
-      
+
       expect(result.context).toBe("TradingViewWidget");
       expect(result.error.target).toBe("SCRIPT");
     });

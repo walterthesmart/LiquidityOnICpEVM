@@ -21,7 +21,7 @@ interface TradingViewErrorBoundaryState {
 
 /**
  * Error Boundary specifically designed for TradingView widgets
- * 
+ *
  * Catches JavaScript errors anywhere in the child component tree,
  * logs those errors, and displays a fallback UI instead of the
  * component tree that crashed.
@@ -86,7 +86,7 @@ class TradingViewErrorBoundary extends Component<
                 {this.state.error?.message || "An unexpected error occurred"}
               </p>
             </div>
-            
+
             <div className="flex space-x-2">
               <Button
                 variant="outline"

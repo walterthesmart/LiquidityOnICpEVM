@@ -152,12 +152,12 @@ export class MultiNetworkEVMService {
         );
       }
 
-      const tokenInfo = await this.publicClient!.readContract({
+      const tokenInfo = (await this.publicClient!.readContract({
         address: factoryAddress as Address,
         abi: NigerianStockTokenFactoryABI,
         functionName: "getTokenInfo",
         args: [symbol],
-      }) as readonly [Address, string, string, string, bigint, bigint, number];
+      })) as readonly [Address, string, string, string, bigint, bigint, number];
 
       return {
         tokenAddress: tokenInfo[0],
@@ -189,11 +189,11 @@ export class MultiNetworkEVMService {
         );
       }
 
-      const tokens = await this.publicClient!.readContract({
+      const tokens = (await this.publicClient!.readContract({
         address: factoryAddress as Address,
         abi: NigerianStockTokenFactoryABI,
         functionName: "getAllTokens",
-      }) as readonly Address[];
+      })) as readonly Address[];
 
       return [...tokens];
     } catch (error) {
@@ -230,7 +230,7 @@ export class MultiNetworkEVMService {
    */
   getTransactionUrl(txHash: string): string {
     const networkConfig = getNetworkByChainId(this.getChainId());
-    return `${networkConfig?.blockExplorer || ''}/tx/${txHash}`;
+    return `${networkConfig?.blockExplorer || ""}/tx/${txHash}`;
   }
 
   /**
@@ -238,7 +238,7 @@ export class MultiNetworkEVMService {
    */
   getTokenUrl(tokenAddress: string): string {
     const networkConfig = getNetworkByChainId(this.getChainId());
-    return `${networkConfig?.blockExplorer || ''}/token/${tokenAddress}`;
+    return `${networkConfig?.blockExplorer || ""}/token/${tokenAddress}`;
   }
 
   /**
@@ -246,10 +246,8 @@ export class MultiNetworkEVMService {
    */
   getAddressUrl(address: string): string {
     const networkConfig = getNetworkByChainId(this.getChainId());
-    return `${networkConfig?.blockExplorer || ''}/address/${address}`;
+    return `${networkConfig?.blockExplorer || ""}/address/${address}`;
   }
-
-
 }
 
 // Export singleton instance (backward compatibility)

@@ -1,6 +1,13 @@
 // RainbowKit configuration for multi-network EVM integration
 import { getDefaultConfig } from "@rainbow-me/rainbowkit";
-import { mainnet, polygon, optimism, arbitrum, base, sepolia } from "wagmi/chains";
+import {
+  mainnet,
+  polygon,
+  optimism,
+  arbitrum,
+  base,
+  sepolia,
+} from "wagmi/chains";
 
 export const projectId =
   process.env.NEXT_PUBLIC_PROJECT_ID || "b56e18d47c72ab683b10814fe9495694";
