@@ -5,6 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { AlertTriangle } from "lucide-react";
 import { logError } from "@/lib/utils";
+import { getTradingViewSymbol } from "./TradingViewWidget";
 
 /**
  * TradingView Symbol Info Widget Configuration Interface
@@ -57,11 +58,12 @@ const TradingViewSymbolInfoWidget: React.FC<TradingViewSymbolInfoWidgetProps> = 
     const [hasError, setHasError] = useState(false);
     const [errorMessage, setErrorMessage] = useState("");
 
+
     // Generate unique container ID
     const containerId = `tradingview-symbol-info-${symbol}-${Math.random().toString(36).substr(2, 9)}`;
 
-    // Format symbol for TradingView (add NSENG prefix for Nigerian stocks)
-    const tradingViewSymbol = symbol.includes(":") ? symbol : `NSENG:${symbol}`;
+    // Use centralized symbol mapping function
+    const tradingViewSymbol = getTradingViewSymbol(symbol);
 
     useEffect(() => {
       if (!symbol || !containerRef.current) return;
@@ -93,6 +95,14 @@ const TradingViewSymbolInfoWidget: React.FC<TradingViewSymbolInfoWidgetProps> = 
             isTransparent: isTransparent,
           };
 
+          // Debug logging
+          console.log("TradingView Symbol Info Widget Configuration:", {
+            symbol: tradingViewSymbol,
+            originalSymbol: symbol,
+            containerId: containerId,
+            config: widgetConfig,
+          });
+
           // Create script element
           const script = document.createElement("script");
           script.src =
@@ -120,7 +130,10 @@ const TradingViewSymbolInfoWidget: React.FC<TradingViewSymbolInfoWidgetProps> = 
 
           // Success handling
           script.onload = () => {
-            setIsLoading(false);
+            console.log("TradingView Symbol Info script loaded successfully");
+            setTimeout(() => {
+              setIsLoading(false);
+            }, 1000); // Give widget time to initialize
           };
 
           // Store script reference
@@ -132,9 +145,12 @@ const TradingViewSymbolInfoWidget: React.FC<TradingViewSymbolInfoWidgetProps> = 
           }
 
           // Set loading to false after a reasonable timeout
-          setTimeout(() => {
+          const loadingTimeout = setTimeout(() => {
+            console.warn("TradingView Symbol Info Widget loading timeout");
             setIsLoading(false);
-          }, 3000);
+          }, 5000); // Increased timeout
+
+          return () => clearTimeout(loadingTimeout);
 
         } catch (error) {
           const errorObj = error instanceof Error ? error : new Error(String(error) || "Unknown error");

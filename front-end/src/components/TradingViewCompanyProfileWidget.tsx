@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { AlertTriangle, Building2 } from "lucide-react";
 import { logError } from "@/lib/utils";
+import { getTradingViewSymbol } from "./TradingViewWidget";
 
 /**
  * TradingView Company Profile Widget Configuration Interface
@@ -67,8 +68,8 @@ const TradingViewCompanyProfileWidget: React.FC<TradingViewCompanyProfileWidgetP
     // Generate unique container ID
     const containerId = `tradingview-company-profile-${symbol}-${Math.random().toString(36).substr(2, 9)}`;
 
-    // Format symbol for TradingView (add NSENG prefix for Nigerian stocks)
-    const tradingViewSymbol = symbol.includes(":") ? symbol : `NSENG:${symbol}`;
+    // Use centralized symbol mapping function
+    const tradingViewSymbol = getTradingViewSymbol(symbol);
 
     useEffect(() => {
       if (!symbol || !containerRef.current) return;
@@ -101,6 +102,14 @@ const TradingViewCompanyProfileWidget: React.FC<TradingViewCompanyProfileWidgetP
             isTransparent: isTransparent,
           };
 
+          // Debug logging
+          console.log("TradingView Company Profile Widget Configuration:", {
+            symbol: tradingViewSymbol,
+            originalSymbol: symbol,
+            containerId: containerId,
+            config: widgetConfig,
+          });
+
           // Create script element
           const script = document.createElement("script");
           script.src =
@@ -128,7 +137,10 @@ const TradingViewCompanyProfileWidget: React.FC<TradingViewCompanyProfileWidgetP
 
           // Success handling
           script.onload = () => {
-            setIsLoading(false);
+            console.log("TradingView Company Profile script loaded successfully");
+            setTimeout(() => {
+              setIsLoading(false);
+            }, 1000);
           };
 
           // Store script reference

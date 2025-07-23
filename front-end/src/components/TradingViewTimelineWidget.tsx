@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { AlertTriangle, TrendingUp, Calendar } from "lucide-react";
 import { logError } from "@/lib/utils";
+import { getTradingViewSymbol } from "./TradingViewWidget";
 
 /**
  * TradingView Timeline Widget Configuration Interface
@@ -85,8 +86,8 @@ const TradingViewTimelineWidget: React.FC<TradingViewTimelineWidgetProps> = memo
     // Generate unique container ID
     const containerId = `tradingview-timeline-${feedMode}-${symbol || market}-${Math.random().toString(36).substr(2, 9)}`;
 
-    // Format symbol for TradingView (add NSENG prefix for Nigerian stocks)
-    const tradingViewSymbol = symbol && !symbol.includes(":") ? `NSENG:${symbol}` : symbol;
+    // Use centralized symbol mapping function
+    const tradingViewSymbol = symbol ? getTradingViewSymbol(symbol) : undefined;
 
     // Determine title and icon based on feed mode
     const getHeaderContent = () => {
@@ -154,6 +155,16 @@ const TradingViewTimelineWidget: React.FC<TradingViewTimelineWidgetProps> = memo
             widgetConfig.market = market;
           }
 
+          // Debug logging
+          console.log("TradingView Timeline Widget Configuration:", {
+            symbol: tradingViewSymbol,
+            originalSymbol: symbol,
+            feedMode: feedMode,
+            market: market,
+            containerId: containerId,
+            config: widgetConfig,
+          });
+
           // Create script element
           const script = document.createElement("script");
           script.src =
@@ -183,7 +194,10 @@ const TradingViewTimelineWidget: React.FC<TradingViewTimelineWidgetProps> = memo
 
           // Success handling
           script.onload = () => {
-            setIsLoading(false);
+            console.log("TradingView Timeline script loaded successfully");
+            setTimeout(() => {
+              setIsLoading(false);
+            }, 1000);
           };
 
           // Store script reference

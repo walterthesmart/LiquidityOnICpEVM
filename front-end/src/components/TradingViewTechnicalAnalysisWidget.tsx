@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { AlertTriangle, BarChart3 } from "lucide-react";
 import { logError } from "@/lib/utils";
+import { getTradingViewSymbol } from "./TradingViewWidget";
 
 /**
  * TradingView Technical Analysis Widget Configuration Interface
@@ -79,8 +80,8 @@ const TradingViewTechnicalAnalysisWidget: React.FC<TradingViewTechnicalAnalysisW
     // Generate unique container ID
     const containerId = `tradingview-technical-analysis-${symbol}-${Math.random().toString(36).substr(2, 9)}`;
 
-    // Format symbol for TradingView (add NSENG prefix for Nigerian stocks)
-    const tradingViewSymbol = symbol.includes(":") ? symbol : `NSENG:${symbol}`;
+    // Use centralized symbol mapping function
+    const tradingViewSymbol = getTradingViewSymbol(symbol);
 
     useEffect(() => {
       if (!symbol || !containerRef.current) return;
@@ -116,6 +117,14 @@ const TradingViewTechnicalAnalysisWidget: React.FC<TradingViewTechnicalAnalysisW
             displayMode: displayMode,
           };
 
+          // Debug logging
+          console.log("TradingView Technical Analysis Widget Configuration:", {
+            symbol: tradingViewSymbol,
+            originalSymbol: symbol,
+            containerId: containerId,
+            config: widgetConfig,
+          });
+
           // Create script element
           const script = document.createElement("script");
           script.src =
@@ -145,7 +154,10 @@ const TradingViewTechnicalAnalysisWidget: React.FC<TradingViewTechnicalAnalysisW
 
           // Success handling
           script.onload = () => {
-            setIsLoading(false);
+            console.log("TradingView Technical Analysis script loaded successfully");
+            setTimeout(() => {
+              setIsLoading(false);
+            }, 1000);
           };
 
           // Store script reference
