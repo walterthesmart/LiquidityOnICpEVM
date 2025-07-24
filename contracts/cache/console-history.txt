@@ -1,4 +1,0 @@
-console.log("Current day minted:", ethers.formatEther
-console.log("Minting enabled:", config.mintingEnabconsole.log("Daily cap:", ethers.formatEther(config.mintingCap))
-const config = await ngn.getConfig()
-const ngn = await ethers.getContractAt("NGNStablecoin", "0xc6FDE8a6D23B2A0e7f39F90bc5B7c062159e9A36")

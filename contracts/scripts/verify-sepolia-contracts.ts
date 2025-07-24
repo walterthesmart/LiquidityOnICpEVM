@@ -7,9 +7,7 @@
 
 import * as fs from "fs";
 import * as path from "path";
-
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const hre = require("hardhat");
+import hre from "hardhat";
 
 // Load deployment data
 interface DeployedToken {
@@ -18,7 +16,8 @@ interface DeployedToken {
   address: string;
   companyName: string;
   maxSupply: string;
-  initialSupply: string;
+  initialSupply?: string;
+  sector?: string;
 }
 
 interface DeploymentData {
@@ -75,14 +74,41 @@ async function verifyToken(token: DeployedToken, adminAddress: string) {
   console.log(`   🔗 Etherscan: https://sepolia.etherscan.io/address/${token.address}`);
 
   try {
-    // Constructor arguments for NigerianStockToken
+    // Constructor arguments for NigerianStockToken (5 parameters)
+    // Based on the actual deployed contract state
+    let stockMetadata;
+    let initialSupply = token.maxSupply;
+
+    // Use specific values for known tokens based on deployment data
+    if (token.symbol === "DANGCEM") {
+      stockMetadata = {
+        symbol: "DANGCEM",
+        companyName: "Dangote Cement Plc",
+        sector: "Industrial Goods",
+        totalShares: "17040000000000000000000000000",
+        marketCap: "7710000000000",
+        isActive: true,
+        lastUpdated: 1753278792,
+      };
+      initialSupply = "17040000000000000000000000000";
+    } else {
+      // Default metadata for other tokens
+      stockMetadata = {
+        symbol: token.symbol,
+        companyName: token.companyName,
+        sector: token.sector || "Unknown",
+        totalShares: token.maxSupply,
+        marketCap: 0,
+        isActive: true,
+        lastUpdated: Math.floor(Date.now() / 1000),
+      };
+    }
+
     const constructorArgs = [
       token.name, // _name
       token.symbol, // _symbol
-      token.symbol, // _stockSymbol
-      token.companyName, // _companyName
-      token.maxSupply, // _maxSupply
-      token.initialSupply, // _initialSupply
+      initialSupply, // _initialSupply
+      stockMetadata, // _stockMetadata
       adminAddress, // _admin
     ];
 
