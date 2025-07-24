@@ -76,7 +76,6 @@
         "pino-pretty": "^13.0.0",
         "react": "^19.1.0",
         "react-dom": "^19.1.0",
-        "react-helmet-async": "^2.0.5",
         "react-hook-form": "^7.56.2",
         "react-toastify": "^11.0.5",
         "recharts": "^2.15.3",
@@ -114,5 +113,13 @@
             "image-size@>=1.1.0 <1.2.1": ">=1.2.1",
             "@vanilla-extract/sprinkles": "1.6.3"
         }
+    },
+    "overrides": {
+        "crypto-js@<4.2.0": ">=4.2.0",
+        "elliptic@<6.6.0": ">=6.6.0",
+        "elliptic@<=6.6.0": ">=6.6.1",
+        "next@=15.2.3": ">=15.2.4",
+        "image-size@>=1.1.0 <1.2.1": ">=1.2.1",
+        "@vanilla-extract/sprinkles": "1.6.3"
     }
 }
