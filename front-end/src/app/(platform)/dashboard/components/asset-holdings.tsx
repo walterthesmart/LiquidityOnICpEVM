@@ -30,8 +30,8 @@ import { Button } from "@/components/ui/button";
 import { ArrowUp, ArrowDown, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { useWriteContract, useChainId } from "wagmi";
-import NigerianStockFactory from "@/contracts/NigerianStockFactory.json";
-import { FACTORY_ADDRESS } from "@/types/contracts";
+
+
 import transferAVAX from "@/server-actions/sell/transfer_avax";
 import { sendNotification } from "@/server-actions/sell/notify";
 import updateUserStockHoldings from "@/server-actions/stocks/update_stock_holdings";

@@ -136,13 +136,13 @@ async function main(): Promise<void> {
     // Get current gas price and add significant buffer to replace any pending transactions
     const feeData = await ethers.provider.getFeeData();
     const baseGasPrice = feeData.gasPrice || ethers.parseUnits("2", "gwei");
-    const gasPrice = baseGasPrice * 150n / 100n; // 50% buffer to replace pending transactions
+    const gasPrice = (baseGasPrice * 150n) / 100n; // 50% buffer to replace pending transactions
 
     console.log(`⛽ Using gas price: ${ethers.formatUnits(gasPrice, "gwei")} gwei`);
 
     const tx = await ngnContract.mint(recipient, amountWei, {
-      gasPrice: gasPrice,
-      gasLimit: 100000 // Set reasonable gas limit
+      gasPrice,
+      gasLimit: 100000, // Set reasonable gas limit
     });
     console.log(`📤 Transaction hash: ${tx.hash}`);
 

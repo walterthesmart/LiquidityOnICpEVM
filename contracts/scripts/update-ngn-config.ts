@@ -3,7 +3,7 @@ import * as readline from "readline";
 
 /**
  * NGN Configuration Update Script
- * 
+ *
  * This script allows updating NGN stablecoin configuration
  * Including minting cap, enabling/disabling features, etc.
  */
@@ -59,7 +59,9 @@ async function main(): Promise<void> {
     console.log(`   Burning Enabled: ${config.burningEnabled}`);
     console.log(`   Transfers Enabled: ${config.transfersEnabled}`);
     console.log(`   Daily Minting Cap: ${formatNumber(ethers.formatEther(config.mintingCap))} NGN`);
-    console.log(`   Current Day Minted: ${formatNumber(ethers.formatEther(config.currentDayMinted))} NGN`);
+    console.log(
+      `   Current Day Minted: ${formatNumber(ethers.formatEther(config.currentDayMinted))} NGN`
+    );
     console.log(`   Max Supply: ${formatNumber(ethers.formatEther(config.maxSupply))} NGN\n`);
 
     // Show update options
@@ -92,7 +94,6 @@ async function main(): Promise<void> {
         console.log("❌ Invalid choice.");
         process.exit(1);
     }
-
   } catch (error: unknown) {
     console.error("❌ Error updating configuration:", error);
     process.exit(1);
@@ -120,7 +121,7 @@ async function updateMintingCap(ngn: any, config: any): Promise<void> {
   console.log(`   New Cap: ${formatNumber(newCap.toString())} NGN`);
 
   const confirm = await askQuestion("\n✅ Confirm update? (y/N): ");
-  if (confirm.toLowerCase() !== 'y' && confirm.toLowerCase() !== 'yes') {
+  if (confirm.toLowerCase() !== "y" && confirm.toLowerCase() !== "yes") {
     console.log("❌ Update cancelled.");
     return;
   }
@@ -137,12 +138,12 @@ async function toggleMinting(ngn: any, config: any): Promise<void> {
   const currentState = config.mintingEnabled;
   const newState = !currentState;
 
-  console.log(`\n🔄 ${newState ? 'Enabling' : 'Disabling'} minting...`);
-  console.log(`   Current state: ${currentState ? 'Enabled' : 'Disabled'}`);
-  console.log(`   New state: ${newState ? 'Enabled' : 'Disabled'}`);
+  console.log(`\n🔄 ${newState ? "Enabling" : "Disabling"} minting...`);
+  console.log(`   Current state: ${currentState ? "Enabled" : "Disabled"}`);
+  console.log(`   New state: ${newState ? "Enabled" : "Disabled"}`);
 
   const confirm = await askQuestion("\n✅ Confirm change? (y/N): ");
-  if (confirm.toLowerCase() !== 'y' && confirm.toLowerCase() !== 'yes') {
+  if (confirm.toLowerCase() !== "y" && confirm.toLowerCase() !== "yes") {
     console.log("❌ Change cancelled.");
     return;
   }
@@ -151,19 +152,21 @@ async function toggleMinting(ngn: any, config: any): Promise<void> {
   console.log(`📤 Transaction hash: ${tx.hash}`);
 
   const receipt = await tx.wait();
-  console.log(`✅ Minting ${newState ? 'enabled' : 'disabled'}! Gas used: ${receipt?.gasUsed.toString()}`);
+  console.log(
+    `✅ Minting ${newState ? "enabled" : "disabled"}! Gas used: ${receipt?.gasUsed.toString()}`
+  );
 }
 
 async function toggleBurning(ngn: any, config: any): Promise<void> {
   const currentState = config.burningEnabled;
   const newState = !currentState;
 
-  console.log(`\n🔥 ${newState ? 'Enabling' : 'Disabling'} burning...`);
-  console.log(`   Current state: ${currentState ? 'Enabled' : 'Disabled'}`);
-  console.log(`   New state: ${newState ? 'Enabled' : 'Disabled'}`);
+  console.log(`\n🔥 ${newState ? "Enabling" : "Disabling"} burning...`);
+  console.log(`   Current state: ${currentState ? "Enabled" : "Disabled"}`);
+  console.log(`   New state: ${newState ? "Enabled" : "Disabled"}`);
 
   const confirm = await askQuestion("\n✅ Confirm change? (y/N): ");
-  if (confirm.toLowerCase() !== 'y' && confirm.toLowerCase() !== 'yes') {
+  if (confirm.toLowerCase() !== "y" && confirm.toLowerCase() !== "yes") {
     console.log("❌ Change cancelled.");
     return;
   }
@@ -172,19 +175,21 @@ async function toggleBurning(ngn: any, config: any): Promise<void> {
   console.log(`📤 Transaction hash: ${tx.hash}`);
 
   const receipt = await tx.wait();
-  console.log(`✅ Burning ${newState ? 'enabled' : 'disabled'}! Gas used: ${receipt?.gasUsed.toString()}`);
+  console.log(
+    `✅ Burning ${newState ? "enabled" : "disabled"}! Gas used: ${receipt?.gasUsed.toString()}`
+  );
 }
 
 async function toggleTransfers(ngn: any, config: any): Promise<void> {
   const currentState = config.transfersEnabled;
   const newState = !currentState;
 
-  console.log(`\n💸 ${newState ? 'Enabling' : 'Disabling'} transfers...`);
-  console.log(`   Current state: ${currentState ? 'Enabled' : 'Disabled'}`);
-  console.log(`   New state: ${newState ? 'Enabled' : 'Disabled'}`);
+  console.log(`\n💸 ${newState ? "Enabling" : "Disabling"} transfers...`);
+  console.log(`   Current state: ${currentState ? "Enabled" : "Disabled"}`);
+  console.log(`   New state: ${newState ? "Enabled" : "Disabled"}`);
 
   const confirm = await askQuestion("\n✅ Confirm change? (y/N): ");
-  if (confirm.toLowerCase() !== 'y' && confirm.toLowerCase() !== 'yes') {
+  if (confirm.toLowerCase() !== "y" && confirm.toLowerCase() !== "yes") {
     console.log("❌ Change cancelled.");
     return;
   }
@@ -193,7 +198,9 @@ async function toggleTransfers(ngn: any, config: any): Promise<void> {
   console.log(`📤 Transaction hash: ${tx.hash}`);
 
   const receipt = await tx.wait();
-  console.log(`✅ Transfers ${newState ? 'enabled' : 'disabled'}! Gas used: ${receipt?.gasUsed.toString()}`);
+  console.log(
+    `✅ Transfers ${newState ? "enabled" : "disabled"}! Gas used: ${receipt?.gasUsed.toString()}`
+  );
 }
 
 async function resetDailyMinting(ngn: any): Promise<void> {
@@ -201,7 +208,7 @@ async function resetDailyMinting(ngn: any): Promise<void> {
   console.log(`   This will reset currentDayMinted to 0 and update lastMintReset to current time.`);
 
   const confirm = await askQuestion("\n✅ Confirm reset? (y/N): ");
-  if (confirm.toLowerCase() !== 'y' && confirm.toLowerCase() !== 'yes') {
+  if (confirm.toLowerCase() !== "y" && confirm.toLowerCase() !== "yes") {
     console.log("❌ Reset cancelled.");
     return;
   }

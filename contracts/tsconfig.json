@@ -28,10 +28,13 @@
     }
   },
   "include": [
-    "./contracts/**/*",
-    "./scripts/**/*",
-    "./test/**/*",
-    "./typechain-types/**/*",
+    "contracts/**/*.sol",
+    "contracts/**/*.ts",
+    "scripts/**/*.ts",
+    "scripts/**/*.js",
+    "test/**/*.ts",
+    "test/**/*.js",
+    "typechain-types/**/*.ts",
     "hardhat.config.ts",
     ".eslintrc.js"
   ],

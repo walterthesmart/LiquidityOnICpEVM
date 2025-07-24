@@ -51,7 +51,10 @@ async function main(): Promise<void> {
     // Calculate available minting capacity
     const remainingDailyCapacity = config.mintingCap - config.currentDayMinted;
     const remainingSupplyCapacity = config.maxSupply - totalSupply;
-    const availableToMint = remainingDailyCapacity < remainingSupplyCapacity ? remainingDailyCapacity : remainingSupplyCapacity;
+    const availableToMint =
+      remainingDailyCapacity < remainingSupplyCapacity
+        ? remainingDailyCapacity
+        : remainingSupplyCapacity;
 
     console.log(`\n💡 Minting Capacity:`);
     console.log(`   Remaining Daily Capacity: ${ethers.formatEther(remainingDailyCapacity)} NGN`);
@@ -65,9 +68,10 @@ async function main(): Promise<void> {
     } else if (availableToMint <= 0n) {
       console.log(`\n❌ Issue: No minting capacity available`);
     } else {
-      console.log(`\n✅ Minting should work for amounts up to ${ethers.formatEther(availableToMint)} NGN`);
+      console.log(
+        `\n✅ Minting should work for amounts up to ${ethers.formatEther(availableToMint)} NGN`
+      );
     }
-
   } catch (error) {
     console.error("❌ Error checking configuration:", error);
   }
