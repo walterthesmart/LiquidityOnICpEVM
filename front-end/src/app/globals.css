@@ -163,3 +163,44 @@
 .animate-pulse {
   animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
+
+/* RainbowKit Custom Styling */
+[data-rk] {
+  --rk-colors-connectButtonBackground: var(--primary);
+  --rk-colors-connectButtonBackgroundError: var(--destructive);
+  --rk-colors-connectButtonInnerBackground: var(--primary);
+  --rk-colors-connectButtonText: var(--primary-foreground);
+  --rk-colors-connectButtonTextError: var(--destructive-foreground);
+  --rk-colors-accentColor: var(--primary);
+  --rk-colors-accentColorForeground: var(--primary-foreground);
+  --rk-radii-connectButton: var(--radius);
+  --rk-radii-modal: var(--radius);
+  --rk-radii-modalMobile: var(--radius);
+}
+
+/* Custom RainbowKit Connect Button */
+[data-rk] button[data-testid="rk-connect-button"] {
+  background: var(--primary) !important;
+  color: var(--primary-foreground) !important;
+  border-radius: var(--radius) !important;
+  font-weight: 500 !important;
+  transition: all 0.2s ease-in-out !important;
+}
+
+[data-rk] button[data-testid="rk-connect-button"]:hover {
+  background: oklch(from var(--primary) calc(l * 0.9) c h) !important;
+  transform: translateY(-1px) !important;
+}
+
+/* RainbowKit Modal Styling */
+[data-rk] [data-rk-modal-overlay] {
+  background: rgba(0, 0, 0, 0.5) !important;
+  backdrop-filter: blur(8px) !important;
+}
+
+[data-rk] [data-rk-modal] {
+  background: var(--card) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: var(--radius-lg) !important;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25) !important;
+}

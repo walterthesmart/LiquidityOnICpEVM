@@ -54,6 +54,10 @@ export function RainbowKitAppProvider({
     <WagmiProvider config={config}>
       <QueryClientProvider client={queryClient}>
         <RainbowKitProvider
+          appInfo={{
+            appName: "Liquidity Nigerian Stock Trading",
+            learnMoreUrl: "https://liquidity-trading.com",
+          }}
           theme={darkTheme({
             accentColor: "#000000",
             accentColorForeground: "white",

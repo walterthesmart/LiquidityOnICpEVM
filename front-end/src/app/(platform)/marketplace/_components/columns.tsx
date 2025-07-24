@@ -6,10 +6,12 @@ import {
   TrendingUp,
   CircleMinus,
 } from "lucide-react";
-import { BuyStocksPopup } from "./buy-stocks-popup";
+import { Button } from "@/components/ui/button";
+import { IconShoppingCart } from "@tabler/icons-react";
 import { ViewButton } from "./view-button";
 import Image from "next/image";
 import { getStockLogoPath, getStockLogoAlt } from "@/utils/stock-logos";
+import Link from "next/link";
 export const columns: ColumnDef<StockData>[] = [
   {
     accessorKey: "symbol",
@@ -120,6 +122,12 @@ export const columns: ColumnDef<StockData>[] = [
     id: "buy",
     header: "Buy",
 
-    cell: ({ row }) => <BuyStocksPopup entry={row.original} />,
+    cell: () => (
+      <Link href="/dex">
+        <Button variant="outline" size="sm">
+          <IconShoppingCart className="h-4 w-4 mr-1" /> Buy
+        </Button>
+      </Link>
+    ),
   },
 ];

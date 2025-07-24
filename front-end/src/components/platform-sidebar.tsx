@@ -28,7 +28,7 @@ export function PlatformSidebar() {
       icon: <IconSocial className="h-5 w-5 shrink-0" />,
     },
     {
-      label: "DEX Trading",
+      label: "Exchange",
       href: "/dex",
       icon: <IconChartCandle className="h-5 w-5 shrink-0" />,
     },
