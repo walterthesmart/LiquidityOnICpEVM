@@ -3,7 +3,7 @@
  * This can be used to test the useTokenBalances hook implementation
  */
 
-import { CONTRACT_ADDRESSES } from '@/abis';
+import { CONTRACT_ADDRESSES, NigerianStockTokenABI, NGNStablecoinABI } from '@/abis';
 
 // Test function to verify contract addresses are properly configured
 export function testContractAddresses() {
@@ -44,24 +44,22 @@ export function testContractAddresses() {
 // Test function to verify ABI imports
 export function testABIImports() {
   console.log('Testing ABI imports...');
-  
+
   try {
-    const { NigerianStockTokenABI, NGNStablecoinABI } = require('@/abis');
-    
     if (!NigerianStockTokenABI) {
       console.error('❌ NigerianStockTokenABI not found');
       return false;
     }
-    
+
     if (!NGNStablecoinABI) {
       console.error('❌ NGNStablecoinABI not found');
       return false;
     }
-    
+
     console.log('✅ All ABIs imported successfully');
-    console.log('NigerianStockTokenABI functions:', NigerianStockTokenABI.filter((item: any) => item.type === 'function').length);
-    console.log('NGNStablecoinABI functions:', NGNStablecoinABI.filter((item: any) => item.type === 'function').length);
-    
+    console.log('NigerianStockTokenABI functions:', NigerianStockTokenABI.filter((item: { type: string }) => item.type === 'function').length);
+    console.log('NGNStablecoinABI functions:', NGNStablecoinABI.filter((item: { type: string }) => item.type === 'function').length);
+
     return true;
   } catch (error) {
     console.error('❌ Error importing ABIs:', error);
@@ -89,8 +87,10 @@ export function runAllTests() {
 }
 
 // Export for use in components or other files
-export default {
+const testTokenBalances = {
   testContractAddresses,
   testABIImports,
   runAllTests
 };
+
+export default testTokenBalances;
