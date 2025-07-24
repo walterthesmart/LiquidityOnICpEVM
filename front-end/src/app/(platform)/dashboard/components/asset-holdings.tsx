@@ -29,7 +29,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ArrowUp, ArrowDown, Loader2 } from "lucide-react";
 import { toast } from "sonner";
-import { useWriteContract } from "wagmi";
+import { useWriteContract, useChainId } from "wagmi";
 import NigerianStockFactory from "@/contracts/NigerianStockFactory.json";
 import { FACTORY_ADDRESS } from "@/types/contracts";
 import transferAVAX from "@/server-actions/sell/transfer_avax";
@@ -54,6 +54,7 @@ export const AssetHoldings = ({
   NGN_TO_AVAX,
 }: AssetHoldingsProps) => {
   const { writeContractAsync } = useWriteContract();
+  const chainId = useChainId();
   const [selectedStock, setSelectedStock] = useState<StockHoldings | null>(
     null,
   );
@@ -63,18 +64,65 @@ export const AssetHoldings = ({
   const [isSelling, setIsSelling] = useState(false);
   // Hedera wallet functionality is handled by useHederaWallet hook
 
+  const approveToken = async (tokenAddress: string, amount: number) => {
+    try {
+      const { getStockNGNDEXAddress } = await import("@/abis");
+      const { NigerianStockTokenABI } = await import("@/abis");
+
+      const dexAddress = getStockNGNDEXAddress(chainId || 11155111);
+      if (!dexAddress) {
+        throw new Error("DEX contract not deployed on this network");
+      }
+
+      const stockAmountIn = BigInt(amount) * BigInt(10 ** 18); // Convert to wei
+
+      await writeContractAsync({
+        abi: NigerianStockTokenABI,
+        address: tokenAddress as `0x${string}`,
+        functionName: "approve",
+        args: [dexAddress as `0x${string}`, stockAmountIn],
+      });
+      toast.success("Token approval submitted");
+    } catch (err) {
+      console.error("Error occurred while approving tokens", err);
+      toast.error("Token approval failed");
+      throw err;
+    }
+  };
+
   const sellToken = async (
     amount: number,
-    tokenId: string,
+    tokenAddress: string,
     pricePerShare: number,
   ) => {
     try {
-      // TODO: Update to use Bitfinity EVM contract
+      // Use DEX contract for selling tokens
+      const { getStockNGNDEXAddress } = await import("@/abis");
+      const { StockNGNDEXABI } = await import("@/abis");
+
+      const dexAddress = getStockNGNDEXAddress(chainId || 11155111);
+      if (!dexAddress) {
+        throw new Error("DEX contract not deployed on this network");
+      }
+
+      // Calculate minimum NGN amount out (with 2% slippage tolerance)
+      const stockAmountIn = BigInt(amount) * BigInt(10 ** 18); // Convert to wei
+      const expectedNGNOut = stockAmountIn * BigInt(Math.floor(pricePerShare * 100)) / BigInt(100);
+      const minNGNAmountOut = (expectedNGNOut * BigInt(98)) / BigInt(100); // 2% slippage
+
+      // Set deadline to 30 minutes from now
+      const deadline = BigInt(Math.floor(Date.now() / 1000) + 1800);
+
       await writeContractAsync({
-        abi: NigerianStockFactory.abi,
-        address: FACTORY_ADDRESS as `0x${string}`,
-        functionName: "sellShares",
-        args: [BigInt(tokenId), BigInt(amount), BigInt(pricePerShare)],
+        abi: StockNGNDEXABI,
+        address: dexAddress as `0x${string}`,
+        functionName: "swapStockForNGN",
+        args: [
+          tokenAddress as `0x${string}`,
+          stockAmountIn,
+          minNGNAmountOut,
+          deadline,
+        ],
       });
       toast.success("Sell transaction submitted");
     } catch (err) {
@@ -106,9 +154,26 @@ export const AssetHoldings = ({
 
       if (isEvmConnected) {
         const saleAmountAVAX = saleAmount / NGN_TO_AVAX;
+        // Get token address from symbol
+        const { getTokenAddress } = await import("@/abis");
+        const tokenAddress = getTokenAddress(chainId || 11155111, selectedStock.symbol);
+
+        if (!tokenAddress) {
+          throw new Error(`Token address not found for ${selectedStock.symbol}`);
+        }
+
+        // First approve the DEX to spend tokens
+        toast.info("Approving token spending...");
+        await approveToken(tokenAddress, sellQuantity);
+
+        // Wait a moment for approval to be mined
+        await new Promise(resolve => setTimeout(resolve, 2000));
+
+        // Then execute the sell
+        toast.info("Executing sell order...");
         await sellToken(
           sellQuantity,
-          selectedStock.tokenId,
+          tokenAddress,
           Math.ceil(currentPricePerShare),
         );
 
