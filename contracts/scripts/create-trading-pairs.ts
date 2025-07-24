@@ -7,7 +7,87 @@ import { resolve } from "path";
  *
  * This script creates trading pairs between NGN stablecoin and existing stock tokens
  * Supports both individual and batch creation of trading pairs
+ * Includes proper gas pricing and retry logic for Sepolia testnet
  */
+
+interface GasSettings {
+  gasPrice: bigint;
+  gasLimit: number;
+}
+
+/**
+ * Get optimal gas settings for transactions
+ * Includes buffer to handle pending transactions and network congestion
+ */
+async function getOptimalGasSettings(operation: "approve" | "create"): Promise<GasSettings> {
+  const feeData = await ethers.provider.getFeeData();
+  const baseGasPrice = feeData.gasPrice || ethers.parseUnits("2", "gwei");
+
+  // Add 50% buffer to handle pending transactions and ensure faster confirmation
+  const gasPrice = (baseGasPrice * 150n) / 100n;
+
+  // Set appropriate gas limits for different operations
+  const gasLimit = operation === "approve" ? 60000 : 200000;
+
+  return { gasPrice, gasLimit };
+}
+
+/**
+ * Execute transaction with retry logic for gas-related failures
+ */
+async function executeWithRetry<T>(
+  operation: () => Promise<T>,
+  operationName: string,
+  maxRetries: number = 3
+): Promise<T> {
+  let lastError: unknown;
+
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      console.log(`   🔄 ${operationName} (attempt ${attempt}/${maxRetries})...`);
+      return await operation();
+    } catch (error: unknown) {
+      lastError = error;
+      const errorMessage = error instanceof Error ? error.message : String(error);
+
+      if (
+        errorMessage.includes("replacement transaction underpriced") ||
+        errorMessage.includes("nonce too low") ||
+        errorMessage.includes("already known")
+      ) {
+        console.log(`   ⚠️  Gas/nonce issue on attempt ${attempt}, retrying with higher gas...`);
+
+        if (attempt < maxRetries) {
+          // Wait a bit before retry
+          await new Promise((resolve) => setTimeout(resolve, 2000));
+          continue;
+        }
+      } else {
+        // Non-gas related error, don't retry
+        break;
+      }
+    }
+  }
+
+  throw lastError;
+}
+
+/**
+ * Check for pending transactions and warn user
+ */
+async function checkPendingTransactions(): Promise<void> {
+  const [deployer] = await ethers.getSigners();
+  const networkNonce = await ethers.provider.getTransactionCount(deployer.address, "latest");
+  const pendingNonce = await ethers.provider.getTransactionCount(deployer.address, "pending");
+
+  if (pendingNonce > networkNonce) {
+    console.log(`⚠️  Warning: You have ${pendingNonce - networkNonce} pending transaction(s)`);
+    console.log(`   This may cause gas pricing issues. Consider waiting for them to confirm.`);
+    console.log(`   The script will use higher gas prices to handle this.\n`);
+  } else {
+    console.log(`✅ No pending transactions detected.\n`);
+  }
+}
 
 interface StockTokenInfo {
   address: string;
@@ -471,33 +551,58 @@ async function createTradingPair(dexContract: any, ngnContract: any, stockInfo: 
       // Pair doesn't exist, continue with creation
     }
 
-    // Approve tokens for DEX
-    console.log(`   💰 Approving ${ethers.formatEther(stockInfo.initialNGNLiquidity)} NGN...`);
-    const ngnApproveTx = await ngnContract.approve(
-      await dexContract.getAddress(),
-      stockInfo.initialNGNLiquidity
-    );
-    await ngnApproveTx.wait();
-
+    // Approve tokens for DEX with proper gas settings
+    const approveGasSettings = await getOptimalGasSettings("approve");
     console.log(
-      `   💰 Approving ${ethers.formatEther(stockInfo.initialStockLiquidity)} ${stockInfo.symbol}...`
-    );
-    const stockApproveTx = await stockContract.approve(
-      await dexContract.getAddress(),
-      stockInfo.initialStockLiquidity
-    );
-    await stockApproveTx.wait();
-
-    // Create trading pair
-    console.log(`   🔄 Creating trading pair...`);
-    const createTx = await dexContract.createTradingPair(
-      stockInfo.address,
-      stockInfo.initialNGNLiquidity,
-      stockInfo.initialStockLiquidity,
-      stockInfo.feeRate
+      `   ⛽ Using gas price: ${ethers.formatUnits(approveGasSettings.gasPrice, "gwei")} gwei`
     );
 
-    const receipt = await createTx.wait();
+    await executeWithRetry(async () => {
+      console.log(`   💰 Approving ${ethers.formatEther(stockInfo.initialNGNLiquidity)} NGN...`);
+      const ngnApproveTx = await ngnContract.approve(
+        await dexContract.getAddress(),
+        stockInfo.initialNGNLiquidity,
+        {
+          gasPrice: approveGasSettings.gasPrice,
+          gasLimit: approveGasSettings.gasLimit,
+        }
+      );
+      return await ngnApproveTx.wait();
+    }, `NGN approval for ${stockInfo.symbol}`);
+
+    await executeWithRetry(async () => {
+      console.log(
+        `   💰 Approving ${ethers.formatEther(stockInfo.initialStockLiquidity)} ${stockInfo.symbol}...`
+      );
+      const stockApproveTx = await stockContract.approve(
+        await dexContract.getAddress(),
+        stockInfo.initialStockLiquidity,
+        {
+          gasPrice: approveGasSettings.gasPrice,
+          gasLimit: approveGasSettings.gasLimit,
+        }
+      );
+      return await stockApproveTx.wait();
+    }, `${stockInfo.symbol} approval`);
+
+    // Create trading pair with proper gas settings
+    const createGasSettings = await getOptimalGasSettings("create");
+
+    const receipt = await executeWithRetry(async () => {
+      console.log(`   🔄 Creating trading pair...`);
+      const createTx = await dexContract.createTradingPair(
+        stockInfo.address,
+        stockInfo.initialNGNLiquidity,
+        stockInfo.initialStockLiquidity,
+        stockInfo.feeRate,
+        {
+          gasPrice: createGasSettings.gasPrice,
+          gasLimit: createGasSettings.gasLimit,
+        }
+      );
+      return await createTx.wait();
+    }, `Trading pair creation for ${stockInfo.symbol}`);
+
     console.log(`   ✅ Trading pair created! Gas used: ${receipt.gasUsed.toString()}`);
 
     // Get the current price
@@ -513,8 +618,11 @@ async function createTradingPair(dexContract: any, ngnContract: any, stockInfo: 
   }
 }
 
-async function main() {
+async function main(): Promise<void> {
   console.log("🚀 Starting Trading Pair Creation...\n");
+
+  // Check for pending transactions
+  await checkPendingTransactions();
 
   // Get network information
   const networkName = process.env.HARDHAT_NETWORK || "hardhat";
