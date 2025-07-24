@@ -12,6 +12,7 @@ import { useAccount } from "wagmi";
 import { PortfolioPerformance } from "./components/portfolio-performance";
 import { AssetHoldings } from "./components/asset-holdings";
 import { SummaryCards } from "./components/summary-cards";
+import { SendReceiveTokens } from "./components/send-receive-tokens";
 import { StockHoldings, PerformanceData, DateRange } from "./components/types";
 import getGraphData from "@/server-actions/dashboard/graph";
 import { GraphDataMode } from "@/constants/types";
@@ -219,6 +220,8 @@ const DashBoardPage = () => {
             onUpdate={fetchData}
             NGN_TO_AVAX={NGN_TO_AVAX}
           />
+
+          <SendReceiveTokens />
         </>
       )}
     </div>
