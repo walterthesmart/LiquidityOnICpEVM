@@ -6,6 +6,7 @@ import { logError } from "@/lib/utils";
 import { AlertTriangle, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AlertCircle, BarChart3 } from "lucide-react";
+import { TradingViewFallback, useTradingViewEnabled } from "./TradingViewFallback";
 
 // TradingView widget configuration interface (corrected for Advanced Chart widget)
 interface TradingViewWidgetConfig {
@@ -188,11 +189,13 @@ const TradingViewWidget: React.FC<TradingViewWidgetProps> = memo(
     hideToolbar = false,
     studies = [],
   }) => {
+    const { isEnabled, fallbackEnabled } = useTradingViewEnabled();
     const containerRef = useRef<HTMLDivElement>(null);
     const scriptRef = useRef<HTMLScriptElement | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [hasError, setHasError] = useState(false);
     const [errorMessage, setErrorMessage] = useState("");
+    const [, setRetryCount] = useState(0);
 
     // Generate stable container ID for this widget instance using React's useId hook
     const reactId = useId();
@@ -202,6 +205,11 @@ const TradingViewWidget: React.FC<TradingViewWidgetProps> = memo(
     const tradingViewSymbol = getTradingViewSymbol(symbol);
 
     useEffect(() => {
+      // If TradingView is disabled, don't load the widget
+      if (!isEnabled) {
+        setIsLoading(false);
+        return;
+      }
       if (!containerRef.current) return;
 
       // Debounce widget creation to prevent rapid re-renders
@@ -368,6 +376,7 @@ const TradingViewWidget: React.FC<TradingViewWidgetProps> = memo(
       hideToolbar,
       studies,
       isLoading,
+      isEnabled,
     ]);
 
     // Cleanup on unmount
@@ -380,8 +389,38 @@ const TradingViewWidget: React.FC<TradingViewWidgetProps> = memo(
       };
     }, []);
 
-    // Error state
+    // If TradingView is disabled, show fallback immediately (after all hooks)
+    if (!isEnabled && fallbackEnabled) {
+      return (
+        <TradingViewFallback
+          symbol={symbol}
+          title={title || `${symbol} Chart`}
+          type="chart"
+          className={className}
+        />
+      );
+    }
+
+    // Error state - use fallback component if enabled
     if (hasError) {
+      if (fallbackEnabled) {
+        return (
+          <TradingViewFallback
+            symbol={symbol}
+            title={title || `${symbol} Chart`}
+            type="chart"
+            onRetry={() => {
+              setHasError(false);
+              setErrorMessage("");
+              setRetryCount(prev => prev + 1);
+              setIsLoading(true);
+            }}
+            className={className}
+          />
+        );
+      }
+
+      // Original error display if fallback is disabled
       return (
         <Card className={className}>
           {showTitle && (
